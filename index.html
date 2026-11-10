@@ -170,7 +170,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbox p{margin:0 0 12px; color:var(--muted)}
 .duelbox .btn{margin-top:10px}
 .duelbox img.dbug{width:150px; height:150px; display:block; margin:0 auto 4px}
-.duelcode{font:700 40px Fredoka,system-ui,sans-serif; letter-spacing:.14em; direction:ltr; background:#F5F0FF; border-radius:16px; padding:10px 8px; margin:6px 0 14px; color:var(--purple-d,#5B2BC7)}
+.duelcode{font:700 40px Fredoka,system-ui,sans-serif; letter-spacing:.14em; direction:ltr; background:#F5F0FF; border-radius:16px; padding:10px 8px; margin:6px 0 14px; color:#5B2BC7}
 .duelvs{display:flex; align-items:center; justify-content:center; gap:14px; margin:8px 0 14px; font-weight:700; font-size:18px}
 .duelvs b{display:block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .duelvs .sc{font-size:34px; font-variant-numeric:tabular-nums; color:var(--ink); display:inline-flex; gap:8px}
@@ -277,8 +277,9 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .modal h3{font-size:26px; margin-top:4px}
 .modal p{color:var(--muted); margin:6px 0 16px; font-weight:500}
 .modal svg.bug{width:90px; height:90px}
-.modal input{width:100%; font:600 18px Fredoka,system-ui,sans-serif; color:var(--ink); background:#F5F0FF; border:2px solid var(--rule); border-radius:14px; padding:10px 14px; margin-bottom:14px; text-align:center}
+.modal input{width:100%; font:600 18px Fredoka,system-ui,sans-serif; color:#2D1B4E; caret-color:#7C4DFF; background:#F5F0FF; border:2px solid var(--rule); border-radius:14px; padding:10px 14px; margin-bottom:14px; text-align:center}
 .modal input:focus{outline:none; border-color:var(--purple)}
+.modal input::placeholder{color:#B7A8DA; opacity:1}
 .streak{display:flex; justify-content:center; gap:6px; margin:4px 0 12px}
 .streak i{width:30px; height:30px; border-radius:10px; background:var(--rule); display:grid; place-items:center; font-style:normal; font-size:13px; font-weight:700; color:var(--muted)}
 .streak i.on{background:var(--orange); color:#fff}
