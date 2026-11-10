@@ -161,6 +161,34 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .winbug.anim{width:min(96vw,400px); margin:-40px 0; background:radial-gradient(circle at 50% 52%, rgba(255,255,255,.6) 0, rgba(255,244,214,.32) 30%, rgba(255,230,160,0) 60%); filter:none}
 .winbug.anim.jump{animation:bugJump .9s cubic-bezier(.25,1.3,.5,1) both}
 .winbug.anim.perch{width:min(64vw,250px); margin:-30px 0 -38px}
+/* ---- duel ---- */
+.daily.duelcard{background:linear-gradient(180deg,#6FB6FF 0%,#3D8BFF 50%,#2A6FE0 100%); box-shadow:0 6px 0 #1C4FA8, 0 12px 24px rgba(42,111,224,.28)}
+.daily.duelcard button{color:#1C4FA8}
+.daily.duelcard h2,.daily.duelcard p{text-shadow:0 2px 0 rgba(0,30,90,.25)}
+.duelbox{text-align:center; padding:22px 18px}
+.duelbox h3{font-size:24px; margin:0 0 6px}
+.duelbox p{margin:0 0 12px; color:var(--muted)}
+.duelbox .btn{margin-top:10px}
+.duelbox img.dbug{width:150px; height:150px; display:block; margin:0 auto 4px}
+.duelcode{font:700 40px Fredoka,system-ui,sans-serif; letter-spacing:.14em; direction:ltr; background:#F5F0FF; border-radius:16px; padding:10px 8px; margin:6px 0 14px; color:var(--purple-d,#5B2BC7)}
+.duelvs{display:flex; align-items:center; justify-content:center; gap:14px; margin:8px 0 14px; font-weight:700; font-size:18px}
+.duelvs b{display:block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.duelvs .sc{font-size:34px; font-variant-numeric:tabular-nums; direction:ltr; color:var(--ink)}
+.duelcount{font:700 96px/1 Fredoka,system-ui,sans-serif; color:var(--orange,#FF8A1F); margin:6px 0 10px; font-variant-numeric:tabular-nums}
+.duelcount.pop{animation:cardPop .35s cubic-bezier(.3,1.4,.6,1) both}
+.dueljoin{display:flex; gap:8px; margin-top:8px}
+.dueljoin input{flex:1; min-width:0; margin:0!important; text-transform:uppercase; letter-spacing:.12em; direction:ltr}
+.dueljoin .btn{margin:0; width:auto; flex:none; padding:0 18px}
+.duelbar{color:var(--ink); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin:10px 0 2px; background:var(--surface); border-radius:18px; padding:8px 12px; box-shadow:0 3px 0 var(--rule)}
+.duelbar[hidden]{display:none}
+.duelbar .dp{display:flex; flex-direction:column; min-width:0; font-weight:700}
+.duelbar .dp b{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px}
+.duelbar .dp span{color:var(--muted); font-size:14px; font-variant-numeric:tabular-nums}
+.duelbar .dp.opp{text-align:end}
+.duelbar .dp.opp span.fin{color:var(--orange-d,#C45A00)}
+.duelbar .mid{text-align:center; font-weight:700; line-height:1.15}
+.duelbar .mid b{font-size:22px; direction:ltr; display:block; font-variant-numeric:tabular-nums}
+.duelbar .mid small{color:var(--muted); font-variant-numeric:tabular-nums}
 .winlayer .win{margin-top:0; width:100%; max-width:400px; animation:cardPop .4s cubic-bezier(.3,1.4,.6,1) both; box-shadow:0 6px 0 var(--rule), 0 24px 50px rgba(20,5,60,.5)}
 .winlayer .win .ribbon{padding-top:26px}
 @keyframes bugJump{0%{transform:translateY(70vh) scale(.5) rotate(-12deg); opacity:0} 55%{transform:translateY(-26px) scale(1.12) rotate(4deg); opacity:1} 78%{transform:translateY(8px) scale(.97) rotate(-2deg)} 100%{transform:none; opacity:1}}
@@ -356,9 +384,9 @@ body{background:
 }
 @media (prefers-color-scheme:dark){ :root{ --bg1:#1A0552; --bg2:#2C0B78; } }
 /* cards keep dark text in light mode */
-.chapter,.set,.rule,.demo,.lb li,.ach,.modal,.win,.chip,.coin,.pill,.minis button,.hud .me,.gear,.adslot,.tabs,.levels{--ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7; color:var(--ink)}
+.chapter,.set,.rule,.demo,.lb li,.ach,.modal,.win,.chip,.coin,.pill,.minis button,.hud .me,.gear,.adslot,.tabs,.levels,.duelbar{--ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7; color:var(--ink)}
 @media (prefers-color-scheme:dark){
-  .chapter,.set,.rule,.demo,.lb li,.ach,.modal,.win,.chip,.coin,.pill,.minis button,.hud .me,.gear,.adslot,.tabs,.levels{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168}
+  .chapter,.set,.rule,.demo,.lb li,.ach,.modal,.win,.chip,.coin,.pill,.minis button,.hud .me,.gear,.adslot,.tabs,.levels,.duelbar{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168}
 }
 body{background:
   radial-gradient(70% 45% at 50% 38%, rgba(160,60,230,.55), transparent 70%),
@@ -476,6 +504,12 @@ body.splashing{overflow:hidden}
     <button id="dailyBtn">שחק</button>
   </div>
 
+  <div class="daily duelcard">
+    <h2>דו-קרב</h2>
+    <p>מי פותר ראשון? שחקו מול חבר</p>
+    <button id="duelBtn">שחק</button>
+  </div>
+
   <button class="btn orange" id="playBtn">שחק</button>
   <div class="minis">
     <button id="lbBtn"><svg viewBox="0 0 1 1"><rect x=".1" y=".5" width=".24" height=".4" rx=".05" fill="var(--blue)"/><rect x=".38" y=".25" width=".24" height=".65" rx=".05" fill="var(--orange)"/><rect x=".66" y=".6" width=".24" height=".3" rx=".05" fill="var(--green)"/></svg>טבלת מובילים</button>
@@ -497,6 +531,7 @@ body.splashing{overflow:hidden}
     <span style="display:flex;gap:8px"><button class="gear" id="muteBtn" aria-label="השתקה"><svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path d="M4 9h4l5-4v14l-5-4H4z" fill="var(--purple)"/><path id="spkWaves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="var(--purple)" stroke-width="2" fill="none" stroke-linecap="round"/><path id="spkX" d="M16 9l5 6M21 9l-5 6" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" hidden/></svg></button><button class="chip" id="resetBtn">איפוס</button></span>
   </div>
   <div class="lvtitle"><h2 id="lvTitle"></h2><small id="lvChapter"></small></div>
+  <div class="duelbar" id="duelBar" hidden></div>
   <div class="pills">
     <div class="pill" id="starPill"></div>
     <div class="pill" id="mirrorPill"></div>
@@ -528,6 +563,14 @@ body.splashing{overflow:hidden}
     </div>
   </div>
   </div>
+</section>
+
+<!-- DUEL: waiting room, countdown and result. The race itself happens on the game screen. -->
+<section id="duel" hidden>
+  <button class="chip" id="duelBack">› חזרה</button>
+  <h2 class="screen-title">דו-קרב</h2>
+  <p class="screen-sub" id="duelSub">&nbsp;</p>
+  <div class="set duelbox" id="duelBox"></div>
 </section>
 
 <!-- LEADERBOARD -->
@@ -709,6 +752,21 @@ const EN = {
   'שמיים זרועי כוכבים': 'A sky full of stars', 'צברו את כל {} הכוכבים': 'Collect all {0} stars', 'אתגר ראשון': 'First challenge', 'סיימו אתגר יומי': 'Finish a daily challenge',
   'שבוע של אתגרים': 'A week of challenges', 'סיימו 7 אתגרים יומיים': 'Finish 7 daily challenges', 'חוזרים לאור': 'Back to the light', 'היכנסו שלושה ימים ברצף': 'Come back three days in a row',
   'שבוע זוהר': 'A glowing week', 'היכנסו שבעה ימים ברצף': 'Come back seven days in a row', 'פרק {}': '{0} chapter', 'השלימו את כל שלבי פרק {}': 'Finish every level in chapter {0}',
+  // ---- duel ----
+  'דו-קרב': 'Duel', 'מי פותר ראשון? שחקו מול חבר': 'Who solves it first? Play a friend', 'סיבוב {} מתוך 3': 'Round {0} of 3',
+  'הראשון שמדליק את כל הכוכבים מנצח': 'First to light every star wins',
+  'שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.': 'Two players, the same board. First to light every star takes the round. Best of three.',
+  'הזמנת חבר': 'Invite a friend', 'קיבלתם קוד מחבר?': 'Got a code from a friend?', 'קוד חדר': 'Room code', 'הצטרפות': 'Join',
+  'פותחים חדר…': 'Opening a room…', 'מצטרפים לחדר…': 'Joining the room…', 'החדר הזה כבר מלא': 'This room is already full',
+  'צריך לרענן את הדף כדי לשחק מול החבר': 'Refresh the page to play your friend', 'לא מצאנו חדר עם הקוד הזה': 'No room found with that code',
+  'החיבור נקטע. מנסים להתחבר מחדש…': 'Connection lost. Reconnecting…', 'החדר נסגר': 'The room was closed',
+  'שלחו את הקישור או את הקוד לחבר': 'Send the link or the code to a friend', 'ממתינים ליריב…': 'Waiting for your opponent…', 'שליחת הקישור': 'Send the link',
+  'החדר נשאר פתוח כל עוד המסך הזה פתוח.': 'The room stays open as long as this screen is open.',
+  'בואו לדו-קרב ב-BEAM! מי פותר ראשון?': 'Duel me in BEAM! Who solves it first?', 'הקישור הועתק, אפשר להדביק ולשלוח': 'Link copied, ready to paste and send',
+  'הסיבוב נגמר בתיקו': 'The round was a draw', 'ניצחתם בסיבוב!': 'You won the round!', 'היריב היה מהיר יותר': 'Your opponent was faster', 'יריב נמצא!': 'Opponent found!',
+  'הלוח ייחשף לשניכם באותו רגע.': 'The board appears for both of you at the same moment.', 'פתרתם! בודקים מי היה ראשון…': 'Solved! Checking who was first…',
+  'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
+  'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
   // ---- messages ----
   'חסימה': 'Block', 'משבצת': 'Tile', '{} {}, {}': '{0} {1}, {2}', 'אין חיבור כרגע. נסו שוב מאוחר יותר.': 'No connection right now. Try again later.',
   'השם והניקוד הוסרו מהטבלה': 'Your name and score were removed', 'הישג חדש: {}': 'New achievement: {0}', 'מהלך אחד': '1 move', '{} מהלכים': '{0} moves',
@@ -1450,7 +1508,7 @@ async function rpc(fn, args) {
    and nothing is sent at all when the browser asks not to be tracked. */
 function track(kind, extra) {
   if (!G || navigator.doNotTrack === '1' || !/^https?:$/.test(location.protocol)) return;
-  rpc('beam_event', { p_kind: kind, p_level: G.mode === 'daily' ? 'daily' : G.lv.id, ...extra }).catch(() => {});
+  rpc('beam_event', { p_kind: kind, p_level: G.mode === 'daily' ? 'daily' : G.mode === 'duel' ? 'duel' : G.lv.id, ...extra }).catch(() => {});
 }
 function playerKey() {
   if (!P.key) {
@@ -1543,7 +1601,7 @@ const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
-const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login'];
+const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel'];
 function show(id) { for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game'); }
 let toastTimer;
 function toast(text, amount) {
@@ -1704,7 +1762,11 @@ function renderPills(st) {
   $('mirrorPill').innerHTML = `${ICON_MIRROR}<span>${maxMirrors() - used}</span>`;
   $('mirrorPill').setAttribute('aria-label', T`נותרו ${maxMirrors() - used} מראות`);
   const mp = $('movesPill');
-  if (G.mode === 'daily' && !G.done) {
+  if (G.mode === 'duel') {
+    const s = duelTimeLeft();
+    mp.innerHTML = `${ICON_CLOCK}<span class="timer">${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span>`;
+    mp.classList.toggle('over', s <= 20); mp.setAttribute('aria-label', T('זמן'));
+  } else if (G.mode === 'daily' && !G.done) {
     const s = elapsed();
     mp.innerHTML = `${ICON_CLOCK}<span class="timer">${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span>`;
     mp.classList.remove('over'); mp.setAttribute('aria-label', T('זמן'));
@@ -1727,7 +1789,9 @@ function renderGame(flash) {
   }
   G.prevSt = st;
   G.lastSt = st;
-  if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
+  $('duelBar').hidden = G.mode !== 'duel';
+  if (G.mode === 'duel') { $('lvTitle').textContent = T`סיבוב ${G.round} מתוך 3`; $('lvChapter').textContent = T('הראשון שמדליק את כל הכוכבים מנצח'); renderDuelBar(); }
+  else if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
   else { $('lvTitle').textContent = T`שלב ${G.idx + 1}`; $('lvChapter').textContent = T`פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
   $('tip').textContent = lv.tip || '';
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
@@ -1739,13 +1803,13 @@ function renderGame(flash) {
   else if (st.bomb) { status.className = 'status bad'; status.textContent = T('בום! הקרן פגעה בפצצה.'); }
   else status.textContent = G.moves === 0 ? T('הקישו על משבצת כדי להציב מראה') : '';
 
-  $('powerBox').hidden = G.mode === 'daily' || G.done;
+  $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done;
   $('pwMirror').innerHTML = `${ICON_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(PRICE.mirror)}</span>`;
   $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(PRICE.hammer)}</span>`;
   $('pwHint').innerHTML = `${ICON_HINT}<span>${T`רמז`}</span><span class="price">${fmt(PRICE.hint)}</span>`;
   $('pwMirror').disabled = P.balance < PRICE.mirror || G.extra >= LIMIT.mirror;
   // the hammer only exists where breaking a wall can actually save a mirror
-  const hammerHere = G.mode !== 'daily' && !!(lv.hammer && lv.hammer.length);
+  const hammerHere = G.mode !== 'daily' && G.mode !== 'duel' && !!(lv.hammer && lv.hammer.length);
   $('pwHammer').hidden = !hammerHere;
   document.querySelector('.powers').classList.toggle('two', !hammerHere);
   $('pwHammer').disabled = !G.hammerMode && (P.balance < PRICE.hammer || !breakable().size || G.hammers >= LIMIT.hammer);
@@ -1903,6 +1967,7 @@ function showWin(mood, delay, onCard) {
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
 function finish() {
+  if (G.mode === 'duel') return duelSolved();
   G.done = true; G.hammerMode = false; clearInterval(timerInt);
   const winDelay = (G.lastSt ? G.lastSt.total : 1) * 90 + 250;
   draw($('board'), G.lv, G.mirrors, null, true, G.locked, false);
@@ -1961,6 +2026,180 @@ let bonusPending = false;   // a newcomer gets the daily bonus when they first r
 function goHome() {
   clearInterval(timerInt); renderHome(); show('home');
   if (bonusPending) { bonusPending = false; setTimeout(() => { dailyBonus(); checkAchievements(); }, 450); }
+}
+
+/* ================= duel =================
+   Two players, the same generated board, first to light every star takes the round; best of three.
+   The server is the referee (clock, who finished first, who went quiet). This side asks it about once a second
+   and draws whatever it answers: waiting room, countdown, the race, the result. */
+const DUEL_GEN = 1;   // raise whenever duelLevel() or the level generator changes, so mismatched versions cannot meet
+const DUEL_SPECS = [
+  { W: 6, H: 6, k: 3, nt: 3, walls: 2, bombs: 2, maxSols: 3, budget: 80000 },
+  { W: 7, H: 7, k: 3, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 120000 },
+  { W: 7, H: 7, k: 4, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 150000 },
+];
+const DUEL_REWARD = { win: 300, draw: 150, lose: 100 };
+/* both players build the round's board from the room's seed, so it is identical without ever being sent */
+function duelLevel(seed, round) {
+  const R = mulberry32(hashStr('duel-' + seed + '-' + round)), sp = DUEL_SPECS[(round - 1) % DUEL_SPECS.length];
+  for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, sp); if (lv) return lv; }
+  return { rows: ['......', '....T.', '......', '......', '.T....', '......'], lasers: [['L', 1]], max: 2, sol: [['5,1', '\\'], ['5,4', '/']] };
+}
+let D = null;   // the duel in progress: { code, st: last server answer, offset: server clock minus ours, key, timer, fails }
+const duelNow = () => Date.now() + (D ? D.offset || 0 : 0);
+function duelTimeLeft() { return D && D.st ? Math.max(0, Math.ceil((D.st.round_start + D.st.round_len * 1000 - duelNow()) / 1000)) : 0; }
+function duelLink(code) { return (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL) + '?duel=' + code; }
+
+function openDuelMenu() {
+  modal(`<svg class="bug" viewBox="-1 -1 2 2" id="duelBug"></svg>
+    <h3>${T('דו-קרב')}</h3>
+    <p>${T('שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.')}</p>
+    <button class="btn orange" id="duelCreate">${T('הזמנת חבר')}</button>
+    <p style="margin:16px 0 6px">${T('קיבלתם קוד מחבר?')}</p>
+    <div class="dueljoin"><input id="duelCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" aria-label="${T('קוד חדר')}" placeholder="ABCDE"><button class="btn blue" id="duelJoinBtn">${T('הצטרפות')}</button></div>`, m => {
+      bugInto(m.querySelector('#duelBug'));
+      m.querySelector('#duelCreate').onclick = () => { closeModal(); withName(createDuel); };
+      const go = () => { const c = m.querySelector('#duelCodeIn').value.trim().toUpperCase(); if (c.length < 5) { m.querySelector('#duelCodeIn').focus(); return; } closeModal(); withName(() => joinDuel(c)); };
+      m.querySelector('#duelJoinBtn').onclick = go;
+      m.querySelector('#duelCodeIn').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    });
+}
+/* a duel shows your name to the other player, so one has to exist first */
+function withName(next) { if (P.name) next(); else askName(next); }
+
+async function createDuel() {
+  show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
+  let code = null;
+  try { code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN }); } catch (e) { /* handled below */ }
+  if (!code) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); goHome(); return; }
+  startDuel(code);
+}
+async function joinDuel(code) {
+  show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('מצטרפים לחדר…')}</p>`;
+  let res = null;
+  try { res = await rpc('beam_duel_join', { p_code: code, p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN }); } catch (e) { /* handled below */ }
+  if (res !== 'ok') {
+    toast(res === 'full' ? T('החדר הזה כבר מלא') : res === 'version' ? T('צריך לרענן את הדף כדי לשחק מול החבר') : res === 'missing' ? T('לא מצאנו חדר עם הקוד הזה') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+    goHome(); return;
+  }
+  startDuel(code);
+}
+function startDuel(code) {
+  stopDuel();
+  D = { code, st: null, offset: 0, key: '', fails: 0, rewarded: '', rematch: false, lastCount: null };
+  duelSync();
+  D.timer = setInterval(duelSync, 900);
+}
+function stopDuel() { if (D) { clearInterval(D.timer); D = null; } clearInterval(timerInt); }
+function leaveDuel() {
+  if (D) rpc('beam_duel_sync', { p_code: D.code, p_id: P.id, p_secret: playerKey(), p_leave: true }).catch(() => {});
+  stopDuel(); G = null; hideWin(); goHome();
+}
+async function duelSync() {
+  const d = D; if (!d || d.busy) return;
+  d.busy = true;
+  const mine = G && G.mode === 'duel' && G.key === d.key;
+  let st;
+  try {
+    st = await rpc('beam_duel_sync', { p_code: d.code, p_id: P.id, p_secret: playerKey(), p_round: mine ? G.round : 0,
+      p_lit: mine && G.lastSt ? G.lastSt.lit : 0, p_done: !!(mine && G.done), p_rematch: d.rematch });
+  } catch (e) { d.busy = false; if (D === d && ++d.fails === 4) toast(T('החיבור נקטע. מנסים להתחבר מחדש…')); return; }
+  d.busy = false;
+  if (D !== d) return;                                    // the player left while we were asking
+  if (!st) { toast(T('החדר נסגר')); stopDuel(); G = null; goHome(); return; }
+  d.fails = 0; d.offset = st.now - Date.now(); d.st = st;
+  duelRender();
+}
+function duelRender() {
+  const st = D.st, me = st.me - 1, opp = 1 - me, box = $('duelBox');
+  const vs = `<div class="duelvs"><b>${esc(st.names[me] || '')}</b><span class="sc">${st.wins[me]} : ${st.wins[opp]}</span><b>${esc(st.names[opp] || '…')}</b></div>`;
+  if (st.status === 'waiting') {
+    if (D.view === 'waiting') return;
+    D.view = 'waiting'; show('duel'); $('duelSub').textContent = T('שלחו את הקישור או את הקוד לחבר');
+    box.innerHTML = `<h3>${T('ממתינים ליריב…')}</h3><div class="duelcode">${st.code}</div>
+      <button class="btn orange" id="duelShare">${T('שליחת הקישור')}</button>
+      <p style="margin-top:14px">${T('החדר נשאר פתוח כל עוד המסך הזה פתוח.')}</p>`;
+    box.querySelector('#duelShare').onclick = () => shareText(T`בואו לדו-קרב ב-BEAM! מי פותר ראשון?`, duelLink(st.code), T('הקישור הועתק, אפשר להדביק ולשלוח'));
+    return;
+  }
+  if (st.status === 'countdown') {
+    const left = Math.max(0, Math.ceil((st.round_start - duelNow()) / 1000));
+    const key = st.seed + ':' + st.round;
+    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round); D.rematch = false; D.view = ''; }   // build the board while the clock runs
+    const head = st.round > 1 && st.last_winner != null
+      ? (st.last_winner === 0 ? T('הסיבוב נגמר בתיקו') : st.last_winner - 1 === me ? T('ניצחתם בסיבוב!') : T('היריב היה מהיר יותר'))
+      : T('יריב נמצא!');
+    if (D.view !== 'countdown') {
+      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = T`סיבוב ${st.round} מתוך 3`;
+      box.innerHTML = `<h3>${head}</h3>${vs}<div class="duelcount" id="duelCount"></div><p>${T('הלוח ייחשף לשניכם באותו רגע.')}</p>`;
+      if (st.round > 1 && st.last_winner != null) Sound.play(st.last_winner - 1 === me ? 'win' : 'unlit', 1);
+      D.lastCount = null;
+    }
+    const shown = left > 3 ? '' : String(Math.max(left, 1));
+    if (shown !== D.lastCount) {
+      D.lastCount = shown; const c = $('duelCount'); c.textContent = shown; c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+      if (shown) Sound.play('tap');
+    }
+    return;
+  }
+  if (st.status === 'playing') {
+    const key = st.seed + ':' + st.round;
+    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round); }
+    if (!G || G.mode !== 'duel' || G.key !== key) {
+      D.view = 'playing';
+      G = session('duel', { ...D.lv, tip: '' }, { round: st.round, key });
+      G.t0 = Date.now(); track('start');
+      clearInterval(timerInt); timerInt = setInterval(() => { if (G && G.mode === 'duel' && !$('game').hidden) { renderPills(); } }, 500);
+      Sound.play('whoosh'); renderGame(); show('game');
+    } else { renderDuelBar(); if (G.done) $('status').textContent = T('פתרתם! בודקים מי היה ראשון…'); }
+    return;
+  }
+  // done
+  const sig = 'done:' + st.seed + ':' + st.rematch + ':' + D.rematch;
+  if (D.view === sig) return;
+  D.view = sig;
+  clearInterval(timerInt); hideWin();
+  const won = st.winner - 1 === me, draw_ = st.winner === 0, gone = st.left_by != null && st.left_by - 1 === opp;
+  const played = st.wins[0] + st.wins[1] > 0 || st.round > 1;          // walking out before a single round earns nobody anything
+  const reward = !played ? 0 : draw_ ? DUEL_REWARD.draw : won ? DUEL_REWARD.win : DUEL_REWARD.lose;
+  if (D.rewarded !== st.seed) {                           // once per match, into the spending balance only
+    D.rewarded = st.seed; gain(reward, false); save(false);
+    Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
+    track('done', { p_stars: won ? 3 : draw_ ? 2 : 1, p_helped: false });
+  }
+  show('duel'); $('duelSub').textContent = gone ? T('היריב עזב את המשחק') : ' ';
+  box.innerHTML = `<img class="dbug" alt="" src="${WIN_BUG[won ? 'cheer' : draw_ ? 'think' : 'shrug']}">
+    <h3>${draw_ ? T('תיקו!') : won ? T('ניצחתם בדו-קרב!') : T('הפעם היריב ניצח')}</h3>${vs}
+    ${reward ? `<div class="gains"><div class="coin">${ICON_POINTS}<span>+${fmt(reward)}</span></div></div>` : ''}
+    ${gone ? '' : `<button class="btn green" id="duelAgain"${D.rematch ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
+    <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>`;
+  const again = box.querySelector('#duelAgain');
+  if (again) again.onclick = () => { D.rematch = true; duelRender(); duelSync(); };
+  box.querySelector('#duelHome').onclick = leaveDuel;
+}
+function renderDuelBar() {
+  if (!D || !D.st) return;
+  const st = D.st, me = st.me - 1, opp = 1 - me, total = G && G.lastSt ? G.lastSt.total : 3;
+  $('duelBar').innerHTML = `<div class="dp"><b>${esc(st.names[me] || '')}</b><span>★ ${G && G.lastSt ? G.lastSt.lit : 0}/${total}</span></div>
+    <div class="mid"><b>${st.wins[me]} : ${st.wins[opp]}</b></div>
+    <div class="dp opp"><b>${esc(st.names[opp] || '')}</b><span class="${st.done[opp] ? 'fin' : ''}">★ ${Math.min(st.lit[opp], total)}/${total}</span></div>`;
+}
+/* you lit every star: freeze the board and tell the referee straight away, without waiting for the next tick */
+function duelSolved() {
+  G.done = true;
+  draw($('board'), G.lv, G.mirrors, null, true, G.locked, false);
+  $('status').className = 'status'; $('status').textContent = T('פתרתם! בודקים מי היה ראשון…');
+  Sound.play('win', 1);
+  if (D) { D.busy = false; duelSync(); }
+}
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function shareText(text, link, copiedMsg) {
+  const copy = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + '\n' + link).then(() => toast(copiedMsg), () => toast(T('לא הצלחנו להעתיק את התוצאה')));
+    else toast(link);
+  };
+  if (navigator.share) navigator.share({ text, url: link }).catch(e => { if (!e || e.name !== 'AbortError') copy(); });
+  else copy();
 }
 
 /* ================= sharing ================= */
@@ -2150,7 +2389,9 @@ $('dailyBtn').onclick = openDaily;
 $('helpBtn').onclick = () => { demoMir = {}; renderDemo(); renderIcons(); show('help'); };
 $('helpBack').onclick = goHome;
 $('helpPlay').onclick = () => $('playBtn').onclick();
-$('backBtn').onclick = goHome;
+$('backBtn').onclick = () => G && G.mode === 'duel' ? leaveDuel() : goHome();
+$('duelBack').onclick = () => leaveDuel();
+$('duelBtn').onclick = openDuelMenu;
 $('resetBtn').onclick = () => {
   if (G.done) return;
   for (const k of Object.keys(G.mirrors)) if (!G.locked.has(k)) delete G.mirrors[k];
@@ -2317,6 +2558,13 @@ function setProgress(p, text) {
   idle(() => { preloadWinVideos(); const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
   // on the web the game installs to the home screen and keeps working offline
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  const invite = (new URLSearchParams(location.search).get('duel') || '').trim().toUpperCase();
+  if (/^[A-Z0-9]{5}$/.test(invite)) {
+    try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays as it was */ }
+    bonusPending = true;                      // the daily bonus waits until they are back on the home screen
+    withName(() => joinDuel(invite));
+    return;
+  }
   await wait(500);
   dailyBonus();
   checkAchievements();
