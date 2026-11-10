@@ -748,7 +748,7 @@ body.splashing{overflow:hidden}
   <div class="rule"><svg viewBox="0 0 1 1" id="icWall"></svg>
     <div><h3>חסימות</h3><p>משבצות עם איקס עוצרות את הקרן.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icBomb"></svg>
-    <div><h3>פצצות</h3><p>אם קרן כלשהי נוגעת בפצצה, הכול נכבה.</p></div></div>
+    <div><h3>פצצות</h3><p>אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה פעמיים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icFixed"></svg>
     <div><h3>מראות קבועות</h3><p>מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icSplit"></svg>
@@ -818,7 +818,7 @@ const EN = {
   'מראות': 'Mirrors', 'הקישו על משבצת כדי להציב מראה. הקשה שנייה מסובבת אותה, ושלישית מסירה. מראה מפנה את הקרן ברבע סיבוב.': 'Tap a tile to place a mirror. A second tap turns it, a third removes it. A mirror bends the beam a quarter turn.',
   'כוכבים': 'Stars', 'הקרן עוברת דרכם, מדליקה אותם וממשיכה הלאה. השלב נגמר כשכל הכוכבים דולקים.': 'The beam passes through them, lights them and carries on. The level ends when every star is lit.',
   'חסימות': 'Blocks', 'משבצות עם איקס עוצרות את הקרן.': 'Tiles with an X stop the beam.',
-  'פצצות': 'Bombs', 'אם קרן כלשהי נוגעת בפצצה, הכול נכבה.': 'If any beam touches a bomb, everything goes dark.',
+  'פצצות': 'Bombs', 'אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה פעמיים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש.': 'If any beam touches a bomb, everything goes dark. You have a moment to fix it. Leave the beam on a bomb twice in the same level and it blows up, and the level starts over.',
   'מראות קבועות': 'Fixed mirrors', 'מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.': 'Dark mirrors with bolts. They are already installed and cannot be moved or turned.',
   'זכוכית מפצלת': 'Splitter glass', 'חלק מהאור ממשיך ישר וחלק מוחזר הצידה. מקרן אחת נוצרות שתיים, וכל אחת מהן יכולה להדליק כוכבים או לפגוע בפצצה.': 'Part of the light goes straight on and part is turned aside. One beam becomes two, and each can light stars or hit a bomb.',
   'שתי גחליליות': 'Two fireflies', 'בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.': 'Later levels have two beams. Every mirror affects both.',
@@ -867,6 +867,13 @@ const EN = {
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
   'הפרופיל שלי': 'My profile', 'בחרו דמות': 'Choose your character', 'דמות': 'Character', 'דו-קרב: {} ניצחונות': 'Duels: {0} wins', 'שם ודמות': 'Name and character',
   '★ {} · {} שלבים · {} בלי עזרה': '★ {0} · {1} levels · {2} unaided',
+  'על מה משחקים?': 'What are you playing for?', 'שני השחקנים שמים את אותו סכום, והמנצח לוקח את הקופה.': 'Both players put in the same amount, and the winner takes the pot.',
+  '{} נקודות': '{0} points', 'משחק ידידותי': 'Friendly match', 'הדו-קרב הזה על {} נקודות, ואין לכם מספיק': 'This duel is for {0} points, and you do not have enough',
+  'דו-קרב על {} נקודות': 'Duel for {0} points', '{} מזמין לדו-קרב. המנצח לוקח {}.': '{0} invites you to a duel. The winner takes {1}.', 'סיבוב {} · הקופה: {}': 'Round {0} · pot: {1}',
+  'שמתם בקופה': 'You put in', 'אין מספיק נקודות למשחק חוזר': 'Not enough points for a rematch', 'כולל הקופה: {}': 'Including the pot: {0}', 'הקופה של {} הלכה ליריב': 'The pot of {0} went to your opponent',
+  'משחקים על {} נקודות. המנצח לוקח {}.': 'Playing for {0} points. The winner takes {1}.',
+  'זהירות! עוד פגיעה בפצצה והיא מתפוצצת.': 'Careful! One more hit and the bomb blows up.', 'בום! הפצצה התפוצצה, והלוח התאפס.': 'Boom! The bomb blew up and the board was wiped.', 'בום! הפצצה התפוצצה.': 'Boom! The bomb blew up.',
+  'הקרן נגעה בפצצה פעמיים. מתחילים את השלב מחדש.': 'The beam touched a bomb twice. The level starts over.', 'הקרן על פצצה! הזיזו את המראה מהר.': 'The beam is on a bomb! Move the mirror quickly.', 'נסו שוב': 'Try again',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -2037,6 +2044,27 @@ let G = null, timerInt = null, DAILY_CACHE = null;
 function session(mode, lv, extra) {
   return { mode, lv: { ...lv, rows: [...lv.rows] }, mirrors: {}, locked: new Set(), extra: 0, hammers: 0, hints: 0, hammerMode: false, helped: false, moves: 0, done: false, ...extra };
 }
+function bombOut() {
+  Sound.play('bomb'); Haptic.play('win');
+  if (G.mode === 'duel') {          // in a race the board is simply wiped, which costs time but not the round
+    for (const k of Object.keys(G.mirrors)) if (!G.locked.has(k)) delete G.mirrors[k];
+    G.bombs = 0; G.prevSt = null; G.bombHeld = false;
+    return renderGame(T('בום! הפצצה התפוצצה, והלוח התאפס.'));
+  }
+  const g = G; G.done = true; track('done', { p_stars: 0, p_moves: G.moves, p_helped: !!G.helped });
+  $('status').className = 'status bad'; $('status').textContent = T('בום! הפצצה התפוצצה.');
+  setTimeout(() => {
+    if (G !== g || $('game').hidden) return;
+    modal(`<img class="bug" alt="" src="${WIN_BUG.shrug}">
+      <h3>${T('בום! הפצצה התפוצצה.')}</h3>
+      <p>${T('הקרן נגעה בפצצה פעמיים. מתחילים את השלב מחדש.')}</p>
+      <button class="btn orange" id="boomAgain">${T('נסו שוב')}</button>
+      <button class="btn ghosty" id="boomHome" style="margin-top:12px">${T('חזרה לבית')}</button>`, m => {
+        m.querySelector('#boomAgain').onclick = () => { closeModal(); if (g.mode === 'daily') openDaily(); else openLevel(g.idx); };
+        m.querySelector('#boomHome').onclick = () => { closeModal(); G = null; goHome(); };
+      }, true);
+  }, 700);
+}
 function openLevel(i) { G = session('level', ALL[i], { idx: i }); startGame(); }
 function openDaily() {
   const t = todayStr();
@@ -2087,6 +2115,20 @@ function renderGame(flash) {
     if (st.lit > G.prevSt.lit) for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90);
     else if (st.lit < G.prevSt.lit && !st.bomb) Sound.play('unlit');
   }
+  /* A bomb forgives one touch per level; the second blows up and the level starts over. A touch only counts when the
+     beam is left on the bomb for a moment, so passing over one while turning a mirror is safe, and so is the opening
+     position of a level that starts with the beam on a bomb. */
+  const onBomb = st.bomb && !G.done && Object.keys(G.mirrors).some(k => !G.locked.has(k));
+  if (!onBomb) { clearTimeout(G.bombT); G.bombT = null; G.bombHeld = false; }
+  else if (!G.bombT && !G.bombHeld) {
+    const g = G;
+    G.bombT = setTimeout(() => {
+      g.bombT = null;
+      if (G !== g || g.done || $('game').hidden) return;
+      g.bombHeld = true; g.bombs = (g.bombs || 0) + 1;
+      if (g.bombs >= 2) bombOut(); else { Haptic.play('win'); renderGame(); }
+    }, 1500);
+  }
   G.prevSt = st;
   G.lastSt = st;
   $('duelBar').hidden = G.mode !== 'duel';
@@ -2100,7 +2142,7 @@ function renderGame(flash) {
   const status = $('status'); status.className = 'status';
   if (flash) { status.className = 'status bad'; status.textContent = flash; }
   else if (G.hammerMode) { status.className = 'status bad'; status.textContent = T('הקישו על חסימה מהבהבת כדי לשבור אותה'); }
-  else if (st.bomb) { status.className = 'status bad'; status.textContent = T('בום! הקרן פגעה בפצצה.'); }
+  else if (st.bomb) { status.className = 'status bad'; status.textContent = !onBomb ? T('בום! הקרן פגעה בפצצה.') : G.bombHeld ? (G.bombs === 1 ? T('זהירות! עוד פגיעה בפצצה והיא מתפוצצת.') : T('בום! הקרן פגעה בפצצה.')) : T('הקרן על פצצה! הזיזו את המראה מהר.'); }
   else status.textContent = G.moves === 0 ? T('הקישו על משבצת כדי להציב מראה') : '';
 
   $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done;
@@ -2371,7 +2413,7 @@ function openDuelMenu() {
     <button class="btn orange" id="duelCreate" style="margin-top:10px">${T('הזמנה בקישור')}</button>
     <p style="margin:16px 0 6px">${T('קיבלתם קוד מחבר?')}</p>
     <div class="dueljoin"><input id="duelCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" aria-label="${T('קוד חדר')}" placeholder="ABCDE"><button class="btn blue" id="duelJoinBtn">${T('הצטרפות')}</button></div>`, m => {
-            m.querySelector('#duelCreate').onclick = () => { closeModal(); withName(createDuel); };
+            m.querySelector('#duelCreate').onclick = () => { closeModal(); withName(() => chooseStake(createDuel)); };
       m.querySelector('#duelFriends').onclick = () => { closeModal(); friendsEntry(); };
       const go = () => { const c = m.querySelector('#duelCodeIn').value.trim().toUpperCase(); if (c.length < 5) { m.querySelector('#duelCodeIn').focus(); return; } closeModal(); withName(() => joinDuel(c)); };
       m.querySelector('#duelJoinBtn').onclick = go;
@@ -2381,14 +2423,40 @@ function openDuelMenu() {
 /* a duel shows your name to the other player, so one has to exist first */
 function withName(next) { if (P.name) next(); else askName(next); }
 
-async function createDuel() {
+/* a duel can be friendly or played for points: both put the stake in, the winner takes the pot */
+const STAKES = [0, 200, 500, 1000];
+function chooseStake(next) {
+  modal(`<img class="bug" alt="" src="${POSE.power}">
+    <h3>${T('על מה משחקים?')}</h3>
+    <p>${T('שני השחקנים שמים את אותו סכום, והמנצח לוקח את הקופה.')}</p>
+    ${STAKES.map(v => `<button class="btn ${v ? 'orange' : 'green'}" data-st="${v}" style="margin-top:10px"${P.balance < v ? ' disabled' : ''}>${v ? T`${fmt(v)} נקודות` : T('משחק ידידותי')}</button>`).join('')}`, m => {
+      for (const b of m.querySelectorAll('[data-st]')) b.onclick = () => { closeModal(); next(+b.dataset.st); };
+    });
+}
+async function createDuel(stake = 0) {
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
   let code = null;
-  try { code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN }); } catch (e) { /* handled below */ }
+  try { code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN, p_stake: stake }); } catch (e) { /* handled below */ }
   if (!code) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); goHome(); return; }
   startDuel(code);
 }
-async function joinDuel(code) {
+async function joinDuel(code, agreed) {
+  if (!agreed) {            // a room played for points says so before anything is taken
+    let room = null;
+    try { room = await rpc('beam_duel_peek', { p_code: code }); } catch (e) { /* the join itself reports a lost connection */ }
+    if (room && room.stake > 0 && room.status === 'waiting') {
+      if (P.balance < room.stake) { toast(T`הדו-קרב הזה על ${fmt(room.stake)} נקודות, ואין לכם מספיק`); goHome(); return; }
+      modal(`<img class="bug" alt="" src="${POSE.power}">
+        <h3>${T`דו-קרב על ${fmt(room.stake)} נקודות`}</h3>
+        <p>${T`${esc(room.name || '')} מזמין לדו-קרב. המנצח לוקח ${fmt(room.stake * 2)}.`}</p>
+        <button class="btn green" id="stYes">${T('הצטרפות')}</button>
+        <button class="btn ghosty" id="stNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+          m.querySelector('#stYes').onclick = () => { closeModal(); joinDuel(code, true); };
+          m.querySelector('#stNo').onclick = () => { closeModal(); goHome(); };
+        }, true);
+      return;
+    }
+  }
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('מצטרפים לחדר…')}</p>`;
   let res = null;
   try { res = await rpc('beam_duel_join', { p_code: code, p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN }); } catch (e) { /* handled below */ }
@@ -2400,7 +2468,7 @@ async function joinDuel(code) {
 }
 function startDuel(code) {
   stopDuel();
-  D = { code, st: null, offset: 0, key: '', fails: 0, rewarded: '', rematch: false, lastCount: null, view: '', invited: '', friendAsked: false };
+  D = { code, st: null, offset: 0, key: '', fails: 0, rewarded: '', rematch: false, lastCount: null, view: '', invited: '', friendAsked: false, paid: '' };
   duelSync();
   D.timer = setInterval(duelSync, 900);
 }
@@ -2445,7 +2513,8 @@ function duelRender() {
       ? (st.last_winner === 0 ? T('הסיבוב נגמר בתיקו') : st.last_winner - 1 === me ? T('ניצחתם בסיבוב!') : T('היריב היה מהיר יותר'))
       : T('יריב נמצא!');
     if (D.view !== 'countdown') {
-      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = T`סיבוב ${st.round} · עד 3 ניצחונות`;
+      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = st.stake ? T`סיבוב ${st.round} · הקופה: ${fmt(st.stake * 2)}` : T`סיבוב ${st.round} · עד 3 ניצחונות`;
+      if (st.stake && st.round === 1 && D.paid !== st.seed) { D.paid = st.seed; P.balance = Math.max(0, P.balance - st.stake); save(false); toast(T('שמתם בקופה'), `-${fmt(st.stake)}`); }
       box.innerHTML = `<img class="dbug" alt="" src="${POSE.power}"><h3>${head}</h3>${vs}<div class="duelcount" id="duelCount"></div><p>${T('הלוח ייחשף לשניכם באותו רגע.')}</p>`;
       if (st.round > 1 && st.last_winner != null) Sound.play(st.last_winner - 1 === me ? 'win' : 'unlit', 1);
       D.lastCount = null;
@@ -2477,7 +2546,8 @@ function duelRender() {
   clearInterval(timerInt); hideWin();
   const won = st.winner - 1 === me, draw_ = st.winner === 0, gone = st.left_by != null && st.left_by - 1 === opp;
   const played = st.wins[0] + st.wins[1] > 0 || st.round > 1;          // walking out before a single round earns nobody anything
-  const reward = !played ? 0 : draw_ ? DUEL_REWARD.draw : won ? DUEL_REWARD.win : DUEL_REWARD.lose;
+  const pot = st.stake && D.paid === st.seed ? (!played || draw_ ? st.stake : won ? st.stake * 2 : 0) : 0;      // an unplayed or drawn match gives the stake back
+  const reward = (!played ? 0 : draw_ ? DUEL_REWARD.draw : won ? DUEL_REWARD.win : DUEL_REWARD.lose) + pot;
   if (D.rewarded !== st.seed) {                           // once per match, into the spending balance only
     D.rewarded = st.seed; gain(reward, false);
     if (played) { P.duel = P.duel || { w: 0, l: 0, d: 0 }; P.duel[draw_ ? 'd' : won ? 'w' : 'l']++; }
@@ -2490,7 +2560,8 @@ function duelRender() {
   box.innerHTML = `<img class="dbug" alt="" src="${WIN_BUG[won ? 'cheer' : draw_ ? 'think' : 'shrug']}">
     <h3>${draw_ ? T('תיקו!') : won ? T('ניצחתם בדו-קרב!') : T('הפעם היריב ניצח')}</h3>${vs}
     ${reward ? `<div class="gains"><div class="coin">${ICON_POINTS}<span>+${fmt(reward)}</span></div></div>` : ''}
-    ${gone ? `<p><b>${T('היריב יצא, אי אפשר לשחק שוב באותו חדר.')}</b></p>` : `<button class="btn green" id="duelAgain"${D.rematch ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
+    ${st.stake && played && !draw_ ? `<p>${won ? T`כולל הקופה: ${fmt(st.stake * 2)}` : T`הקופה של ${fmt(st.stake * 2)} הלכה ליריב`}</p>` : ''}
+    ${gone ? `<p><b>${T('היריב יצא, אי אפשר לשחק שוב באותו חדר.')}</b></p>` : `<button class="btn green" id="duelAgain"${D.rematch || P.balance < (st.stake || 0) ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : P.balance < (st.stake || 0) ? T('אין מספיק נקודות למשחק חוזר') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
     <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>
     ${D.friendAsked || isFriend(st.names[opp]) ? '' : `<button class="linkbtn" id="duelFriend">${T`הוספת ${st.names[opp] || ''} לחברים`}</button>`}`;
   const fr = box.querySelector('#duelFriend');
@@ -2585,13 +2656,14 @@ function socialRender() {
     Social.invite = inv.id; Sound.play('whoosh'); Haptic.play('win');
     modal(`<img class="bug" alt="" src="${inv.avatar && inv.avatar !== 'bug' ? avatarSrc(inv.avatar) : POSE.power}">
       <h3>${T`הזמנה לדו-קרב מ-${esc(inv.name)}`}</h3>
-      <button class="btn green" id="invYes">${T('קבל')}</button>
+      ${inv.stake ? `<p>${P.balance < inv.stake ? T`הדו-קרב הזה על ${fmt(inv.stake)} נקודות, ואין לכם מספיק` : T`משחקים על ${fmt(inv.stake)} נקודות. המנצח לוקח ${fmt(inv.stake * 2)}.`}</p>` : ''}
+      <button class="btn green" id="invYes"${inv.stake && P.balance < inv.stake ? ' disabled' : ''}>${T('קבל')}</button>
       <button class="btn ghosty" id="invNo" style="margin-top:12px">${T('לא עכשיו')}</button>`, m => {
                 const answer = async yes => {
           Social.invite = null; closeModal();
           let code = null;
           try { code = await rpc('beam_invite_answer', { p_id: P.id, p_secret: playerKey(), p_invite: inv.id, p_accept: yes }); } catch (e) { /* the room tells */ }
-          if (yes) { G = null; hideWin(); clearInterval(timerInt); joinDuel(code || inv.code); }
+          if (yes) { G = null; hideWin(); clearInterval(timerInt); joinDuel(code || inv.code, true); }
         };
         m.querySelector('#invYes').onclick = () => answer(true);
         m.querySelector('#invNo').onclick = () => answer(false);
@@ -2632,7 +2704,7 @@ function renderFriends() {
 }
 async function friendAction(a, f) {
   const base = { p_id: P.id, p_secret: playerKey() };
-  if (a === 'invite') return inviteFriend(f);
+  if (a === 'invite') return chooseStake(stake => inviteFriend(f, stake));
   if (a === 'remove') {
     modal(`<h3>${T`להסיר את ${esc(f.name)} מהחברים?`}</h3>
       <button class="btn danger" id="rmGo">${T('הסרה')}</button>
@@ -2647,11 +2719,11 @@ async function friendAction(a, f) {
   pulse();
 }
 /* open a room and ring the friend; they get a pop-up wherever they are in the game */
-async function inviteFriend(f) {
+async function inviteFriend(f, stake = 0) {
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
   let code = null, res = null;
   try {
-    code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN });
+    code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN, p_stake: stake });
     if (code) res = await rpc('beam_invite_send', { p_id: P.id, p_secret: playerKey(), p_friend: f.id, p_code: code });
   } catch (e) { /* handled below */ }
   if (res !== 'ok') {
