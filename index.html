@@ -163,7 +163,8 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .winbug.anim.perch{width:min(64vw,250px); margin:-30px 0 -38px}
 /* ---- duel ---- */
 .daily.duelcard{background:linear-gradient(180deg,#6FB6FF 0%,#3D8BFF 50%,#2A6FE0 100%); box-shadow:0 6px 0 #1C4FA8, 0 12px 24px rgba(42,111,224,.28)}
-.daily.duelcard button{color:#1C4FA8}
+.daily.duelcard button{color:#1C4FA8; grid-row:auto; grid-column:auto; padding:0 14px}
+.duelbtns{grid-row:1 / span 2; grid-column:2; display:flex; gap:8px; position:relative; z-index:1}
 .daily.duelcard h2,.daily.duelcard p{text-shadow:0 2px 0 rgba(0,30,90,.25)}
 .duelbox{text-align:center; padding:22px 18px}
 .duelbox h3{font-size:24px; margin:0 0 6px}
@@ -527,7 +528,7 @@ body.splashing{overflow:hidden}
   <div class="daily duelcard">
     <h2>דו-קרב</h2>
     <p id="duelText">מי פותר ראשון? שחקו מול חבר</p>
-    <button id="duelBtn">שחק</button>
+    <div class="duelbtns"><button id="friendsBtn">חברים</button><button id="duelBtn">שחק</button></div>
   </div>
 
   <button class="btn orange" id="playBtn">שחק</button>
@@ -799,7 +800,7 @@ const EN = {
   'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
   // ---- friends ----
-  'החברים שלי': 'My friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
+  'החברים שלי': 'My friends', 'חברים': 'Friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
   'יש לכם בקשת חברות חדשה': 'You have a new friend request', '{} חברים מחוברים עכשיו': '{0} friends online now', 'ההזמנה כבר לא בתוקף': 'That invitation is no longer open',
   'הזמנה לדו-קרב מ-{}': '{0} invites you to a duel', 'קבל': 'Accept', 'לא עכשיו': 'Not now', '{}: לא עכשיו': '{0}: not now', 'אין תשובה מ-{}': 'No answer from {0}',
@@ -2170,7 +2171,7 @@ function openDuelMenu() {
     <div class="dueljoin"><input id="duelCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" aria-label="${T('קוד חדר')}" placeholder="ABCDE"><button class="btn blue" id="duelJoinBtn">${T('הצטרפות')}</button></div>`, m => {
       bugInto(m.querySelector('#duelBug'));
       m.querySelector('#duelCreate').onclick = () => { closeModal(); withName(createDuel); };
-      m.querySelector('#duelFriends').onclick = () => { closeModal(); withName(openFriends); };
+      m.querySelector('#duelFriends').onclick = () => { closeModal(); friendsEntry(); };
       const go = () => { const c = m.querySelector('#duelCodeIn').value.trim().toUpperCase(); if (c.length < 5) { m.querySelector('#duelCodeIn').focus(); return; } closeModal(); withName(() => joinDuel(c)); };
       m.querySelector('#duelJoinBtn').onclick = go;
       m.querySelector('#duelCodeIn').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
@@ -2401,6 +2402,11 @@ function socialRender() {
     leaveDuel(); openFriends();
   }
 }
+/* the way in from the home screen; someone who has just picked a name for this is offered the link to send straight away */
+function friendsEntry() {
+  const fresh = !P.name;
+  withName(() => { openFriends(); if (fresh) shareFriendLink(); });
+}
 function openFriends() {
   show('friends'); $('optPresence').checked = P.hidePresence !== true;
   renderFriends(); socialStart();
@@ -2456,7 +2462,8 @@ async function inviteFriend(f) {
 }
 const friendLink = () => (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL) + '#friend=' + Social.data.fcode;
 async function shareFriendLink() {
-  if (!Social.data) { await pulse(); }
+  if (!Social.data) pulse();
+  for (let i = 0; i < 40 && !Social.data; i++) await wait(100);        // the first answer from the server is on its way
   if (!Social.data) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
   shareSheet(T('שליחת קישור לחבר'), T('בואו נהיה חברים ב-BEAM ונשחק דו-קרב!'), friendLink());
 }
@@ -2468,6 +2475,7 @@ async function acceptFriendLink(fcode) {
   openFriends();
 }
 $('frBack').onclick = goHome;
+$('friendsBtn').onclick = friendsEntry;
 $('frAdd').onclick = shareFriendLink;
 $('optPresence').onchange = e => { P.hidePresence = !e.target.checked; save(false); pulse(); };
 
