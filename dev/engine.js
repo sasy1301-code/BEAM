@@ -178,7 +178,8 @@ function dailyLevel(dateStr){
     {W:7,H:7,k:5,nt:3,walls:3,bombs:3,maxSols:2,budget:150000},
     {W:7,H:7,k:3,nt:3,walls:2,bombs:2,lasers:2,maxSols:2,budget:150000},
   ];
-  for(let i=0;i<300;i++){const lv=makeLevel(R,specs[v]);if(lv)return lv;}
+  // the day's own variant gets the most tries; if it finds nothing, the other 7x7 variants take over before any smaller board
+  for(let o=0;o<4;o++){const sp=specs[(v+o)%4]; for(let i=0,n=o?300:600;i<n;i++){const lv=makeLevel(R,sp);if(lv)return lv;}}
   for(let i=0;i<300;i++){const lv=makeLevel(R,{W:6,H:6,k:3,nt:2,walls:2,bombs:2,maxSols:2,budget:100000});if(lv)return lv;}
   return {rows:["......","....T.","......","......",".T....","......"],lasers:[['L',1]],max:2,sol:[['5,1','\\'],['5,4','/']]};
 }

@@ -518,6 +518,7 @@ body.splashing{overflow:hidden}
       <div class="gains" id="gains"></div>
       <button class="btn green" id="nextBtn"></button>
       <button class="btn blue" id="retryBtn">נסו שוב לשלושה כוכבים</button>
+      <button class="linkbtn" id="shareBtn" hidden>שתפו את התוצאה</button>
     </div>
   </div>
   </div>
@@ -811,7 +812,8 @@ function dailyLevel(dateStr){
     {W:7,H:7,k:5,nt:3,walls:3,bombs:3,maxSols:2,budget:150000},
     {W:7,H:7,k:3,nt:3,walls:2,bombs:2,lasers:2,maxSols:2,budget:150000},
   ];
-  for(let i=0;i<300;i++){const lv=makeLevel(R,specs[v]);if(lv)return lv;}
+  // the day's own variant gets the most tries; if it finds nothing, the other 7x7 variants take over before any smaller board
+  for(let o=0;o<4;o++){const sp=specs[(v+o)%4]; for(let i=0,n=o?300:600;i<n;i++){const lv=makeLevel(R,sp);if(lv)return lv;}}
   for(let i=0;i<300;i++){const lv=makeLevel(R,{W:6,H:6,k:3,nt:2,walls:2,bombs:2,maxSols:2,budget:100000});if(lv)return lv;}
   return {rows:["......","....T.","......","......",".T....","......"],lasers:[['L',1]],max:2,sol:[['5,1','\\'],['5,4','/']]};
 }
@@ -1714,8 +1716,11 @@ function finish() {
     $('nextBtn').onclick = () => openLeaderboard('day');
     $('retryBtn').textContent = 'נסו שוב לשיא'; $('retryBtn').hidden = false;
     $('retryBtn').onclick = () => openDaily();
+    $('shareBtn').hidden = false;
+    $('shareBtn').onclick = () => shareDaily(P.daily[t]);
     if (!P.name) setTimeout(() => askName(), winDelay + 4800);
   } else {
+    $('shareBtn').hidden = true;
     const lv = G.lv, i = G.idx;
     const stars = G.helped ? 1 : G.moves <= par(lv) ? 3 : 2;
     mood = stars === 3 ? 'cheer' : stars === 2 ? 'think' : 'shrug';
@@ -1739,7 +1744,33 @@ function finish() {
   showWin(mood, winDelay, winSound);
   save(); checkAchievements();
 }
-function goHome() { clearInterval(timerInt); renderHome(); show('home'); }
+let bonusPending = false;   // a newcomer gets the daily bonus when they first reach the home screen, not on top of level one
+function goHome() {
+  clearInterval(timerInt); renderHome(); show('home');
+  if (bonusPending) { bonusPending = false; setTimeout(() => { dailyBonus(); checkAchievements(); }, 450); }
+}
+
+/* ================= sharing ================= */
+const SITE_URL = 'https://beam-game.co.il/';
+function shareDaily(d) {
+  if (!d) return;
+  const t = todayStr().split('-').reverse().join('.');
+  const link = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL;
+  const text = `BEAM · האתגר היומי ${t}\n${fmt(d.score)} נקודות · ${movesText(d.moves)} · ${Math.floor(d.time / 60)}:${String(d.time % 60).padStart(2, '0')}\nמצליחים לעקוף אותי?`;
+  const copied = () => toast('התוצאה הועתקה, אפשר להדביק ולשלוח');
+  const copy = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + '\n' + link).then(copied, () => toast('לא הצלחנו להעתיק את התוצאה'));
+    else {
+      const ta = document.createElement('textarea'); ta.value = text + '\n' + link; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); copied(); } catch (e) { toast('לא הצלחנו להעתיק את התוצאה'); }
+      ta.remove();
+    }
+  };
+  // phones open their own share sheet; everywhere else the result goes to the clipboard
+  if (navigator.share) navigator.share({ text, url: link }).catch(e => { if (!e || e.name !== 'AbortError') copy(); });
+  else copy();
+}
 
 /* ================= leaderboard ================= */
 let lbTab = 'all';
@@ -1977,6 +2008,7 @@ $('overlay').addEventListener('click', e => { if (e.target === $('overlay') && $
    when publishing; the official buttons and sign-in windows come from those SDKs. */
 const PROVIDERS = { google: 'Google', facebook: 'Facebook' };
 const AUTH = {
+  demo: true,   // no real provider is connected yet; while this is true the sign-in screen and the account card stay hidden
   signIn(provider) {
     return new Promise(resolve => {
       modal(`<h3>התחברות עם ${PROVIDERS[provider]}</h3>
@@ -2005,6 +2037,7 @@ async function loginWith(provider) {
 }
 function renderAccount() {
   const card = $('accountCard'), a = P.auth || { provider: 'guest' };
+  card.hidden = !!AUTH.demo; if (AUTH.demo) return;
   if (a.provider === 'guest') {
     card.innerHTML = `<h3>חשבון</h3>
       <p>אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.</p>
@@ -2053,19 +2086,24 @@ function setProgress(p, text) {
   await Promise.all([...document.images].map(i => i.decode ? i.decode().catch(() => {}) : null));
   setProgress(72, 'מדליק את הכוכבים…');
   await wait(80);
-  const t = todayStr();
-  try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ }
   setProgress(92);
+  // a new player goes straight in as a guest: no sign-in wall, and the very first thing they see is level one
+  const firstRun = !P.auth;
+  if (firstRun) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
+  const newcomer = firstRun && !Object.keys(P.levels).length;
   renderHome();
-  const rest = 2000 - (Date.now() - t0);
+  if (newcomer) { G = session('level', ALL[0], { idx: 0 }); renderGame(); show('game'); bonusPending = true; }
+  const rest = 800 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
-  if (!P.auth) show('login');
   setProgress(100, 'מוכן!');
-  await wait(450);
+  await wait(200);
   $('splash').classList.add('gone');
   document.body.classList.remove('splashing');
   setTimeout(() => $('splash').remove(), 700);
-  if (!P.auth) { show('login'); return; }
+  // today's challenge takes a moment to build, so it is prepared quietly once the screen is up
+  const idle = window.requestIdleCallback || (f => setTimeout(f, 1200));
+  idle(() => { const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
+  if (newcomer) return;
   await wait(500);
   dailyBonus();
   checkAchievements();
