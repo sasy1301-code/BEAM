@@ -599,7 +599,7 @@ body.splashing{overflow:hidden}
   <h2 class="screen-title">החברים שלי</h2>
   <p class="screen-sub" id="frSub">&nbsp;</p>
   <ul class="frlist" id="frList"></ul>
-  <button class="btn orange" id="frAdd">הוספת חבר בקישור</button>
+  <button class="btn orange" id="frAdd">שליחת קישור לחבר</button>
   <div class="set" style="margin-top:16px">
     <label class="toggle" style="border-top:none"><span>הצג אותי כמחובר לחברים</span><input type="checkbox" id="optPresence"><i></i></label>
   </div>
@@ -799,7 +799,7 @@ const EN = {
   'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
   // ---- friends ----
-  'החברים שלי': 'My friends', 'הוספת חבר בקישור': 'Add a friend by link', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
+  'החברים שלי': 'My friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
   'יש לכם בקשת חברות חדשה': 'You have a new friend request', '{} חברים מחוברים עכשיו': '{0} friends online now', 'ההזמנה כבר לא בתוקף': 'That invitation is no longer open',
   'הזמנה לדו-קרב מ-{}': '{0} invites you to a duel', 'קבל': 'Accept', 'לא עכשיו': 'Not now', '{}: לא עכשיו': '{0}: not now', 'אין תשובה מ-{}': 'No answer from {0}',
@@ -2232,7 +2232,7 @@ function duelRender() {
     box.innerHTML = `<h3>${D.invited ? T`ממתינים ל-${D.invited}…` : T('ממתינים ליריב…')}</h3><div class="duelcode">${st.code}</div>
       <button class="btn orange" id="duelShare">${T('שליחת הקישור')}</button>
       <p style="margin-top:14px">${T('החדר נשאר פתוח כל עוד המסך הזה פתוח.')}</p>`;
-    box.querySelector('#duelShare').onclick = () => shareText(T`בואו לדו-קרב ב-BEAM! מי פותר ראשון?`, duelLink(st.code), T('הקישור הועתק, אפשר להדביק ולשלוח'));
+    box.querySelector('#duelShare').onclick = () => shareSheet(T('שליחת הקישור'), T`בואו לדו-קרב ב-BEAM! מי פותר ראשון?`, duelLink(st.code));
     return;
   }
   if (st.status === 'countdown') {
@@ -2319,6 +2319,25 @@ function duelSolved() {
   if (D) { D.busy = false; duelSync(); }
 }
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+/* a small sheet with the ways to send a link to a friend: WhatsApp, the phone's own share menu, or copy */
+function shareSheet(title, text, link) {
+  const wa = 'https://wa.me/?text=' + encodeURIComponent(text + '\n' + link);
+  modal(`<h3>${title}</h3>
+    <a class="btn green" id="shWa" href="${wa}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">${T('שליחה בוואטסאפ')}</a>
+    ${navigator.share ? `<button class="btn blue" id="shMore" style="margin-top:12px">${T('שיתוף באפליקציה אחרת')}</button>` : ''}
+    <button class="btn ghosty" id="shCopy" style="margin-top:12px">${T('העתקת הקישור')}</button>
+    <button class="linkbtn" id="shClose">${T('סגירה')}</button>`, m => {
+      m.querySelector('#shWa').onclick = () => setTimeout(closeModal, 300);
+      const more = m.querySelector('#shMore');
+      if (more) more.onclick = () => navigator.share({ text, url: link }).then(closeModal, () => {});
+      m.querySelector('#shCopy').onclick = () => {
+        const done = () => { closeModal(); toast(T('הקישור הועתק, אפשר להדביק ולשלוח')); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, () => toast(link));
+        else toast(link);
+      };
+      m.querySelector('#shClose').onclick = closeModal;
+    });
+}
 function shareText(text, link, copiedMsg) {
   const copy = () => {
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + '\n' + link).then(() => toast(copiedMsg), () => toast(T('לא הצלחנו להעתיק את התוצאה')));
@@ -2439,7 +2458,7 @@ const friendLink = () => (/^https?:$/.test(location.protocol) ? location.origin 
 async function shareFriendLink() {
   if (!Social.data) { await pulse(); }
   if (!Social.data) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
-  shareText(T('בואו נהיה חברים ב-BEAM ונשחק דו-קרב!'), friendLink(), T('הקישור הועתק, אפשר להדביק ולשלוח'));
+  shareSheet(T('שליחת קישור לחבר'), T('בואו נהיה חברים ב-BEAM ונשחק דו-קרב!'), friendLink());
 }
 /* a friend link was opened: sharing it was the consent, so the two become friends straight away */
 async function acceptFriendLink(fcode) {
