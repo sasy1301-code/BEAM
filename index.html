@@ -236,7 +236,18 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .hud{display:flex; justify-content:space-between; align-items:center; gap:8px}
 .hud .me{display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:999px; padding:4px 14px 4px 14px; box-shadow:0 3px 0 var(--rule); border:none; color:var(--ink); font:inherit; min-height:44px}
 .hud .me .badge{width:34px; height:34px; border-radius:50%; background:var(--bg2); border:2px solid var(--t-purple); display:grid; place-items:center}
-.hud .me .badge svg{width:30px; height:30px}
+.hud .me .badge{overflow:hidden}
+.hud .me .badge img{width:32px; height:32px; object-fit:contain}
+.avgrid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:10px 0 14px}
+.avgrid button{aspect-ratio:1; border-radius:16px; border:3px solid transparent; background:var(--rule); padding:3px; display:grid; place-items:center}
+.avgrid button img{width:100%; height:100%; object-fit:contain}
+.avgrid button[aria-pressed="true"]{border-color:var(--orange,#FF8A1F); background:#FFF3E0}
+.modal img.bug.me{width:110px; height:110px}
+.profstats{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:0 0 12px}
+.profstats span{background:var(--rule); border-radius:999px; padding:4px 12px; font-weight:600; font-size:14px}
+.frlist .av{width:38px; height:38px; flex:none; border-radius:50%; background:var(--rule); position:relative; display:grid; place-items:center}
+.frlist .av img{width:34px; height:34px; object-fit:contain}
+.frlist .av .dot{position:absolute; bottom:-2px; inset-inline-end:-2px; border:2px solid var(--surface); box-sizing:content-box}
 .hud .me b{display:block; font-size:15px; line-height:1.1}
 .hud .me small{display:block; color:var(--muted); font-size:13px; line-height:1.1}
 .wallet{display:flex; gap:8px}
@@ -508,7 +519,7 @@ body.splashing{overflow:hidden}
 <section id="home">
   <div class="hud">
     <button class="me" id="meBtn" aria-label="פרופיל ושם">
-      <span class="badge"><svg viewBox="-1 -1 2 2" id="meBug"></svg></span>
+      <span class="badge"><img id="meBug" alt=""></span>
       <span><b id="meName"></b><small id="meRank"></small></span>
     </button>
     <div class="wallet">
@@ -661,9 +672,9 @@ body.splashing{overflow:hidden}
     </div>
   </div>
   <div class="set">
-    <h3>שם בטבלת המובילים</h3>
+    <h3>שם ודמות</h3>
     <p id="setName"></p>
-    <button class="btn blue" id="setRename">שינוי שם</button>
+    <button class="btn blue" id="setRename">הפרופיל שלי</button>
     <button class="linkbtn" id="setLeave">הסרת השם והניקוד מהטבלה</button>
   </div>
   <div class="set">
@@ -804,6 +815,7 @@ const EN = {
   'הלוח ייחשף לשניכם באותו רגע.': 'The board appears for both of you at the same moment.', 'פתרתם! בודקים מי היה ראשון…': 'Solved! Checking who was first…',
   'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
+  'הפרופיל שלי': 'My profile', 'בחרו דמות': 'Choose your character', 'דמות': 'Character', 'דו-קרב: {} ניצחונות': 'Duels: {0} wins', 'שם ודמות': 'Name and character',
   // ---- friends ----
   'החברים שלי': 'My friends', 'חברים': 'Friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
@@ -1738,8 +1750,9 @@ function askName(after) {
     <p>${T`השם יופיע בטבלת המובילים, וכל השחקנים יוכלו לראות אותו.`}</p>
     <input id="nameInput" maxlength="16" aria-label="${T`שם`}">
     <button class="btn orange" id="nameSave">${T`שמירה`}</button>`, m => {
-      const inp = m.querySelector('#nameInput'); inp.value = def;       const done = () => {
-        const v = inp.value.replace(/[<>]/g, '').trim().slice(0, 16);
+      const inp = m.querySelector('#nameInput'); inp.value = P.name || ''; inp.placeholder = def;
+      const done = () => {
+        const v = (inp.value.trim() || def).replace(/[<>]/g, '').trim().slice(0, 16);
         if (!v) { inp.focus(); return; }
         P.name = v; closeModal(); save(); renderHome(); if (after) after();
       };
@@ -1767,12 +1780,41 @@ function dailyBonus() {
     }, true);
 }
 
+/* ================= my profile ================= */
+const AVATARS = ['bug', 'welcome', 'hero', 'power', 'cheer', 'thumbs', 'think', 'point', 'shrug', 'sleep'];
+function avatarSrc(k) { return k === 'cheer' || k === 'think' || k === 'shrug' ? WIN_BUG[k] : POSE[k] || BUG_SRC; }
+function openProfile(after) {
+  let pick = AVATARS.includes(P.avatar) ? P.avatar : 'bug';
+  const r = rankOf(P.earned), def = P.name || T`גחלילית ${Math.floor(100 + Math.random() * 900)}`;
+  modal(`<img class="bug me" id="profMe" alt="" src="${avatarSrc(pick)}">
+    <h3>${T('הפרופיל שלי')}</h3>
+    <div class="profstats"><span>${esc(r.name)}</span><span>★ ${totalStars()}</span>${P.duel ? `<span>${T`דו-קרב: ${P.duel.w} ניצחונות`}</span>` : ''}</div>
+    <input id="nameInput" maxlength="16" aria-label="${T`שם`}">
+    <p style="margin:14px 0 0">${T('בחרו דמות')}</p>
+    <div class="avgrid">${AVATARS.map(a => `<button data-a="${a}" aria-pressed="${a === pick}" aria-label="${T('דמות')} ${a}"><img alt="" src="${avatarSrc(a)}"></button>`).join('')}</div>
+    <button class="btn orange" id="nameSave">${T`שמירה`}</button>`, m => {
+      const inp = m.querySelector('#nameInput'); inp.value = P.name || ''; inp.placeholder = def;
+      for (const b of m.querySelectorAll('.avgrid button')) b.onclick = () => {
+        pick = b.dataset.a; Sound.play('tap');
+        for (const o of m.querySelectorAll('.avgrid button')) o.setAttribute('aria-pressed', o === b);
+        m.querySelector('#profMe').src = avatarSrc(pick);
+      };
+      const done = () => {
+        const v = (inp.value.trim() || def).replace(/[<>]/g, '').trim().slice(0, 16);
+        if (!v) { inp.focus(); return; }
+        P.name = v; P.avatar = pick; closeModal(); save(); renderHome(); pulse(); if (after) after();
+      };
+      m.querySelector('#nameSave').onclick = done;
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') done(); });
+    });
+}
+
 /* ================= home ================= */
 function renderHome() {
   const r = rankOf(P.earned);
   $('meName').textContent = P.name || T('שחקן חדש');
   $('meRank').textContent = r.name;
-  const mb = $('meBug'); mb.innerHTML = ''; firefly(mb, 0, .05, 0, 1, 1.65, null);
+  $('meBug').src = avatarSrc(P.avatar);
   $('homePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   if (r.next) {
     $('rankFill').style.width = Math.max(3, (P.earned - r.at) / (r.next.at - r.at) * 100) + '%';
@@ -2376,7 +2418,7 @@ async function pulse() {
   let r = null;
   try {
     r = await rpc('beam_pulse', { p_id: P.id, p_secret: playerKey(), p_name: P.name,
-      p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true });
+      p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true, p_avatar: AVATARS.includes(P.avatar) ? P.avatar : 'bug' });
   } catch (e) { /* quiet: the next pulse tries again */ }
   Social.busy = false;
   if (!r || !Array.isArray(r.friends) || !Array.isArray(r.invites)) return;
@@ -2393,7 +2435,7 @@ function socialRender() {
   if (Social.invite && (!inv || inv.id !== Social.invite)) { Social.invite = null; closeModal(); toast(T('ההזמנה כבר לא בתוקף')); }
   if (inv && !Social.invite && !D && $('overlay').hidden) {
     Social.invite = inv.id; Sound.play('whoosh'); Haptic.play('win');
-    modal(`<img class="bug" alt="" src="${POSE.power}">
+    modal(`<img class="bug" alt="" src="${inv.avatar && inv.avatar !== 'bug' ? avatarSrc(inv.avatar) : POSE.power}">
       <h3>${T`הזמנה לדו-קרב מ-${esc(inv.name)}`}</h3>
       <button class="btn green" id="invYes">${T('קבל')}</button>
       <button class="btn ghosty" id="invNo" style="margin-top:12px">${T('לא עכשיו')}</button>`, m => {
@@ -2436,7 +2478,7 @@ function renderFriends() {
     const act = f.rel === 'in' ? `<button class="go" data-a="yes" data-i="${i}">${T('אישור')}</button><button data-a="no" data-i="${i}">${T('דחייה')}</button>`
       : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button><button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
       : `<button class="x" data-a="remove" data-i="${i}" aria-label="${T('ביטול הבקשה')}">✕</button>`;
-    return `<li><span class="dot${f.online ? ' on' : ''}"></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
+    return `<li><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
   }).join('');
   for (const b of list.querySelectorAll('button')) b.onclick = () => friendAction(b.dataset.a, d.friends[+b.dataset.i]);
 }
@@ -2632,7 +2674,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
@@ -2692,14 +2734,14 @@ $('lbBtn').onclick = () => openLeaderboard('all');
 $('lbBack').onclick = goHome;
 $('tabAll').onclick = () => openLeaderboard('all');
 $('tabDay').onclick = () => openLeaderboard('day');
-$('renameBtn').onclick = () => askName(() => openLeaderboard());
+$('renameBtn').onclick = () => openProfile(() => openLeaderboard());
 $('achBtn').onclick = openAchievements;
 $('achBack').onclick = goHome;
-$('meBtn').onclick = () => askName();
+$('meBtn').onclick = () => openProfile();
 $('gearBtn').onclick = openSettings;
 $('adBannerRemove').onclick = openSettings;
 $('setBack').onclick = goHome;
-$('setRename').onclick = () => askName(openSettings);
+$('setRename').onclick = () => openProfile(openSettings);
 $('setReset').onclick = confirmReset;
 function applySoundPrefs() {
   const sfx = P.sfx !== false, mus = P.music !== false;
