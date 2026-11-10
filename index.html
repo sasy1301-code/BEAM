@@ -248,7 +248,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .modal h3{font-size:26px; margin-top:4px}
 .modal p{color:var(--muted); margin:6px 0 16px; font-weight:500}
 .modal svg.bug{width:90px; height:90px}
-.modal input{width:100%; font:600 18px Fredoka,system-ui,sans-serif; color:var(--ink); background:var(--bg2); border:2px solid var(--rule); border-radius:14px; padding:10px 14px; margin-bottom:14px; text-align:center}
+.modal input{width:100%; font:600 18px Fredoka,system-ui,sans-serif; color:var(--ink); background:#F5F0FF; border:2px solid var(--rule); border-radius:14px; padding:10px 14px; margin-bottom:14px; text-align:center}
 .modal input:focus{outline:none; border-color:var(--purple)}
 .streak{display:flex; justify-content:center; gap:6px; margin:4px 0 12px}
 .streak i{width:30px; height:30px; border-radius:10px; background:var(--rule); display:grid; place-items:center; font-style:normal; font-size:13px; font-weight:700; color:var(--muted)}
@@ -302,6 +302,10 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .toggle input:checked + i{background:var(--green)}
 .toggle input:checked + i::after{transform:translateX(-22px)}
 .toggle input:focus-visible + i{outline:3px solid var(--blue); outline-offset:2px}
+[dir=ltr] .toggle i::after{right:auto; left:3px}
+[dir=ltr] .toggle input:checked + i::after{transform:translateX(22px)}
+[dir=ltr] .sp-track{transform:scaleX(-1)}
+[dir=ltr] .sp-track img{transform:translateY(-58%) scaleX(-1)}
 .musicstyle{display:flex; justify-content:space-between; align-items:center; padding:10px 0 2px; border-top:1px solid var(--rule); font-weight:600}
 .musicstyle.off{opacity:.45}
 .segm{display:inline-flex; background:var(--rule); border-radius:999px; padding:3px}
@@ -570,6 +574,14 @@ body.splashing{overflow:hidden}
     </div>
   </div>
   <div class="set">
+    <div class="musicstyle"><span>שפה</span>
+      <div class="segm" role="group" aria-label="שפה">
+        <button id="langHe" aria-pressed="true">עברית</button>
+        <button id="langEn" aria-pressed="false">English</button>
+      </div>
+    </div>
+  </div>
+  <div class="set">
     <h3>שם בטבלת המובילים</h3>
     <p id="setName"></p>
     <button class="btn blue" id="setRename">שינוי שם</button>
@@ -633,7 +645,136 @@ body.splashing{overflow:hidden}
 <div class="toast" id="toast" role="status"></div>
 
 <script>
+/* ================= language =================
+   The game is written in Hebrew. Every visible string passes through T(), and when the language is English
+   T() looks the Hebrew text up in EN below. Templates use a tag: T`שלב ${n}` is looked up as "שלב {}" and
+   the English entry places the values with {0}, {1}… A string with no entry simply stays in Hebrew.
+   The choice is remembered in the browser; without one, Hebrew browsers get Hebrew and everyone else English. */
+const LANG = (() => {
+  try { const s = localStorage.getItem('beam:lang'); if (s === 'he' || s === 'en') return s; } catch (e) { /* storage blocked */ }
+  return /^(he|iw)\b/i.test(navigator.language || 'he') ? 'he' : 'en';
+})();
+function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
+const EN = {
+  // ---- static page text ----
+  'טוען את האור…': 'Lighting up…', 'עזרו לגחלילית להדליק את כל הכוכבים': 'Help the firefly light every star',
+  'המשך עם Google': 'Continue with Google', 'המשך עם Facebook': 'Continue with Facebook', 'או': 'or', 'כניסה כאורח': 'Play as a guest',
+  'כאורח ההתקדמות נשמרת רק במכשיר הזה. אפשר לחבר חשבון בכל רגע מההגדרות.': 'As a guest your progress stays on this device. You can connect an account any time in Settings.',
+  'פרופיל ושם': 'Profile and name', 'הגדרות': 'Settings', 'נקודות לקניות': 'Points to spend', 'אתגר יומי': 'Daily challenge', 'שחק': 'Play',
+  'טבלת מובילים': 'Leaderboard', 'הישגים': 'Achievements', 'איך משחקים': 'How to play', 'מקום לפרסומת': 'Ad space', 'כאן יוצג באנר פרסומי': 'A banner ad will appear here',
+  'הסרת פרסומות': 'Remove ads', 'שלבים': 'Levels', 'פרקים, החליקו לצדדים': 'Chapters, swipe sideways', 'מעבר בין פרקים': 'Switch chapter',
+  '› חזרה': '‹ Back', 'השתקה': 'Mute', 'איפוס': 'Reset', 'קניית מראה נוספת': 'Buy an extra mirror', 'פטיש לשבירת חסימה': 'Hammer to break a block', 'רמז': 'Hint',
+  'קונים בנקודות. עזרה מגבילה את השלב לכוכב אחד.': 'Bought with points. Using help caps the level at one star.',
+  'נסו שוב לשלושה כוכבים': 'Try again for three stars', 'שתפו את התוצאה': 'Share your result', 'כל הזמנים': 'All time', 'האתגר של היום': "Today's challenge",
+  'אין חיבור לטבלה כרגע. מוצגות רק התוצאות שלכם.': 'The leaderboard is unreachable right now. Only your own results are shown.',
+  'השם והניקוד שלכם גלויים לכל מי שמשחק במשחק הזה.': 'Your name and score are visible to everyone who plays this game.', 'שנו שם': 'Change name',
+  'צלילים ורטט': 'Sound and vibration', 'אפקטים קוליים': 'Sound effects', 'מוזיקת רקע במשחק': 'Music while playing', 'רטט': 'Vibration',
+  '· לא נתמך במכשיר הזה': '· not supported on this device', 'סגנון מוזיקה': 'Music style', 'רגועה': 'Calm', 'קצבית': 'Upbeat',
+  'שם בטבלת המובילים': 'Leaderboard name', 'שינוי שם': 'Change name', 'הסרת השם והניקוד מהטבלה': 'Remove my name and score from the leaderboard',
+  'איפוס התקדמות': 'Reset progress', 'מוחק שלבים, כוכבים, נקודות והישגים. רכישות נשמרות.': 'Erases levels, stars, points and achievements. Purchases are kept.',
+  'מדיניות פרטיות': 'Privacy Policy', 'תמיכה': 'Support', 'שפה': 'Language',
+  'הגחלילית יורה קרן אור. הציבו מראות כך שהקרן תעבור דרך כל הכוכבים.': 'The firefly shoots a beam of light. Place mirrors so the beam passes through every star.',
+  'מראות': 'Mirrors', 'הקישו על משבצת כדי להציב מראה. הקשה שנייה מסובבת אותה, ושלישית מסירה. מראה מפנה את הקרן ברבע סיבוב.': 'Tap a tile to place a mirror. A second tap turns it, a third removes it. A mirror bends the beam a quarter turn.',
+  'כוכבים': 'Stars', 'הקרן עוברת דרכם, מדליקה אותם וממשיכה הלאה. השלב נגמר כשכל הכוכבים דולקים.': 'The beam passes through them, lights them and carries on. The level ends when every star is lit.',
+  'חסימות': 'Blocks', 'משבצות עם איקס עוצרות את הקרן.': 'Tiles with an X stop the beam.',
+  'פצצות': 'Bombs', 'אם קרן כלשהי נוגעת בפצצה, הכול נכבה.': 'If any beam touches a bomb, everything goes dark.',
+  'מראות קבועות': 'Fixed mirrors', 'מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.': 'Dark mirrors with bolts. They are already installed and cannot be moved or turned.',
+  'זכוכית מפצלת': 'Splitter glass', 'חלק מהאור ממשיך ישר וחלק מוחזר הצידה. מקרן אחת נוצרות שתיים, וכל אחת מהן יכולה להדליק כוכבים או לפגוע בפצצה.': 'Part of the light goes straight on and part is turned aside. One beam becomes two, and each can light stars or hit a bomb.',
+  'שתי גחליליות': 'Two fireflies', 'בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.': 'Later levels have two beams. Every mirror affects both.',
+  'שלושה כוכבים': 'Three stars', 'כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ופי שניים נקודות.': 'Every tap is a move. Solve without help and within the move target for three stars and double points.',
+  'מה עושים עם הנקודות': 'What points are for', 'הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות: מראה נוספת ב-150, פטיש ב-200, רמז ב-350.': 'The points you earn set your rank and leaderboard place, and never go down. Alongside them you have a balance to spend: an extra mirror for 150, a hammer for 200, a hint for 350.',
+  'פטיש': 'Hammer', 'מופיע רק בשלבים שבהם שבירת חסימה באמת עוזרת, כלומר מאפשרת פתרון עם פחות מראות. לחצו על הפטיש, והחסימות ששווה לשבור יתחילו להבהב.': 'Appears only in levels where breaking a block really helps, meaning it allows a solution with fewer mirrors. Tap the hammer and the blocks worth breaking start to blink.',
+  'שלב חדש בכל יום, זהה לכל השחקנים. הניקוד תלוי במהירות ובמספר המהלכים, ונכנס לטבלת המובילים.': 'A new level every day, the same for all players. Your score depends on speed and move count, and goes on the leaderboard.',
+  'נסו בעצמכם': 'Try it yourself', 'הציבו מראה אחת כך שהקרן תפנה למעלה אל הכוכב.': 'Place one mirror so the beam turns up toward the star.', 'טיפים': 'Tips',
+  'התחילו מהסוף.': 'Start from the end.', 'חשבו מאיזה כיוון הקרן יכולה להגיע לכוכב הרחוק ביותר, ובנו את המסלול לאחור.': 'Think which way the beam can reach the farthest star, and build the path backwards.',
+  'ספרו פניות.': 'Count the turns.', 'כל פנייה במסלול דורשת מראה. מספר המראות שקיבלתם הוא רמז.': 'Every turn in the path needs a mirror. The number of mirrors you are given is a clue.',
+  'עקבו אחרי כל הקרניים.': 'Follow every beam.', 'עם זכוכית מפצלת או שתי גחליליות, מראה שעוזרת לקרן אחת יכולה לשלוח את השנייה לפצצה.': 'With splitter glass or two fireflies, a mirror that helps one beam can send the other into a bomb.',
+  'חשבו לפני שמקישים.': 'Think before you tap.', 'כל הקשה נספרת, ושלושה כוכבים שווים פי שניים נקודות.': 'Every tap counts, and three stars are worth double points.',
+  'התחילו לשחק': 'Start playing',
+  // ---- game data ----
+  'הארה': 'Light', 'מבוך': 'Maze', 'ליקוי': 'Eclipse', 'קבועות': 'Fixed', 'פיצול': 'Split', 'תאומות': 'Twins', 'מאסטר': 'Master',
+  'מראות, כוכבים וחסימות.': 'Mirrors, stars and blocks.', 'לא כל דרך פתוחה.': 'Not every path is open.', 'לוחות גדולים, פתרון אחד.': 'Big boards, one solution.',
+  'שש מראות ומעלה.': 'Six mirrors and more.', 'מראות שאי אפשר להזיז.': 'Mirrors that cannot be moved.', 'קרן אחת, שני כיוונים.': 'One beam, two directions.',
+  'שתי גחליליות, לוח אחד.': 'Two fireflies, one board.', 'רק לחזקים.': 'For the strong only.',
+  'הקישו על משבצת כדי להציב מראה. הקשה נוספת מסובבת אותה, ושלישית מסירה.': 'Tap a tile to place a mirror. Another tap turns it, a third removes it.',
+  'הקרן עוברת דרך כוכבים וממשיכה הלאה. הדליקו את שניהם.': 'The beam passes through stars and carries on. Light them both.',
+  'פצצה: אם הקרן נוגעת בה, הכול נכבה.': 'Bomb: if the beam touches it, everything goes dark.', 'הקרן יכולה לחצות את עצמה.': 'The beam can cross itself.',
+  'המראות הכהות עם הברגים כבר מותקנות. אי אפשר להזיז אותן, אבל הקרן מוחזרת מהן.': 'The dark mirrors with bolts are already installed. They cannot be moved, but the beam bounces off them.',
+  'זכוכית מפצלת: חלק מהאור ממשיך ישר וחלק מוחזר הצידה. עקבו אחרי שתי הקרניים.': 'Splitter glass: part of the light goes straight on and part is turned aside. Follow both beams.',
+  'שתי גחליליות. כל מראה משפיעה על שתי הקרניים, וכל אחת מהן יכולה לפגוע בפצצה.': 'Two fireflies. Every mirror affects both beams, and either one can hit a bomb.',
+  'הכול ביחד, על לוחות גדולים. קחו את הזמן.': 'Everything together, on big boards. Take your time.',
+  'ניצוץ': 'Spark', 'גחלילית': 'Firefly', 'פנס': 'Lantern', 'מגדלור': 'Lighthouse', 'ירח': 'Moon', 'שמש': 'Sun', 'גלקסיה': 'Galaxy',
+  'אור ראשון': 'First light', 'פתרו את השלב הראשון': 'Solve the first level', 'מושלם': 'Perfect', 'קבלו שלושה כוכבים בשלב': 'Get three stars on a level',
+  'בלי עזרה': 'No help needed', 'שלושה כוכבים בשלב מהפרק האחרון': 'Three stars on a level in the last chapter', 'אספן כוכבים': 'Star collector', 'צברו 60 כוכבים': 'Collect 60 stars',
+  'שמיים זרועי כוכבים': 'A sky full of stars', 'צברו את כל {} הכוכבים': 'Collect all {0} stars', 'אתגר ראשון': 'First challenge', 'סיימו אתגר יומי': 'Finish a daily challenge',
+  'שבוע של אתגרים': 'A week of challenges', 'סיימו 7 אתגרים יומיים': 'Finish 7 daily challenges', 'חוזרים לאור': 'Back to the light', 'היכנסו שלושה ימים ברצף': 'Come back three days in a row',
+  'שבוע זוהר': 'A glowing week', 'היכנסו שבעה ימים ברצף': 'Come back seven days in a row', 'פרק {}': '{0} chapter', 'השלימו את כל שלבי פרק {}': 'Finish every level in chapter {0}',
+  // ---- messages ----
+  'חסימה': 'Block', 'משבצת': 'Tile', '{} {}, {}': '{0} {1}, {2}', 'אין חיבור כרגע. נסו שוב מאוחר יותר.': 'No connection right now. Try again later.',
+  'השם והניקוד הוסרו מהטבלה': 'Your name and score were removed', 'הישג חדש: {}': 'New achievement: {0}', 'מהלך אחד': '1 move', '{} מהלכים': '{0} moves',
+  'גחלילית {}': 'Firefly {0}', 'איך לקרוא לכם?': 'What should we call you?', 'השם יופיע בטבלת המובילים, וכל השחקנים יוכלו לראות אותו.': 'The name appears on the leaderboard, where every player can see it.',
+  'שם': 'Name', 'שמירה': 'Save', '{} ימים ברצף!': '{0} days in a row!', 'ברוכים השבים!': 'Welcome back!',
+  'קיבלתם {} נקודות לקניות. חזרו מחר כדי להגדיל את הבונוס.': 'You got {0} points to spend. Come back tomorrow for a bigger bonus.', 'איסוף': 'Collect',
+  'שחקן חדש': 'New player', '{}, {} נקודות שנצברו': '{0}, {1} points earned', 'עוד {} ל{}': '{0} more to {1}', 'הדרגה הגבוהה ביותר': 'Highest rank',
+  'השיא שלכם היום: {} נקודות': 'Your best today: {0} points', 'שלב חדש היום, אותו שלב לכולם': 'A new level today, the same for everyone', 'לשפר': 'Improve',
+  'הישגים {}/{}': 'Achievements {0}/{1}', 'פרק {}: {}': 'Chapter {0}: {1}', 'ייפתח אחרי פרק {}': 'Opens after chapter {0}', 'שלב {}{}': 'Level {0}{1}', ', {} כוכבים': ', {0} stars',
+  'פרק {} מתוך {}': 'Chapter {0} of {1}', '{} מתוך {} שלבים, {} מתוך {} כוכבים': '{0} of {1} levels, {2} of {3} stars', 'שפרו כוכבים': 'Improve your stars', 'המשך לשלב {}': 'Continue to level {0}',
+  '{} מתוך {} כוכבים דולקים': '{0} of {1} stars lit', 'נותרו {} מראות': '{0} mirrors left', 'זמן': 'Time', '{} מהלכים, יעד {}': '{0} moves, target {1}',
+  'יעד מהלכים: {}': 'Move target: {0}', 'שלב {}': 'Level {0}', 'הקישו על חסימה מהבהבת כדי לשבור אותה': 'Tap a blinking block to break it', 'בום! הקרן פגעה בפצצה.': 'Boom! The beam hit a bomb.',
+  'הקישו על משבצת כדי להציב מראה': 'Tap a tile to place a mirror', 'מראה': 'Mirror', 'ביטול': 'Cancel',
+  'את המראה הזו הציב הרמז, והיא נשארת במקום.': 'The hint placed this mirror, and it stays put.', 'נגמרו המראות. הסירו אחת או קנו מראה נוספת.': 'Out of mirrors. Remove one or buy an extra.',
+  'קיבלתם מראה נוספת': 'You got an extra mirror', 'החסימה נשברה': 'Block broken', 'הרמז הציב מראה במקום הנכון': 'The hint placed a mirror in the right spot',
+  'פתרתם שוב!': 'Solved again!', 'שיא חדש להיום!': 'New best for today!', 'האתגר היומי הושלם!': 'Daily challenge complete!',
+  '{} נקודות בטבלה. {}:{} דקות, {}.{}': '{0} points on the board. {1}:{2}, {3}.{4}', ' השיא שלכם: {}.': ' Your best: {0}.', 'לטבלת המובילים': 'To the leaderboard', 'נסו שוב לשיא': 'Try for a new best',
+  'מושלם!': 'Perfect!', 'סיימתם את המשחק!': 'You finished the game!', 'הפרק הושלם!': 'Chapter complete!', 'כל הכבוד!': 'Well done!',
+  'פתרתם ב{}, בתוך היעד.': 'Solved in {0}, within the target.', '{}. פתרו ב-{} מהלכים או פחות בשביל שלושה כוכבים.': '{0}. Solve it in {1} moves or fewer for three stars.',
+  'השתמשתם בעזרה. פתרו בלי עזרה בשביל עוד כוכבים.': 'You used help. Solve without it for more stars.', 'חזרה לשלבים': 'Back to levels', 'לשלב הבא': 'Next level',
+  'כבר השגתם את התוצאה הזו': 'You already had this result',
+  'BEAM · האתגר היומי {}\n{} נקודות · {} · {}:{}\nמצליחים לעקוף אותי?': 'BEAM · Daily challenge {0}\n{1} points · {2} · {3}:{4}\nCan you beat me?',
+  'התוצאה הועתקה, אפשר להדביק ולשלוח': 'Result copied, ready to paste and send', 'לא הצלחנו להעתיק את התוצאה': 'Could not copy the result',
+  '<li class="empty">טוען…</li>': '<li class="empty">Loading…</li>', 'כל הנקודות שנצברו במשחק': 'All points earned in the game', 'האתגר של {}': 'Challenge for {0}',
+  'עוד אין שחקנים בטבלה. היו הראשונים!': 'No players yet. Be the first!', 'אף אחד עוד לא פתר את האתגר של היום.': 'Nobody has solved today\'s challenge yet.',
+  ' (אתם)': ' (you)', '{} כוכבים, {}': '{0} stars, {1}', '{} מתוך {} הושגו': '{0} of {1} earned',
+  'אישור רכישה': 'Confirm purchase', 'הסרת פרסומות לתמיד בתשלום חד-פעמי של {}.': 'Remove ads forever for a one-time payment of {0}.',
+  'גרסת הדגמה: לא יבוצע חיוב. במשחק המפורסם כאן ייפתח מסך התשלום של החנות.': 'Demo version: you will not be charged. In the published game the store payment screen opens here.',
+  'רכישה ב-{}': 'Buy for {0}', 'תודה על התמיכה!': 'Thank you for your support!', 'הפרסומות הוסרו, וקיבלתם {} נקודות לקניות במתנה.': 'Ads are removed, and you got {0} bonus points to spend.',
+  'יופי': 'Great', 'הרכישה שוחזרה': 'Purchase restored', 'לא נמצאו רכישות קודמות': 'No previous purchases found', 'פרסומת': 'Ad', 'מקום לפרסומת בין שלבים': 'Space for an ad between levels',
+  'אפשר לסגור בעוד': 'You can close in', 'הסרת פרסומות ב-{}': 'Remove ads for {0}', 'המשך למשחק': 'Back to the game', 'המשחק בלי פרסומות': 'The game is ad-free',
+  'תודה שתמכתם בגחלילית!': 'Thanks for supporting the firefly!', 'תשלום חד-פעמי, לתמיד.': 'One payment, forever.', 'בלי באנרים במסך הבית': 'No banners on the home screen',
+  'בלי פרסומות בין שלבים': 'No ads between levels', 'מתנה: {} נקודות לקניות': 'Gift: {0} points to spend', 'שחזור רכישות': 'Restore purchases',
+  'כרגע: {}': 'Currently: {0}', 'עוד לא בחרתם שם.': 'You have not chosen a name yet.', 'לאפס את ההתקדמות?': 'Reset your progress?',
+  'כל השלבים, הכוכבים, הנקודות וההישגים יימחקו. אי אפשר לבטל את זה.': 'All levels, stars, points and achievements will be erased. This cannot be undone.', 'כן, לאפס': 'Yes, reset',
+  'ההתקדמות אופסה': 'Progress reset', 'בדיוק ככה!': 'Exactly like that!', 'כמעט. נסו לסובב או להזיז.': 'Almost. Try turning or moving it.', 'הקישו על משבצת.': 'Tap a tile.',
+  'הפעלת צלילים': 'Turn sound on', 'התחברות עם {}': 'Sign in with {0}', 'כאן ייפתח חלון ההתחברות של {}.': 'The {0} sign-in window opens here.',
+  'גרסת הדגמה: אין חיבור אמיתי לחשבון. במשחק המפורסם ההתקדמות תישמר בחשבון ותעבור בין מכשירים.': 'Demo version: no real account is connected. In the published game your progress is saved to the account and follows you between devices.',
+  'המשך': 'Continue', 'התחברתם עם {}': 'Signed in with {0}', 'חשבון': 'Account',
+  'אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.': 'You are playing as a guest. Progress stays on this device. Connect an account to keep it and continue on another device.',
+  'חיבור עם Google': 'Connect Google', 'חיבור עם Facebook': 'Connect Facebook', 'מחוברים עם {}.': 'Connected with {0}.', 'התנתקות': 'Sign out', 'החשבון חובר עם {}': 'Account connected with {0}',
+  'מכין את השלבים…': 'Preparing the levels…', 'מדליק את הכוכבים…': 'Lighting the stars…', 'מוכן!': 'Ready!',
+};
+function T(s, ...v) {
+  if (typeof s === 'string') return LANG === 'en' && EN[s] !== undefined ? EN[s] : s;
+  const key = s.join('{}');
+  if (LANG === 'en' && EN[key] !== undefined) return EN[key].replace(/\{(\d)\}/g, (m, i) => v[+i]);
+  return s.reduce((a, c, i) => a + c + (i < v.length ? v[i] : ''), '');
+}
+/* the page itself is written in Hebrew: for English, swap its text and attributes once, and turn it left-to-right */
+if (LANG === 'en') {
+  document.documentElement.lang = 'en'; document.documentElement.dir = 'ltr';
+  document.title = 'BEAM · a puzzle game of mirrors and light';
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes) {
+    const raw = n.nodeValue, k = raw.trim();
+    if (k && EN[k] !== undefined && !n.parentElement.closest('script,style')) n.nodeValue = raw.replace(k, EN[k]);
+  }
+  for (const e of document.querySelectorAll('[aria-label],[alt],[placeholder]')) for (const a of ['aria-label', 'alt', 'placeholder']) {
+    const val = e.getAttribute(a); if (val && EN[val] !== undefined) e.setAttribute(a, EN[val]);
+  }
+}
+
 const CHAPTERS = [{"name":"הארה","desc":"מראות, כוכבים וחסימות.","levels":[{"rows":["....T.","......","......","......","......","......"],"lasers":[["L",3]],"max":1,"sol":[["4,3","/"]],"tip":"הקישו על משבצת כדי להציב מראה. הקשה נוספת מסובבת אותה, ושלישית מסירה.","id":"L17k8zoe"},{"rows":["......","....T.","......","......",".T....","......"],"lasers":[["L",1]],"max":2,"sol":[["5,1","\\"],["5,4","/"]],"tip":"הקרן עוברת דרך כוכבים וממשיכה הלאה. הדליקו את שניהם.","id":"L1ktnd9e"},{"rows":["......","......","......",".#....","#.....",".T..T."],"lasers":[["R",2]],"max":2,"sol":[["5,2","/"],["5,5","/"]],"id":"La3hh9f"},{"rows":["......","......","......","....T#",".....T","....#."],"lasers":[["L",2]],"max":2,"sol":[["4,2","\\"],["4,4","\\"]],"id":"L17u1vbf"},{"rows":[".#...#","T..T..","......","......","......","......"],"lasers":[["R",4]],"max":2,"sol":[["4,1","\\"],["4,4","\\"]],"id":"L14yb9ud"},{"rows":["......",".T..#.","......","..#...","....T.","......"],"lasers":[["B",2]],"max":4,"sol":[["1,0","/"],["2,4","/"],["5,0","\\"],["5,4","/"]],"tip":"משבצות עם איקס עוצרות את הקרן.","hammer":["4,1","2,3"],"id":"L1385b7j"},{"rows":["#.T...","T.....",".#....","....#.","......","......"],"lasers":[["T",4]],"max":3,"sol":[["1,0","/"],["1,1","/"],["4,0","/"]],"hammer":["0,0"],"id":"L1ky0lre"},{"rows":["...#..",".....#","..T.#.","..T...","......","......"],"lasers":[["R",2]],"max":3,"sol":[["2,5","\\"],["5,2","/"],["5,5","/"]],"hammer":["4,2"],"id":"L1v68ees"},{"rows":[".....#","......","......","......",".....T","#.T.#."],"lasers":[["B",1]],"max":3,"sol":[["1,5","/"],["3,4","/"],["3,5","/"]],"hammer":["4,5"],"id":"Lkjrs0f"},{"rows":["##..T.","......","#.....","......","T..T..","......"],"lasers":[["B",3]],"max":3,"sol":[["3,0","/"],["5,0","\\"],["5,4","/"]],"id":"Lfa2nar"}]},{"name":"פצצות","desc":"לא כל דרך פתוחה.","levels":[{"rows":["..T...","......",".#..X.","......","X...T.","......"],"lasers":[["L",2]],"max":4,"sol":[["0,0","/"],["0,2","/"],["3,0","\\"],["3,4","\\"]],"tip":"פצצה: אם הקרן נוגעת בה, הכול נכבה.","id":"Lmkswja"},{"rows":[".#....",".#...X","X.....","....T.",".T....",".T...."],"lasers":[["R",2]],"max":3,"sol":[["1,3","/"],["5,2","/"],["5,3","/"]],"id":"L3vg2lj"},{"rows":["X....T","#T..T.","......","....X.","#.....","......"],"lasers":[["R",0]],"max":3,"sol":[["1,0","/"],["1,2","\\"],["4,2","/"]],"id":"Le65itp"},{"rows":[".....#",".XT...",".XT...","......","....#.",".T...."],"lasers":[["L",3]],"max":3,"sol":[["0,3","\\"],["0,5","\\"],["2,5","/"]],"id":"Lsylebo"},{"rows":[".T....","......",".....X",".T.T.#","....#X","...X.."],"lasers":[["R",1]],"max":3,"sol":[["1,4","\\"],["3,1","/"],["3,4","/"]],"id":"Lq211fo"},{"rows":[".......",".......",".X.....","#......","...TX..","#....T.",".T.#X.."],"lasers":[["B",6]],"max":4,"sol":[["1,3","/"],["3,3","\\"],["3,5","\\"],["6,5","\\"]],"id":"L3a5pq2"},{"rows":["......#","..T.#..","..#...T",".......","X....X.","T......",".X....."],"lasers":[["R",2]],"max":4,"sol":[["1,1","/"],["1,5","/"],["3,1","\\"],["3,2","\\"]],"id":"L174e44s"},{"rows":["..X....",".X.....",".......",".T.....","..X#...","......#",".#..TT."],"lasers":[["L",2]],"max":4,"sol":[["1,2","\\"],["1,5","\\"],["3,5","\\"],["3,6","\\"]],"hammer":["1,6"],"id":"Lci9r7m"},{"rows":["......T",".....T.",".#T...#",".X.....","......X","..X....","..#...."],"lasers":[["B",5]],"max":4,"sol":[["2,1","/"],["2,3","\\"],["5,3","\\"],["6,1","/"]],"id":"L15plvw5"},{"rows":[".X....#","....X..","...T...","T.XT...","......T",".......","..#X..#"],"lasers":[["L",5]],"max":4,"sol":[["0,1","/"],["0,4","\\"],["3,1","\\"],["3,5","/"]],"id":"Lrkwcht"}]},{"name":"מבוך","desc":"לוחות גדולים, פתרון אחד.","levels":[{"rows":["...T...",".#...X.","T......","...#...","......T",".X...#.","...T..."],"lasers":[["B",1]],"max":4,"sol":[["0,0","/"],["1,6","/"],["6,0","\\"],["6,6","/"]],"id":"Lum26p1"},{"rows":["..T....","....#..","T....X.","..#....",".....T.",".X.....","....#.T"],"lasers":[["L",3]],"max":5,"sol":[["0,0","/"],["0,3","/"],["3,0","\\"],["3,4","\\"],["6,4","\\"]],"tip":"הקרן יכולה לחצות את עצמה.","id":"L1fdeqer"},{"rows":["..X....","X.T..#.","....T..","..X....","....X..","...T...","#...#.."],"lasers":[["L",0]],"max":5,"sol":[["1,0","\\"],["1,1","\\"],["3,3","/"],["4,1","\\"],["4,3","/"]],"id":"L1i5bgs"},{"rows":["..T....","..XT...","......X",".....#.","#.X.X..",".#..T..","......."],"lasers":[["B",4]],"max":5,"sol":[["3,0","\\"],["3,5","\\"],["4,6","/"],["6,5","\\"],["6,6","/"]],"id":"L96mhg0"},{"rows":[".......",".......",".....X#","..#..X.",".....T.",".#.T...","...XXT."],"lasers":[["R",3]],"max":5,"sol":[["2,4","/"],["2,5","\\"],["5,5","\\"],["6,3","/"],["6,4","/"]],"id":"L1sbcvl9"},{"rows":["#.#....","..#.T..",".TT.TX#","......X",".......","....X..","X......"],"lasers":[["T",5]],"max":5,"sol":[["3,2","\\"],["3,4","\\"],["4,0","/"],["4,4","/"],["5,0","/"]],"id":"L1ujmwsg"},{"rows":["#..XT..","...T...","..T....",".#...X#",".T..#..",".......","....XX."],"lasers":[["L",5]],"max":5,"sol":[["0,4","/"],["0,5","/"],["2,1","/"],["2,4","/"],["4,1","/"]],"id":"L197sare"},{"rows":["...#.X.","T.T....","....X..","....X.T","..T....","......#",".X...##"],"lasers":[["B",4]],"max":5,"sol":[["0,4","/"],["0,5","\\"],["4,5","\\"],["6,1","\\"],["6,4","/"]],"id":"Llpnycb"},{"rows":["......X","...T.#.","......#",".XT....",".T....#","X....TX","#......"],"lasers":[["B",4]],"max":5,"sol":[["2,1","/"],["2,6","\\"],["4,1","\\"],["5,4","\\"],["5,6","/"]],"id":"L1pakhrh"},{"rows":["....T.#","#..T..T","XX..T.X","X...#..",".......","......#","X......"],"lasers":[["T",5]],"max":5,"sol":[["3,0","/"],["3,2","\\"],["5,0","/"],["5,1","/"],["5,2","/"]],"id":"L1uk3wfy"}]},{"name":"ליקוי","desc":"שש מראות ומעלה.","levels":[{"rows":["....#...","......T.",".X.T..TX","...#X.TX","....#...","..#...X.","........","....#..."],"lasers":[["T",1]],"max":6,"sol":[["1,1","\\"],["2,1","\\"],["2,2","\\"],["5,2","\\"],["5,4","\\"],["6,4","/"]],"id":"Lmks94h"},{"rows":["........","#..X....","......X.","#.X.X.#.","....#.T.","........","....T.T#","...XT..."],"lasers":[["B",6]],"max":6,"sol":[["4,5","/"],["5,4","/"],["5,5","/"],["6,5","/"],["7,4","\\"],["7,5","/"]],"hammer":["6,3","4,4"],"id":"L1m9x3dk"},{"rows":["...T....","....#...","........","X..T#.T.",".#......","......T.","X....#XX","....X..#"],"lasers":[["B",2]],"max":6,"sol":[["2,4","/"],["3,5","\\"],["5,3","/"],["5,4","/"],["7,3","\\"],["7,5","/"]],"id":"L2e4jq4","hammer":["4,3"]},{"rows":["..#.#...",".......T",".T..XX..","#.#..XX#","........",".X......","........",".....TT."],"lasers":[["R",4]],"max":6,"sol":[["1,1","/"],["1,4","\\"],["4,4","\\"],["4,7","\\"],["7,4","/"],["7,7","/"]],"id":"Ld51uzq","hammer":["7,3"]},{"rows":["X.....T.","..X#....","..#.....",".#.#..T.","........","#..XX...","X....T..","......TT"],"lasers":[["R",0]],"max":6,"sol":[["5,0","/"],["5,1","\\"],["5,5","/"],["5,7","\\"],["6,1","\\"],["6,5","/"]],"id":"Lrs624a"},{"rows":["....T..",".X.....","......#","T..#..T",".......","#....X.","..T...."],"lasers":[["B",4]],"max":7,"sol":[["0,0","/"],["0,4","\\"],["1,4","\\"],["1,6","\\"],["4,6","\\"],["5,0","\\"],["5,3","\\"]],"hammer":["6,2","0,5"],"id":"L4l9oo"},{"rows":["T.#.....","........","#.XX....","..T.#..T","X...T..#","........","X.X.....",".X...#.."],"lasers":[["T",0]],"max":7,"sol":[["0,1","\\"],["1,1","\\"],["1,3","\\"],["3,3","\\"],["3,4","\\"],["6,3","/"],["6,4","/"]],"hammer":["0,2","4,3","7,4"],"id":"L1ar3xry"},{"rows":[".....#..",".#T....X",".....X..",".X....X.","X.#...T.","..T.....","..#.T...","..#X...."],"lasers":[["T",2]],"max":7,"sol":[["2,3","\\"],["3,3","\\"],["3,6","\\"],["4,4","/"],["4,5","/"],["7,4","\\"],["7,6","/"]],"id":"L1wnqa00","hammer":["2,4","2,6"]},{"rows":["X.T.....","...T.#..","..#.....","X..X.T..",".X.#..T.","#.....T.",".....X.X",".....#.."],"lasers":[["R",5]],"max":7,"sol":[["2,1","\\"],["4,1","\\"],["4,3","\\"],["5,4","/"],["5,5","\\"],["7,3","\\"],["7,4","/"]],"id":"Lsipddz","hammer":["5,1"]},{"rows":["##..X...","..#...TT","...T.T..","X#.X....","#..X.T..","...X....","........",".....#X."],"lasers":[["B",3]],"max":7,"sol":[["3,6","/"],["4,4","/"],["4,6","/"],["6,0","/"],["6,4","/"],["7,0","\\"],["7,2","/"]],"id":"L8qrouo"}]},{"name":"קבועות","desc":"מראות שאי אפשר להזיז.","levels":[{"rows":[".X.....","X.T...#","..g.g..","T..T...","......#","....X..","......."],"lasers":[["T",3]],"max":3,"sol":[["2,0","/"],["3,0","/"],["4,3","/"]],"tip":"המראות הכהות עם הברגים כבר מותקנות. אי אפשר להזיז אותן, אבל הקרן מוחזרת מהן.","id":"L24w3ni"},{"rows":[".....X.","..#..T.",".#..TX.",".....g#",".....g.",".X....T","......."],"lasers":[["R",6]],"max":4,"sol":[["4,1","/"],["4,3","\\"],["6,4","\\"],["6,6","\\"]],"hammer":["6,3"],"id":"Lqybgri"},{"rows":["...X.X#","Tf.....","T.T....",".gT..#.",".g.....","#X...X.","......."],"lasers":[["L",2]],"max":4,"sol":[["0,3","\\"],["1,2","/"],["2,1","\\"],["2,4","/"]],"id":"L1np8c6o"},{"rows":[".X.....","..#.#..","....g#.",".T.....","X..T...",".T.f...",".X....."],"lasers":[["B",3]],"max":4,"sol":[["0,2","/"],["0,3","\\"],["3,3","\\"],["4,5","/"]],"id":"L7ei9iq"},{"rows":["........","....X..#","........",".#.#T.T.",".....gg#",".X......","X...T.f.",".X..T..."],"lasers":[["B",5]],"max":5,"sol":[["4,2","/"],["5,3","/"],["5,6","/"],["7,2","\\"],["7,3","/"]],"id":"Ldd0gak"},{"rows":["....T...","X.......","....#..T","#..f.TT.",".X...g..",".#.XX...","....f..#","....fX.."],"lasers":[["B",3]],"max":5,"sol":[["3,4","\\"],["3,7","/"],["5,6","/"],["7,0","\\"],["7,3","/"]],"id":"L1odsfav"},{"rows":["X.g.....","........","#..f....","...X....","...T..#.","........","XT.Tf...",".T.#.X#."],"lasers":[["T",2]],"max":5,"sol":[["1,4","/"],["2,2","/"],["2,6","\\"],["3,0","\\"],["4,4","\\"]],"id":"Lrlnbqu"},{"rows":["T.#.....","...#fT.X","Xg...#..","........","....#f..","......T.","....XT..","X.#...X."],"lasers":[["B",5]],"max":6,"sol":[["1,0","\\"],["4,2","/"],["6,1","\\"],["6,6","\\"],["7,4","\\"],["7,6","/"]],"id":"Lghyz6c"},{"rows":["#..T....","#X#..X.X","...Tg...",".....g..","...T.f..","...X....","....T#..",".....#.X"],"lasers":[["L",3]],"max":6,"sol":[["2,2","/"],["2,3","/"],["2,4","/"],["2,7","\\"],["3,3","\\"],["4,7","/"]],"id":"L431xpt","hammer":["2,1","5,7"]},{"rows":["....T...","....#...","...g..g.","...X.ff#",".T...TX.",".T.X..X.","#T......","#..X..#."],"lasers":[["L",1]],"max":6,"sol":[["1,0","/"],["3,1","\\"],["4,3","/"],["4,5","\\"],["5,0","\\"],["5,5","/"]],"id":"L1cty8cf","hammer":["7,3"]}]},{"name":"פיצול","desc":"קרן אחת, שני כיוונים.","levels":[{"rows":[".#X....",".T.....","p.....T",".......","......X","....T..",".#.X..."],"lasers":[["L",5]],"max":3,"sol":[["0,1","/"],["0,5","/"],["4,1","\\"]],"tip":"זכוכית מפצלת: חלק מהאור ממשיך ישר וחלק מוחזר הצידה. עקבו אחרי שתי הקרניים.","id":"L1hxcjqa"},{"rows":["...X...",".......",".......","Tq...X.","...#...","#T..#T.",".....TX"],"lasers":[["L",3]],"max":3,"sol":[["4,3","\\"],["4,4","\\"],["5,4","\\"]],"id":"L16lpvnu"},{"rows":["T......","..#...X","....#.X","p......",".T.....","..T...#","...TX.."],"lasers":[["L",3]],"max":3,"sol":[["1,3","\\"],["1,5","\\"],["3,5","\\"]],"id":"Lf8puh3"},{"rows":[".T...TT",".....#.",".p.....",".....X.","X...pT.","....X#X","#......"],"lasers":[["L",1]],"max":4,"sol":[["0,0","/"],["0,2","\\"],["1,1","\\"],["1,4","\\"]],"id":"L1kgnhf1"},{"rows":[".X.X#...","#.T#.X..",".Tp....X","....T...","........","#f.T....","..q.....","...T...."],"lasers":[["R",7]],"max":4,"sol":[["1,6","\\"],["2,7","\\"],["4,2","\\"],["4,5","/"]],"id":"L4c7gjx"},{"rows":["X....XT","..X#...",".......","......p","X.qT...",".TT#..#","......."],"lasers":[["B",4]],"max":4,"sol":[["1,4","/"],["1,6","\\"],["4,6","\\"],["6,4","/"]],"id":"Ly5egcn"},{"rows":[".#...T..","........",".X.q...T","....Tq.#",".......T","......#.","..X.....","..XXXT.#"],"lasers":[["T",5]],"max":5,"sol":[["3,1","/"],["3,3","\\"],["5,1","/"],["6,3","\\"],["6,4","\\"]],"hammer":["7,3"],"id":"L1mxemrg"},{"rows":[".#.TX.TT","......#.","..Tq....","pT......","....X..#","........","..X.....","X....X.#"],"lasers":[["L",4]],"max":5,"sol":[["0,2","/"],["0,4","/"],["3,3","/"],["5,0","/"],["5,2","/"]],"id":"L1y1m952"},{"rows":["X.XX....","..X.....","##......","....T..T","#...q...","..f.q.#X",".#.TT...",".T......"],"lasers":[["B",2]],"max":6,"sol":[["2,7","/"],["3,4","/"],["4,2","/"],["4,7","/"],["5,2","\\"],["5,3","\\"]],"hammer":["0,4","1,6"],"id":"L187qx8u"},{"rows":["T.......","X.......","X#.p....","......#.",".p......","X..X....","....TTT.",".##XT..#"],"lasers":[["L",4]],"max":6,"sol":[["1,3","/"],["2,4","\\"],["2,6","\\"],["3,0","\\"],["3,3","/"],["4,2","\\"]],"id":"Lvj9n1c","hammer":["1,2"]}]},{"name":"תאומות","desc":"שתי גחליליות, לוח אחד.","levels":[{"rows":[".......","T.X.X..",".......","....T..",".....T#","....#..","X.T...."],"lasers":[["B",2],["L",2]],"max":3,"sol":[["0,2","/"],["2,3","/"],["5,3","\\"]],"tip":"שתי גחליליות. כל מראה משפיעה על שתי הקרניים, וכל אחת מהן יכולה לפגוע בפצצה.","id":"L1m7gn23"},{"rows":["....#T.","......#",".......","X#...X.",".T.....","......X","...TT.."],"lasers":[["R",2],["L",6]],"max":3,"sol":[["5,2","\\"],["5,4","\\"],["5,6","/"]],"id":"Ldtdgh4"},{"rows":[".....#.","..XT...","X#.....","..#....",".T....X",".......","T.T...."],"lasers":[["L",5],["B",5]],"max":4,"sol":[["0,4","/"],["0,5","/"],["3,4","/"],["5,6","\\"]],"id":"Lx7qrqi"},{"rows":[".T......","g...#.X#","T.T.....",".T......","........","..#.X.X.","..X...T.","........"],"lasers":[["B",5],["L",1]],"max":4,"sol":[["0,3","\\"],["2,0","\\"],["2,3","/"],["5,6","/"]],"id":"L6izjov"},{"rows":["......T",".X.TT#.",".....#.","...X...","..X..X.",".......",".#....T"],"lasers":[["B",4],["T",4]],"max":4,"sol":[["3,0","/"],["3,2","\\"],["4,2","/"],["4,6","/"]],"id":"Ls62wka"},{"rows":["...#..#.","........","........","..X#X..T","..#...T.","......p.","..XX....","TTX....T"],"lasers":[["R",6],["B",1]],"max":5,"sol":[["0,6","/"],["1,6","\\"],["6,2","/"],["6,6","\\"],["7,2","\\"]],"id":"L32iodq"},{"rows":["....T...","........","X..T.T..",".X.....#","........","...X#.T.","....X..T","...#...#"],"lasers":[["T",5],["B",5]],"max":5,"sol":[["3,0","/"],["3,3","\\"],["5,0","/"],["6,3","\\"],["6,6","\\"]],"id":"L18yaag3"},{"rows":["...#....","#T.....T","......XT","X....#XT",".fX.....",".T......","........","#X......"],"lasers":[["B",5],["B",3]],"max":5,"sol":[["0,4","/"],["0,5","\\"],["3,4","/"],["5,5","\\"],["7,4","/"]],"id":"L1guv5ah","hammer":["5,3"]},{"rows":["........","T.X.X..X","...gT...",".X..T...",".......T",".g...#..","#.X#....",".T...#.."],"lasers":[["T",0],["B",1]],"max":6,"sol":[["0,2","\\"],["3,3","\\"],["6,3","\\"],["6,5","\\"],["7,2","\\"],["7,5","/"]],"id":"L1m82ydi"},{"rows":[".....TXT","TT....X.","..X...#.","..#.X..q","....T...","....X...",".......#","#......."],"lasers":[["T",3],["R",5]],"max":6,"sol":[["3,1","\\"],["3,4","\\"],["5,1","/"],["5,3","/"],["5,4","/"],["7,5","\\"]],"id":"L1p3e0qo"}]},{"name":"מאסטר","desc":"רק לחזקים.","levels":[{"rows":[".T...TX.",".#....qg",".X......",".#.TTX..",".....#..",".....#..","...XgT..",".#X....."],"lasers":[["T",5]],"max":6,"sol":[["0,0","/"],["0,5","\\"],["3,5","/"],["4,0","\\"],["5,1","\\"],["6,6","/"]],"tip":"הכול ביחד, על לוחות גדולים. קחו את הזמן.","hammer":["5,4","5,5"],"id":"Lt8b7tc"},{"rows":[".X..f..#.","...XT..#.","..p......","XX.g.p.#.","X......#.","#.T......","....T..X.",".........","T...T...."],"lasers":[["L",2]],"max":6,"sol":[["3,2","\\"],["4,7","\\"],["5,0","\\"],["5,8","/"],["6,3","\\"],["6,7","/"]],"hammer":["0,5"],"id":"L17dtwjf"},{"rows":[".....g.gT",".......q.","..X.T.#..","..X......","..XT..#.#",".........",".....X.X.","..T..#...","#XT......"],"lasers":[["T",8]],"max":6,"sol":[["2,6","/"],["3,2","/"],["3,6","/"],["5,1","/"],["5,2","/"],["8,1","/"]],"id":"L1k7eiwx","hammer":["6,2"]},{"rows":[".#T....##",".........",".........","X.X.X....",".X..#T...",".......TT","#X.......","....f....","T.X......"],"lasers":[["B",4],["T",2]],"max":6,"sol":[["0,7","/"],["2,1","\\"],["4,5","/"],["5,1","\\"],["5,5","\\"],["5,7","/"]],"id":"L1qrzw7k","hammer":["0,6"]},{"rows":[".....T.T.","....qf.g.","#.X....T.",".#...T..f",".#....T..","...X...X.",".X.......","...#.#.#T","..X...X.."],"lasers":[["T",6]],"max":7,"sol":[["4,0","/"],["4,2","\\"],["5,4","\\"],["6,2","/"],["7,3","\\"],["8,0","\\"],["8,4","\\"]],"id":"L1madtlp"},{"rows":["..T...#qT","..f#.T...","..TT...X.","T...X..X.",".f...X...",".#....#..","....#....",".X....X..","#........"],"lasers":[["T",7],["R",3]],"max":7,"sol":[["0,1","/"],["0,4","\\"],["1,2","/"],["4,1","/"],["4,2","/"],["7,1","/"],["8,3","/"]],"hammer":["3,1"],"id":"Liqz0i4"},{"rows":["T.......T","X.T..g##X",".T.q.T...","..#.Tg...",".........",".........","X..#..XX.","......X#.","...#...X."],"lasers":[["L",2]],"max":7,"sol":[["1,0","\\"],["1,1","\\"],["3,4","\\"],["4,0","/"],["4,4","/"],["6,2","\\"],["6,3","/"]],"id":"Lm2y9ks"},{"rows":[".#.....Tp",".#..T....","T.......T","......#..","....#X...","TT..X.#..","X....X.gg","..X..#...","X........"],"lasers":[["T",8]],"max":7,"sol":[["3,5","\\"],["3,8","\\"],["4,0","/"],["4,2","/"],["7,4","/"],["8,4","/"],["8,8","/"]],"id":"L6tsej","hammer":["1,0","1,1","6,3"]},{"rows":[".TTX...#.","..q......",".........","XT#.#..#.","fg.......","T.......X","T.......X","T.....#XX","........#"],"lasers":[["L",8]],"max":7,"sol":[["0,8","/"],["1,1","\\"],["1,2","/"],["1,5","\\"],["2,2","/"],["2,4","\\"],["2,5","/"]],"id":"Lm29rlx"},{"rows":["X..#gTT.#","##.......","....T..TX","........X","X#X......","......T..","...#..ff.",".T....qXX","........."],"lasers":[["L",3]],"max":7,"sol":[["1,2","/"],["1,3","/"],["5,6","/"],["5,8","\\"],["6,2","\\"],["6,8","/"],["7,0","\\"]],"id":"L1ktn7j6","hammer":["3,6"]}]}];
+if (LANG === 'en') for (const c of CHAPTERS) { c.name = T(c.name); c.desc = T(c.desc); for (const l of c.levels) if (l.tip) l.tip = T(l.tip); }
 // level order before chapters had 10 levels each, used once to move saved progress to level ids
 const OLD_IDS = ["L17k8zoe","L1ktnd9e","La3hh9f","L17u1vbf","L14yb9ud","L1385b7j","L1ky0lre","L1v68ees","Lkjrs0f","Lmkswja","L3vg2lj","Le65itp","Lsylebo","L3a5pq2","L174e44s","Lci9r7m","Lum26p1","L1fdeqer","L1i5bgs","L96mhg0","L1sbcvl9","L1ujmwsg","L197sare","Lmks94h","L1m9x3dk","L4l9oo","L1ar3xry","L24w3ni","Lqybgri","L1np8c6o","Ldd0gak","L1odsfav","Lghyz6c","L1hxcjqa","L16lpvnu","L1kgnhf1","L4c7gjx","L1mxemrg","L187qx8u","L1m7gn23","Lx7qrqi","L6izjov","L32iodq","L1m82ydi","Lt8b7tc","L17dtwjf","L1madtlp","Liqz0i4","Lm2y9ks"];
 /* ---------- core: shared by the game and the level generator ---------- */
@@ -970,7 +1111,7 @@ function draw(svg, lv, mir, onTap, won, locked, hammer) {
   if (onTap) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const c = lv.rows[y][x];
     if (hammer ? !hammer.has(key(x, y)) : c !== '.') continue;
-    const h = el('rect', { x, y, width: 1, height: 1, class: 'hit', role: 'button', 'aria-label': `${hammer ? 'חסימה' : 'משבצת'} ${x + 1}, ${y + 1}`, style: 'cursor:pointer' }, root);
+    const h = el('rect', { x, y, width: 1, height: 1, class: 'hit', role: 'button', 'aria-label': `${hammer ? T('חסימה') : T('משבצת')} ${x + 1}, ${y + 1}`, style: 'cursor:pointer' }, root);
     h.addEventListener('click', () => onTap(x, y));
   }
   return { lit: res.lit.size, total: res.total, bomb: !!res.bomb, allLit: res.allLit };
@@ -1204,8 +1345,8 @@ const START_POINTS = 500;
 const REMOVE_ADS = { id: 'remove_ads', price: '14.90 ₪', bonus: 2000 };
 const AD_EVERY = 3;
 const RANKS = [
-  { at: 0, name: 'ניצוץ' }, { at: 2000, name: 'גחלילית' }, { at: 6000, name: 'פנס' }, { at: 12000, name: 'מגדלור' },
-  { at: 20000, name: 'ירח' }, { at: 32000, name: 'שמש' }, { at: 50000, name: 'גלקסיה' },
+  { at: 0, name: T('ניצוץ') }, { at: 2000, name: T('גחלילית') }, { at: 6000, name: T('פנס') }, { at: 12000, name: T('מגדלור') },
+  { at: 20000, name: T('ירח') }, { at: 32000, name: T('שמש') }, { at: 50000, name: T('גלקסיה') },
 ];
 const par = lv => lv.max * 2 + 2;
 const levelPoints = (lv, stars) => Math.round(lv.max * 100 * [0, 1, 1.5, 2][stars]);
@@ -1358,31 +1499,31 @@ async function readBoard(tab) {
 }
 async function leaveLeaderboard() {
   try { await rpc('beam_delete_me', { p_id: P.id, p_secret: playerKey() }); }
-  catch (e) { toast('אין חיבור כרגע. נסו שוב מאוחר יותר.'); return; }
+  catch (e) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
   try { if (window.storage) { await window.storage.delete('lb:' + P.id, true); await window.storage.delete(`day:${todayStr()}:${P.id}`, true); } } catch (e) { /* nothing stored */ }
-  P.name = ''; save(false); renderHome(); openSettings(); toast('השם והניקוד הוסרו מהטבלה');
+  P.name = ''; save(false); renderHome(); openSettings(); toast(T('השם והניקוד הוסרו מהטבלה'));
 }
 
 /* ================= achievements ================= */
 const chapterRange = ci => { let s = 0; for (let c = 0; c < ci; c++) s += CHAPTERS[c].levels.length; return [s, s + CHAPTERS[ci].levels.length]; };
 const chapterDone = ci => { const [a, b] = chapterRange(ci); for (let i = a; i < b; i++) if (!isSolved(i)) return false; return true; };
 const ACH = [
-  { id: 'first', name: 'אור ראשון', desc: 'פתרו את השלב הראשון', reward: 200, test: () => isSolved(0) },
-  { id: 'three', name: 'מושלם', desc: 'קבלו שלושה כוכבים בשלב', reward: 300, test: () => Object.values(P.levels).some(l => l.stars === 3) },
-  ...CHAPTERS.map((c, ci) => ({ id: 'ch' + ci, name: `פרק ${c.name}`, desc: `השלימו את כל שלבי פרק ${ci + 1}`, reward: 500 + ci * 250, test: () => chapterDone(ci) })),
-  { id: 'hard3', name: 'בלי עזרה', desc: 'שלושה כוכבים בשלב מהפרק האחרון', reward: 1500, test: () => { const [a, b] = chapterRange(CHAPTERS.length - 1); for (let i = a; i < b; i++) if (recOf(i) && recOf(i).stars === 3) return true; return false; } },
-  { id: 'stars60', name: 'אספן כוכבים', desc: 'צברו 60 כוכבים', reward: 1000, test: () => totalStars() >= 60 },
-  { id: 'starsAll', name: 'שמיים זרועי כוכבים', desc: `צברו את כל ${ALL.length * 3} הכוכבים`, reward: 5000, test: () => totalStars() >= ALL.length * 3 },
-  { id: 'daily1', name: 'אתגר ראשון', desc: 'סיימו אתגר יומי', reward: 300, test: () => Object.keys(P.daily).length >= 1 },
-  { id: 'daily7', name: 'שבוע של אתגרים', desc: 'סיימו 7 אתגרים יומיים', reward: 1500, test: () => Object.keys(P.daily).length >= 7 },
-  { id: 'streak3', name: 'חוזרים לאור', desc: 'היכנסו שלושה ימים ברצף', reward: 500, test: () => P.streak.count >= 3 },
-  { id: 'streak7', name: 'שבוע זוהר', desc: 'היכנסו שבעה ימים ברצף', reward: 1500, test: () => P.streak.count >= 7 },
+  { id: 'first', name: T('אור ראשון'), desc: T('פתרו את השלב הראשון'), reward: 200, test: () => isSolved(0) },
+  { id: 'three', name: T('מושלם'), desc: T('קבלו שלושה כוכבים בשלב'), reward: 300, test: () => Object.values(P.levels).some(l => l.stars === 3) },
+  ...CHAPTERS.map((c, ci) => ({ id: 'ch' + ci, name: T`פרק ${c.name}`, desc: T`השלימו את כל שלבי פרק ${ci + 1}`, reward: 500 + ci * 250, test: () => chapterDone(ci) })),
+  { id: 'hard3', name: T('בלי עזרה'), desc: T('שלושה כוכבים בשלב מהפרק האחרון'), reward: 1500, test: () => { const [a, b] = chapterRange(CHAPTERS.length - 1); for (let i = a; i < b; i++) if (recOf(i) && recOf(i).stars === 3) return true; return false; } },
+  { id: 'stars60', name: T('אספן כוכבים'), desc: T('צברו 60 כוכבים'), reward: 1000, test: () => totalStars() >= 60 },
+  { id: 'starsAll', name: T('שמיים זרועי כוכבים'), desc: T`צברו את כל ${ALL.length * 3} הכוכבים`, reward: 5000, test: () => totalStars() >= ALL.length * 3 },
+  { id: 'daily1', name: T('אתגר ראשון'), desc: T('סיימו אתגר יומי'), reward: 300, test: () => Object.keys(P.daily).length >= 1 },
+  { id: 'daily7', name: T('שבוע של אתגרים'), desc: T('סיימו 7 אתגרים יומיים'), reward: 1500, test: () => Object.keys(P.daily).length >= 7 },
+  { id: 'streak3', name: T('חוזרים לאור'), desc: T('היכנסו שלושה ימים ברצף'), reward: 500, test: () => P.streak.count >= 3 },
+  { id: 'streak7', name: T('שבוע זוהר'), desc: T('היכנסו שבעה ימים ברצף'), reward: 1500, test: () => P.streak.count >= 7 },
 ];
 function checkAchievements() {
   const fresh = ACH.filter(a => !P.ach.includes(a.id) && a.test());
   fresh.forEach((a, n) => {
     P.ach.push(a.id); gain(a.reward);
-    setTimeout(() => { Sound.play('achievement'); toast(`הישג חדש: ${a.name}`, `+${fmt(a.reward)}`); }, 1800 + n * 2600);
+    setTimeout(() => { Sound.play('achievement'); toast(T`הישג חדש: ${a.name}`, `+${fmt(a.reward)}`); }, 1800 + n * 2600);
   });
   if (fresh.length) save();
 }
@@ -1397,8 +1538,8 @@ const ICON_HINT = `<svg viewBox="0 0 1 1"><path d="M.5 .1A.28 .28 0 0 1 .66 .62V
 const ICON_MOVES = `<svg viewBox="0 0 1 1"><circle cx=".5" cy=".5" r=".36" fill="none" stroke="var(--purple)" stroke-width=".12"/><circle cx=".5" cy=".5" r=".1" fill="var(--purple)"/></svg>`;
 const ICON_CLOCK = `<svg viewBox="0 0 1 1"><circle cx=".5" cy=".54" r=".38" fill="var(--green)"/><path d="M.5 .32V.54L.65 .64" stroke="#fff" stroke-width=".09" stroke-linecap="round" fill="none"/></svg>`;
 const ICON_LOCK = `<svg viewBox="0 0 1 1"><rect x=".22" y=".45" width=".56" height=".42" rx=".08" fill="var(--muted)"/><path d="M.33 .45V.33A.17 .17 0 0 1 .67 .33V.45" fill="none" stroke="var(--muted)" stroke-width=".09"/></svg>`;
-const fmt = n => n.toLocaleString('he-IL');
-const movesText = n => n === 1 ? 'מהלך אחד' : `${n} מהלכים`;
+const fmt = n => n.toLocaleString(LANG === 'en' ? 'en-US' : 'he-IL');
+const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
@@ -1420,12 +1561,12 @@ function closeModal() { $('overlay').hidden = true; }
 function bugInto(svg) { firefly(svg, 0, 0, 0, 1, 1.7, null); }
 
 function askName(after) {
-  const def = P.name || `גחלילית ${Math.floor(100 + Math.random() * 900)}`;
+  const def = P.name || T`גחלילית ${Math.floor(100 + Math.random() * 900)}`;
   modal(`<svg class="bug" viewBox="-1 -1 2 2" id="nameBug"></svg>
-    <h3>איך לקרוא לכם?</h3>
-    <p>השם יופיע בטבלת המובילים, וכל השחקנים יוכלו לראות אותו.</p>
-    <input id="nameInput" maxlength="16" aria-label="שם">
-    <button class="btn orange" id="nameSave">שמירה</button>`, m => {
+    <h3>${T`איך לקרוא לכם?`}</h3>
+    <p>${T`השם יופיע בטבלת המובילים, וכל השחקנים יוכלו לראות אותו.`}</p>
+    <input id="nameInput" maxlength="16" aria-label="${T`שם`}">
+    <button class="btn orange" id="nameSave">${T`שמירה`}</button>`, m => {
       const inp = m.querySelector('#nameInput'); inp.value = def; bugInto(m.querySelector('#nameBug'));
       const done = () => {
         const v = inp.value.replace(/[<>]/g, '').trim().slice(0, 16);
@@ -1448,10 +1589,10 @@ function dailyBonus() {
   let days = '';
   for (let i = 1; i <= 7; i++) days += `<i class="${i <= Math.min(P.streak.count, 7) ? 'on' : ''}">${i * 100}</i>`;
   modal(`<svg class="bug" viewBox="-1 -1 2 2" id="bonusBug"></svg>
-    <h3>${P.streak.count > 1 ? `${P.streak.count} ימים ברצף!` : 'ברוכים השבים!'}</h3>
-    <p>קיבלתם ${reward} נקודות לקניות. חזרו מחר כדי להגדיל את הבונוס.</p>
+    <h3>${P.streak.count > 1 ? T`${P.streak.count} ימים ברצף!` : T('ברוכים השבים!')}</h3>
+    <p>${T`קיבלתם ${reward} נקודות לקניות. חזרו מחר כדי להגדיל את הבונוס.`}</p>
     <div class="streak">${days}</div>
-    <button class="btn green" id="bonusOk">איסוף</button>`, m => {
+    <button class="btn green" id="bonusOk">${T`איסוף`}</button>`, m => {
       bugInto(m.querySelector('#bonusBug'));
       m.querySelector('#bonusOk').onclick = () => { Sound.play('bonus'); closeModal(); renderHome(); checkAchievements(); };
     }, true);
@@ -1460,20 +1601,20 @@ function dailyBonus() {
 /* ================= home ================= */
 function renderHome() {
   const r = rankOf(P.earned);
-  $('meName').textContent = P.name || 'שחקן חדש';
+  $('meName').textContent = P.name || T('שחקן חדש');
   $('meRank').textContent = r.name;
   const mb = $('meBug'); mb.innerHTML = ''; firefly(mb, 0, .05, 0, 1, 1.65, null);
   $('homePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   if (r.next) {
     $('rankFill').style.width = Math.max(3, (P.earned - r.at) / (r.next.at - r.at) * 100) + '%';
-    $('rankNow').textContent = `${r.name}, ${fmt(P.earned)} נקודות שנצברו`;
-    $('rankNext').textContent = `עוד ${fmt(r.next.at - P.earned)} ל${r.next.name}`;
-  } else { $('rankFill').style.width = '100%'; $('rankNow').textContent = r.name; $('rankNext').textContent = 'הדרגה הגבוהה ביותר'; }
+    $('rankNow').textContent = T`${r.name}, ${fmt(P.earned)} נקודות שנצברו`;
+    $('rankNext').textContent = T`עוד ${fmt(r.next.at - P.earned)} ל${r.next.name}`;
+  } else { $('rankFill').style.width = '100%'; $('rankNow').textContent = r.name; $('rankNext').textContent = T('הדרגה הגבוהה ביותר'); }
 
   const d = P.daily[todayStr()];
-  $('dailyText').textContent = d ? `השיא שלכם היום: ${fmt(d.score)} נקודות` : 'שלב חדש היום, אותו שלב לכולם';
-  $('dailyBtn').textContent = d ? 'לשפר' : 'שחק';
-  $('achLabel').textContent = `הישגים ${P.ach.length}/${ACH.length}`;
+  $('dailyText').textContent = d ? T`השיא שלכם היום: ${fmt(d.score)} נקודות` : T('שלב חדש היום, אותו שלב לכולם');
+  $('dailyBtn').textContent = d ? T('לשפר') : T('שחק');
+  $('achLabel').textContent = T`הישגים ${P.ach.length}/${ACH.length}`;
   $('adBanner').hidden = !!P.adFree;
 
   const box = $('chapters'); box.innerHTML = ''; let idx = 0;
@@ -1483,7 +1624,7 @@ function renderHome() {
     let got = 0; for (let i = a; i < b; i++) got += recOf(i) ? recOf(i).stars : 0;
     const open = unlocked(a);
     const div = document.createElement('div'); div.className = 'chapter' + (open ? '' : ' locked'); div.dataset.ci = ci;
-    div.innerHTML = `<div class="banner" style="background:${col.solid}"><h2>פרק ${ci + 1}: ${ch.name}</h2><p>${ch.desc}</p><span class="chstars">★ ${got}/${(b - a) * 3}</span></div>${open ? '' : `<div class="lockmsg">${ICON_LOCK}<span>ייפתח אחרי פרק ${ci}</span></div>`}`;
+    div.innerHTML = `<div class="banner" style="background:${col.solid}"><h2>${T`פרק ${ci + 1}: ${ch.name}`}</h2><p>${ch.desc}</p><span class="chstars">★ ${got}/${(b - a) * 3}</span></div>${open ? '' : `<div class="lockmsg">${ICON_LOCK}<span>${T`ייפתח אחרי פרק ${ci}`}</span></div>`}`;
     const grid = document.createElement('div'); grid.className = 'levels';
     grid.style.setProperty('--tint', col.tint); grid.style.setProperty('--solid', col.solid);
     ch.levels.forEach(() => {
@@ -1491,7 +1632,7 @@ function renderHome() {
       const btn = document.createElement('button');
       btn.innerHTML = `${i + 1}${rec ? `<span class="st">${'★'.repeat(rec.stars)}</span>` : ''}`;
       if (rec) btn.className = 'done';
-      btn.setAttribute('aria-label', `שלב ${i + 1}${rec ? `, ${rec.stars} כוכבים` : ''}`);
+      btn.setAttribute('aria-label', T`שלב ${i + 1}${rec ? T`, ${rec.stars} כוכבים` : ''}`);
       btn.disabled = !unlocked(i);
       btn.onclick = () => openLevel(i);
       grid.appendChild(btn);
@@ -1503,7 +1644,7 @@ function renderHome() {
   const cards = [...box.children];
   cards.forEach((card, ci) => {
     const d = document.createElement('button');
-    d.setAttribute('role', 'tab'); d.setAttribute('aria-label', `פרק ${ci + 1}: ${CHAPTERS[ci].name}`);
+    d.setAttribute('role', 'tab'); d.setAttribute('aria-label', T`פרק ${ci + 1}: ${CHAPTERS[ci].name}`);
     d.onclick = () => centerCard(card, true);
     dots.appendChild(d);
   });
@@ -1512,7 +1653,7 @@ function renderHome() {
     for (const e of entries) if (e.isIntersecting) {
       const ci = +e.target.dataset.ci;
       [...dots.children].forEach((d, j) => { d.classList.toggle('on', j === ci); d.setAttribute('aria-selected', j === ci); });
-      $('chCount').textContent = `פרק ${ci + 1} מתוך ${CHAPTERS.length}`;
+      $('chCount').textContent = T`פרק ${ci + 1} מתוך ${CHAPTERS.length}`;
     }
   }, { root: box, threshold: .6 });
   cards.forEach(c => chObserver.observe(c));
@@ -1520,9 +1661,9 @@ function renderHome() {
   const curCh = nextLv === -1 ? 0 : ALL[nextLv].ch;
   requestAnimationFrame(() => centerCard(cards[curCh], false));
   const solvedN = ALL.filter(l => P.levels[l.id]).length;
-  $('progress').textContent = `${solvedN} מתוך ${ALL.length} שלבים, ${totalStars()} מתוך ${ALL.length * 3} כוכבים`;
+  $('progress').textContent = T`${solvedN} מתוך ${ALL.length} שלבים, ${totalStars()} מתוך ${ALL.length * 3} כוכבים`;
   const next = ALL.findIndex((_, i) => !isSolved(i));
-  $('playBtn').textContent = solvedN === 0 ? 'שחק' : next === -1 ? 'שפרו כוכבים' : `המשך לשלב ${next + 1}`;
+  $('playBtn').textContent = solvedN === 0 ? T('שחק') : next === -1 ? T('שפרו כוכבים') : T`המשך לשלב ${next + 1}`;
 }
 
 let chObserver = null;
@@ -1559,18 +1700,18 @@ function renderPills(st) {
   st = st || G.lastSt;
   const used = Object.keys(G.mirrors).length;
   $('starPill').innerHTML = `${ICON_STAR}<span>${st.lit}/${st.total}</span>`;
-  $('starPill').setAttribute('aria-label', `${st.lit} מתוך ${st.total} כוכבים דולקים`);
+  $('starPill').setAttribute('aria-label', T`${st.lit} מתוך ${st.total} כוכבים דולקים`);
   $('mirrorPill').innerHTML = `${ICON_MIRROR}<span>${maxMirrors() - used}</span>`;
-  $('mirrorPill').setAttribute('aria-label', `נותרו ${maxMirrors() - used} מראות`);
+  $('mirrorPill').setAttribute('aria-label', T`נותרו ${maxMirrors() - used} מראות`);
   const mp = $('movesPill');
   if (G.mode === 'daily' && !G.done) {
     const s = elapsed();
     mp.innerHTML = `${ICON_CLOCK}<span class="timer">${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span>`;
-    mp.classList.remove('over'); mp.setAttribute('aria-label', 'זמן');
+    mp.classList.remove('over'); mp.setAttribute('aria-label', T('זמן'));
   } else {
     mp.innerHTML = `${ICON_MOVES}<span>${G.moves}/${par(G.lv)}</span>`;
     mp.classList.toggle('over', G.moves > par(G.lv));
-    mp.setAttribute('aria-label', `${G.moves} מהלכים, יעד ${par(G.lv)}`);
+    mp.setAttribute('aria-label', T`${G.moves} מהלכים, יעד ${par(G.lv)}`);
   }
 }
 
@@ -1586,22 +1727,22 @@ function renderGame(flash) {
   }
   G.prevSt = st;
   G.lastSt = st;
-  if (G.mode === 'daily') { $('lvTitle').textContent = 'אתגר יומי'; $('lvChapter').textContent = `יעד מהלכים: ${par(lv)}`; }
-  else { $('lvTitle').textContent = `שלב ${G.idx + 1}`; $('lvChapter').textContent = `פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
+  if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
+  else { $('lvTitle').textContent = T`שלב ${G.idx + 1}`; $('lvChapter').textContent = T`פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
   $('tip').textContent = lv.tip || '';
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   renderPills(st);
 
   const status = $('status'); status.className = 'status';
   if (flash) { status.className = 'status bad'; status.textContent = flash; }
-  else if (G.hammerMode) { status.className = 'status bad'; status.textContent = 'הקישו על חסימה מהבהבת כדי לשבור אותה'; }
-  else if (st.bomb) { status.className = 'status bad'; status.textContent = 'בום! הקרן פגעה בפצצה.'; }
-  else status.textContent = G.moves === 0 ? 'הקישו על משבצת כדי להציב מראה' : '';
+  else if (G.hammerMode) { status.className = 'status bad'; status.textContent = T('הקישו על חסימה מהבהבת כדי לשבור אותה'); }
+  else if (st.bomb) { status.className = 'status bad'; status.textContent = T('בום! הקרן פגעה בפצצה.'); }
+  else status.textContent = G.moves === 0 ? T('הקישו על משבצת כדי להציב מראה') : '';
 
   $('powerBox').hidden = G.mode === 'daily' || G.done;
-  $('pwMirror').innerHTML = `${ICON_MIRROR}<span>מראה</span><span class="price">${fmt(PRICE.mirror)}</span>`;
-  $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? 'ביטול' : 'פטיש'}</span><span class="price">${fmt(PRICE.hammer)}</span>`;
-  $('pwHint').innerHTML = `${ICON_HINT}<span>רמז</span><span class="price">${fmt(PRICE.hint)}</span>`;
+  $('pwMirror').innerHTML = `${ICON_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(PRICE.mirror)}</span>`;
+  $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(PRICE.hammer)}</span>`;
+  $('pwHint').innerHTML = `${ICON_HINT}<span>${T`רמז`}</span><span class="price">${fmt(PRICE.hint)}</span>`;
   $('pwMirror').disabled = P.balance < PRICE.mirror || G.extra >= LIMIT.mirror;
   // the hammer only exists where breaking a wall can actually save a mirror
   const hammerHere = G.mode !== 'daily' && !!(lv.hammer && lv.hammer.length);
@@ -1619,9 +1760,9 @@ function tap(x, y) {
   const k = key(x, y);
   if (G.hammerMode) return breakWall(x, y);
   const m = G.mirrors[k];
-  if (G.locked.has(k)) { Sound.play('error'); renderGame('את המראה הזו הציב הרמז, והיא נשארת במקום.'); return; }
+  if (G.locked.has(k)) { Sound.play('error'); renderGame(T('את המראה הזו הציב הרמז, והיא נשארת במקום.')); return; }
   if (!m) {
-    if (Object.keys(G.mirrors).length >= maxMirrors()) { Sound.play('error'); renderGame('נגמרו המראות. הסירו אחת או קנו מראה נוספת.'); return; }
+    if (Object.keys(G.mirrors).length >= maxMirrors()) { Sound.play('error'); renderGame(T('נגמרו המראות. הסירו אחת או קנו מראה נוספת.')); return; }
     G.mirrors[k] = '/'; Sound.play('place');
   } else if (m === '/') { G.mirrors[k] = '\\'; Sound.play('rotate'); }
   else { delete G.mirrors[k]; Sound.play('remove'); }
@@ -1636,7 +1777,7 @@ function nextHint() {
 function spend(n) { if (P.balance < n) return false; P.balance -= n; G.helped = true; save(false); return true; }
 function buyMirror() {
   if (G.extra >= LIMIT.mirror || !spend(PRICE.mirror)) return;
-  G.extra++; Sound.play('purchase'); toast('קיבלתם מראה נוספת', `-${fmt(PRICE.mirror)}`); renderGame();
+  G.extra++; Sound.play('purchase'); toast(T('קיבלתם מראה נוספת'), `-${fmt(PRICE.mirror)}`); renderGame();
 }
 function breakable() {
   return new Set((G.lv.hammer || []).filter(k => { const [x, y] = k.split(',').map(Number); return G.lv.rows[y][x] === '#'; }));
@@ -1649,7 +1790,7 @@ function breakWall(x, y) {
   if (!breakable().has(key(x, y)) || !spend(PRICE.hammer)) return;
   const r = G.lv.rows[y]; G.lv.rows[y] = r.slice(0, x) + '.' + r.slice(x + 1);
   G.hammers++; G.hammerMode = false; Sound.play('hammer');
-  toast('החסימה נשברה', `-${fmt(PRICE.hammer)}`); renderGame();
+  toast(T('החסימה נשברה'), `-${fmt(PRICE.hammer)}`); renderGame();
 }
 function buyHint() {
   const h = nextHint(); if (!h || !spend(PRICE.hint)) return;
@@ -1660,7 +1801,7 @@ function buyHint() {
     if (wrong) delete G.mirrors[wrong];
   }
   G.mirrors[k] = m; G.locked.add(k); Sound.play('hint');
-  toast('הרמז הציב מראה במקום הנכון', `-${fmt(PRICE.hint)}`); renderGame();
+  toast(T('הרמז הציב מראה במקום הנכון'), `-${fmt(PRICE.hint)}`); renderGame();
 }
 
 const starsSVG = n => [1, 2, 3].map(i => (i <= n ? ICON_STAR : ICON_STAR_OFF)).join('');
@@ -1779,13 +1920,13 @@ function finish() {
     if (!prev || score > prev.score) { earned = score - (prev ? prev.score : 0); P.daily[t] = { score, moves: G.moves, time }; }
     if (!prev) earned += 500;
     gain(earned);
-    $('winTitle').textContent = prev && score <= prev.score ? 'פתרתם שוב!' : prev ? 'שיא חדש להיום!' : 'האתגר היומי הושלם!';
+    $('winTitle').textContent = prev && score <= prev.score ? T('פתרתם שוב!') : prev ? T('שיא חדש להיום!') : T('האתגר היומי הושלם!');
     $('bigStars').innerHTML = '';
     winSound = () => Sound.play('win', 0);
-    $('winText').textContent = `${fmt(score)} נקודות בטבלה. ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')} דקות, ${movesText(G.moves)}.${prev && score <= prev.score ? ` השיא שלכם: ${fmt(prev.score)}.` : ''}`;
-    $('nextBtn').textContent = 'לטבלת המובילים';
+    $('winText').textContent = T`${fmt(score)} נקודות בטבלה. ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')} דקות, ${movesText(G.moves)}.${prev && score <= prev.score ? T` השיא שלכם: ${fmt(prev.score)}.` : ''}`;
+    $('nextBtn').textContent = T('לטבלת המובילים');
     $('nextBtn').onclick = () => openLeaderboard('day');
-    $('retryBtn').textContent = 'נסו שוב לשיא'; $('retryBtn').hidden = false;
+    $('retryBtn').textContent = T('נסו שוב לשיא'); $('retryBtn').hidden = false;
     $('retryBtn').onclick = () => openDaily();
     $('shareBtn').hidden = false;
     $('shareBtn').onclick = () => shareDaily(P.daily[t]);
@@ -1800,18 +1941,18 @@ function finish() {
     if (!prev || stars > prev.stars) { earned = pts - (prev ? prev.pts : 0); P.levels[lv.id] = { stars, pts }; }
     gain(earned);
     const last = i === ALL.length - 1, chEnd = !last && ALL[i + 1].ch !== lv.ch;
-    $('winTitle').textContent = stars === 3 ? 'מושלם!' : last ? 'סיימתם את המשחק!' : chEnd ? 'הפרק הושלם!' : 'כל הכבוד!';
+    $('winTitle').textContent = stars === 3 ? T('מושלם!') : last ? T('סיימתם את המשחק!') : chEnd ? T('הפרק הושלם!') : T('כל הכבוד!');
     $('bigStars').innerHTML = starsSVG(stars);
     winSound = () => { Sound.play('win', stars); if (stars === 3) Sound.play('perfect'); };
-    $('winText').textContent = stars === 3 ? `פתרתם ב${movesText(G.moves)}, בתוך היעד.` :
-      stars === 2 ? `${movesText(G.moves)}. פתרו ב-${par(lv)} מהלכים או פחות בשביל שלושה כוכבים.` :
-      'השתמשתם בעזרה. פתרו בלי עזרה בשביל עוד כוכבים.';
-    $('nextBtn').textContent = last ? 'חזרה לשלבים' : 'לשלב הבא';
+    $('winText').textContent = stars === 3 ? T`פתרתם ב${movesText(G.moves)}, בתוך היעד.` :
+      stars === 2 ? T`${movesText(G.moves)}. פתרו ב-${par(lv)} מהלכים או פחות בשביל שלושה כוכבים.` :
+      T('השתמשתם בעזרה. פתרו בלי עזרה בשביל עוד כוכבים.');
+    $('nextBtn').textContent = last ? T('חזרה לשלבים') : T('לשלב הבא');
     $('nextBtn').onclick = () => last ? goHome() : maybeInterstitial(() => openLevel(i + 1));
-    $('retryBtn').textContent = 'נסו שוב לשלושה כוכבים'; $('retryBtn').hidden = stars === 3;
+    $('retryBtn').textContent = T('נסו שוב לשלושה כוכבים'); $('retryBtn').hidden = stars === 3;
     $('retryBtn').onclick = () => openLevel(i);
   }
-  $('gains').innerHTML = earned ? `<div class="coin">${ICON_POINTS}<span>+${fmt(earned)}</span></div>` : `<span style="color:var(--muted)">כבר השגתם את התוצאה הזו</span>`;
+  $('gains').innerHTML = earned ? `<div class="coin">${ICON_POINTS}<span>+${fmt(earned)}</span></div>` : `<span style="color:var(--muted)">${T`כבר השגתם את התוצאה הזו`}</span>`;
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   showWin(mood, winDelay, winSound);
   save(); checkAchievements();
@@ -1828,14 +1969,14 @@ function shareDaily(d) {
   if (!d) return;
   const t = todayStr().split('-').reverse().join('.');
   const link = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL;
-  const text = `BEAM · האתגר היומי ${t}\n${fmt(d.score)} נקודות · ${movesText(d.moves)} · ${Math.floor(d.time / 60)}:${String(d.time % 60).padStart(2, '0')}\nמצליחים לעקוף אותי?`;
-  const copied = () => toast('התוצאה הועתקה, אפשר להדביק ולשלוח');
+  const text = T`BEAM · האתגר היומי ${t}\n${fmt(d.score)} נקודות · ${movesText(d.moves)} · ${Math.floor(d.time / 60)}:${String(d.time % 60).padStart(2, '0')}\nמצליחים לעקוף אותי?`;
+  const copied = () => toast(T('התוצאה הועתקה, אפשר להדביק ולשלוח'));
   const copy = () => {
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + '\n' + link).then(copied, () => toast('לא הצלחנו להעתיק את התוצאה'));
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + '\n' + link).then(copied, () => toast(T('לא הצלחנו להעתיק את התוצאה')));
     else {
       const ta = document.createElement('textarea'); ta.value = text + '\n' + link; ta.style.cssText = 'position:fixed;opacity:0';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); copied(); } catch (e) { toast('לא הצלחנו להעתיק את התוצאה'); }
+      try { document.execCommand('copy'); copied(); } catch (e) { toast(T('לא הצלחנו להעתיק את התוצאה')); }
       ta.remove();
     }
   };
@@ -1853,21 +1994,21 @@ async function openLeaderboard(tab) {
   $('tabAll').setAttribute('aria-selected', lbTab === 'all');
   $('tabDay').setAttribute('aria-selected', lbTab === 'day');
   const list = $('lbList');
-  list.innerHTML = '<li class="empty">טוען…</li>';
-  $('lbSub').textContent = lbTab === 'all' ? 'כל הנקודות שנצברו במשחק' : `האתגר של ${todayStr().split('-').reverse().join('.')}`;
+  list.innerHTML = T('<li class="empty">טוען…</li>');
+  $('lbSub').textContent = lbTab === 'all' ? T('כל הנקודות שנצברו במשחק') : T`האתגר של ${todayStr().split('-').reverse().join('.')}`;
   if (P.name) await publishScore();
   const asked = lbTab, { online, rows } = await readBoard(lbTab);
   if (asked !== lbTab || $('leader').hidden) return;   // the player moved on while the table was loading
   const val = r => lbTab === 'all' ? r.total : r.score;
   $('lbOffline').hidden = online;
   list.innerHTML = '';
-  if (!rows.length) { list.innerHTML = `<li class="empty">${lbTab === 'all' ? 'עוד אין שחקנים בטבלה. היו הראשונים!' : 'אף אחד עוד לא פתר את האתגר של היום.'}</li>`; return; }
+  if (!rows.length) { list.innerHTML = `<li class="empty">${lbTab === 'all' ? T('עוד אין שחקנים בטבלה. היו הראשונים!') : T('אף אחד עוד לא פתר את האתגר של היום.')}</li>`; return; }
   const row = (r, n) => {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
     li.innerHTML = `<span class="pos">${r.rank || n + 1}</span><span class="nm"><span></span><small></small></span><span class="sc"></span>`;
-    li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? ' (אתם)' : '');
-    li.querySelector('.nm small').textContent = lbTab === 'all' ? `${r.stars || 0} כוכבים, ${rankOf(r.total).name}` : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
+    li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? T(' (אתם)') : '');
+    li.querySelector('.nm small').textContent = lbTab === 'all' ? T`${r.stars || 0} כוכבים, ${rankOf(r.total).name}` : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
     li.querySelector('.sc').textContent = fmt(val(r));
     return li;
   };
@@ -1876,7 +2017,7 @@ async function openLeaderboard(tab) {
 
 /* ================= achievements screen ================= */
 function openAchievements() {
-  $('achSub').textContent = `${P.ach.length} מתוך ${ACH.length} הושגו`;
+  $('achSub').textContent = T`${P.ach.length} מתוך ${ACH.length} הושגו`;
   const box = $('achList'); box.innerHTML = '';
   for (const a of ACH) {
     const got = P.ach.includes(a.id);
@@ -1894,11 +2035,11 @@ function openAchievements() {
 const PAYMENTS = {
   buy(product) {
     return new Promise(resolve => {
-      modal(`<h3>אישור רכישה</h3>
-        <p>הסרת פרסומות לתמיד בתשלום חד-פעמי של ${product.price}.</p>
-        <p class="demo-note">גרסת הדגמה: לא יבוצע חיוב. במשחק המפורסם כאן ייפתח מסך התשלום של החנות.</p>
-        <button class="btn orange" id="buyOk" style="margin-top:12px">רכישה ב-${product.price}</button>
-        <button class="btn ghosty" id="buyCancel" style="margin-top:12px">ביטול</button>`, m => {
+      modal(`<h3>${T`אישור רכישה`}</h3>
+        <p>${T`הסרת פרסומות לתמיד בתשלום חד-פעמי של ${product.price}.`}</p>
+        <p class="demo-note">${T`גרסת הדגמה: לא יבוצע חיוב. במשחק המפורסם כאן ייפתח מסך התשלום של החנות.`}</p>
+        <button class="btn orange" id="buyOk" style="margin-top:12px">${T`רכישה ב-${product.price}`}</button>
+        <button class="btn ghosty" id="buyCancel" style="margin-top:12px">${T`ביטול`}</button>`, m => {
           m.querySelector('#buyOk').onclick = () => { closeModal(); resolve(true); };
           m.querySelector('#buyCancel').onclick = () => { closeModal(); resolve(false); };
         }, true);
@@ -1912,28 +2053,28 @@ async function buyRemoveAds() {
   P.adFree = true; P.purchases = [...new Set([...(P.purchases || []), REMOVE_ADS.id])];
   gain(REMOVE_ADS.bonus, false); save(); openSettings(); Sound.play('purchase'); setTimeout(() => Sound.play('win', 0), 400);
   modal(`<svg class="bug" viewBox="-1 -1 2 2" id="thanksBug"></svg>
-    <h3>תודה על התמיכה!</h3>
-    <p>הפרסומות הוסרו, וקיבלתם ${fmt(REMOVE_ADS.bonus)} נקודות לקניות במתנה.</p>
-    <button class="btn green" id="thanksOk">יופי</button>`, m => { bugInto(m.querySelector('#thanksBug')); m.querySelector('#thanksOk').onclick = closeModal; });
+    <h3>${T`תודה על התמיכה!`}</h3>
+    <p>${T`הפרסומות הוסרו, וקיבלתם ${fmt(REMOVE_ADS.bonus)} נקודות לקניות במתנה.`}</p>
+    <button class="btn green" id="thanksOk">${T`יופי`}</button>`, m => { bugInto(m.querySelector('#thanksBug')); m.querySelector('#thanksOk').onclick = closeModal; });
 }
 async function restorePurchases() {
-  if (await PAYMENTS.restore()) { P.adFree = true; save(false); openSettings(); toast('הרכישה שוחזרה'); }
-  else toast('לא נמצאו רכישות קודמות');
+  if (await PAYMENTS.restore()) { P.adFree = true; save(false); openSettings(); toast(T('הרכישה שוחזרה')); }
+  else toast(T('לא נמצאו רכישות קודמות'));
 }
 function maybeInterstitial(next) {
   if (P.adFree) return next();
   P.adCount = (P.adCount || 0) + 1; save(false);
   if (P.adCount % AD_EVERY !== 0) return next();
   let left = 5, iv;
-  modal(`<h3>פרסומת</h3>
-    <div class="adbox">מקום לפרסומת בין שלבים</div>
-    <button class="btn ghosty" id="adClose" disabled>אפשר לסגור בעוד <span id="adLeft">5</span></button>
-    <button class="linkbtn" id="adRemove" style="color:var(--purple)">הסרת פרסומות ב-${REMOVE_ADS.price}</button>`, m => {
+  modal(`<h3>${T`פרסומת`}</h3>
+    <div class="adbox">${T`מקום לפרסומת בין שלבים`}</div>
+    <button class="btn ghosty" id="adClose" disabled>${T`אפשר לסגור בעוד`} <span id="adLeft">5</span></button>
+    <button class="linkbtn" id="adRemove" style="color:var(--purple)">${T`הסרת פרסומות ב-${REMOVE_ADS.price}`}</button>`, m => {
       const close = m.querySelector('#adClose');
       iv = setInterval(() => {
         left--;
         if (left > 0) m.querySelector('#adLeft').textContent = left;
-        else { clearInterval(iv); close.disabled = false; close.textContent = 'המשך למשחק'; close.className = 'btn green'; }
+        else { clearInterval(iv); close.disabled = false; close.textContent = T('המשך למשחק'); close.className = 'btn green'; }
       }, 1000);
       close.onclick = () => { clearInterval(iv); closeModal(); next(); };
       m.querySelector('#adRemove').onclick = () => { clearInterval(iv); closeModal(); openSettings(); };
@@ -1944,29 +2085,29 @@ function maybeInterstitial(next) {
 function openSettings() {
   const card = $('premiumCard');
   if (P.adFree) {
-    card.innerHTML = `<div class="owned">${ICON_STAR}<span>המשחק בלי פרסומות</span></div><p style="margin:8px 0 0">תודה שתמכתם בגחלילית!</p>`;
+    card.innerHTML = `<div class="owned">${ICON_STAR}<span>${T`המשחק בלי פרסומות`}</span></div><p style="margin:8px 0 0">${T`תודה שתמכתם בגחלילית!`}</p>`;
   } else {
-    card.innerHTML = `<h3>הסרת פרסומות</h3><p>תשלום חד-פעמי, לתמיד.</p>
-      <ul class="perks"><li>בלי באנרים במסך הבית</li><li>בלי פרסומות בין שלבים</li><li>מתנה: ${fmt(REMOVE_ADS.bonus)} נקודות לקניות</li></ul>
-      <button class="btn white" id="buyAds">הסרת פרסומות ב-${REMOVE_ADS.price}</button>
-      <div style="text-align:center"><button class="linkbtn" id="restoreBtn">שחזור רכישות</button></div>`;
+    card.innerHTML = `<h3>${T`הסרת פרסומות`}</h3><p>${T`תשלום חד-פעמי, לתמיד.`}</p>
+      <ul class="perks"><li>${T`בלי באנרים במסך הבית`}</li><li>${T`בלי פרסומות בין שלבים`}</li><li>${T`מתנה: ${fmt(REMOVE_ADS.bonus)} נקודות לקניות`}</li></ul>
+      <button class="btn white" id="buyAds">${T`הסרת פרסומות ב-${REMOVE_ADS.price}`}</button>
+      <div style="text-align:center"><button class="linkbtn" id="restoreBtn">${T`שחזור רכישות`}</button></div>`;
     card.querySelector('#buyAds').onclick = buyRemoveAds;
     card.querySelector('#restoreBtn').onclick = restorePurchases;
   }
-  $('setName').textContent = P.name ? `כרגע: ${P.name}` : 'עוד לא בחרתם שם.'; $('setLeave').hidden = !P.name;
+  $('setName').textContent = P.name ? T`כרגע: ${P.name}` : T('עוד לא בחרתם שם.'); $('setLeave').hidden = !P.name;
   renderAccount();
   show('settings');
 }
 function confirmReset() {
-  modal(`<h3>לאפס את ההתקדמות?</h3>
-    <p>כל השלבים, הכוכבים, הנקודות וההישגים יימחקו. אי אפשר לבטל את זה.</p>
-    <button class="btn danger" id="resetYes">כן, לאפס</button>
-    <button class="btn ghosty" id="resetNo" style="margin-top:12px">ביטול</button>`, m => {
+  modal(`<h3>${T`לאפס את ההתקדמות?`}</h3>
+    <p>${T`כל השלבים, הכוכבים, הנקודות וההישגים יימחקו. אי אפשר לבטל את זה.`}</p>
+    <button class="btn danger" id="resetYes">${T`כן, לאפס`}</button>
+    <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
         const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
-        save(); closeModal(); goHome(); toast('ההתקדמות אופסה');
+        save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
     });
 }
@@ -1981,7 +2122,7 @@ function renderDemo() {
     renderDemo();
   }, false);
   if (st.allLit) draw($('demoBoard'), DEMO, demoMir, null, true);
-  $('demoStatus').textContent = st.allLit ? 'בדיוק ככה!' : Object.keys(demoMir).length ? 'כמעט. נסו לסובב או להזיז.' : 'הקישו על משבצת.';
+  $('demoStatus').textContent = st.allLit ? T('בדיוק ככה!') : Object.keys(demoMir).length ? T('כמעט. נסו לסובב או להזיז.') : T('הקישו על משבצת.');
 }
 function renderIcons() {
   const one = (id, fn) => { const s = $(id); s.innerHTML = ''; fn(el('g', {}, s)); };
@@ -2043,11 +2184,13 @@ function applySoundPrefs() {
   $('styleRow').classList.toggle('off', !mus);
   const muted = !sfx && !mus;
   $('spkWaves').toggleAttribute('hidden', muted); $('spkX').toggleAttribute('hidden', !muted);
-  $('muteBtn').setAttribute('aria-label', muted ? 'הפעלת צלילים' : 'השתקה');
+  $('muteBtn').setAttribute('aria-label', muted ? T('הפעלת צלילים') : T('השתקה'));
 }
 $('optSfx').onchange = e => { P.sfx = e.target.checked; applySoundPrefs(); save(false); if (P.sfx) Sound.play('tap'); };
 if (/^https?:$/.test(location.protocol)) { $('legalPrivacy').href = 'privacy/'; $('legalSupport').href = 'support/'; }   // on the web the pages sit next to the game
 $('setLeave').onclick = leaveLeaderboard;
+$('langHe').setAttribute('aria-pressed', LANG === 'he'); $('langEn').setAttribute('aria-pressed', LANG === 'en');
+$('langHe').onclick = () => LANG !== 'he' && setLang('he'); $('langEn').onclick = () => LANG !== 'en' && setLang('en');
 $('optHaptic').onchange = e => { P.haptic = e.target.checked; applySoundPrefs(); save(false); if (P.haptic) Haptic.play('win'); };
 $('optMusic').onchange = e => { P.music = e.target.checked; applySoundPrefs(); save(false); if (P.music) previewMusic(); };
 // choosing a style in settings plays a short preview
@@ -2083,11 +2226,11 @@ const AUTH = {
   demo: true,   // no real provider is connected yet; while this is true the sign-in screen and the account card stay hidden
   signIn(provider) {
     return new Promise(resolve => {
-      modal(`<h3>התחברות עם ${PROVIDERS[provider]}</h3>
-        <p>כאן ייפתח חלון ההתחברות של ${PROVIDERS[provider]}.</p>
-        <p class="demo-note">גרסת הדגמה: אין חיבור אמיתי לחשבון. במשחק המפורסם ההתקדמות תישמר בחשבון ותעבור בין מכשירים.</p>
-        <button class="btn orange" id="authOk" style="margin-top:12px">המשך</button>
-        <button class="btn ghosty" id="authCancel" style="margin-top:12px">ביטול</button>`, m => {
+      modal(`<h3>${T`התחברות עם ${PROVIDERS[provider]}`}</h3>
+        <p>${T`כאן ייפתח חלון ההתחברות של ${PROVIDERS[provider]}.`}</p>
+        <p class="demo-note">${T`גרסת הדגמה: אין חיבור אמיתי לחשבון. במשחק המפורסם ההתקדמות תישמר בחשבון ותעבור בין מכשירים.`}</p>
+        <button class="btn orange" id="authOk" style="margin-top:12px">${T`המשך`}</button>
+        <button class="btn ghosty" id="authCancel" style="margin-top:12px">${T`ביטול`}</button>`, m => {
           m.querySelector('#authOk').onclick = () => { closeModal(); resolve({ provider }); };
           m.querySelector('#authCancel').onclick = () => { closeModal(); resolve(null); };
         }, true);
@@ -2101,7 +2244,7 @@ async function loginWith(provider) {
     const r = await AUTH.signIn(provider);
     if (!r) return;
     P.auth = { provider, since: Date.now() };
-    toast(`התחברתם עם ${PROVIDERS[provider]}`);
+    toast(T`התחברתם עם ${PROVIDERS[provider]}`);
   }
   save(false);
   renderHome(); show('home');
@@ -2111,15 +2254,15 @@ function renderAccount() {
   const card = $('accountCard'), a = P.auth || { provider: 'guest' };
   card.hidden = !!AUTH.demo; if (AUTH.demo) return;
   if (a.provider === 'guest') {
-    card.innerHTML = `<h3>חשבון</h3>
-      <p>אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.</p>
-      <button class="sso google small" id="linkGoogle">חיבור עם Google</button>
-      <button class="sso facebook small" id="linkFacebook" style="margin-top:12px">חיבור עם Facebook</button>`;
+    card.innerHTML = `<h3>${T`חשבון`}</h3>
+      <p>${T`אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.`}</p>
+      <button class="sso google small" id="linkGoogle">${T`חיבור עם Google`}</button>
+      <button class="sso facebook small" id="linkFacebook" style="margin-top:12px">${T`חיבור עם Facebook`}</button>`;
     card.querySelector('#linkGoogle').onclick = () => linkAccount('google');
     card.querySelector('#linkFacebook').onclick = () => linkAccount('facebook');
   } else {
-    card.innerHTML = `<h3>חשבון</h3><p>מחוברים עם ${PROVIDERS[a.provider]}.</p>
-      <button class="btn ghosty" id="signOutBtn">התנתקות</button>`;
+    card.innerHTML = `<h3>${T`חשבון`}</h3><p>${T`מחוברים עם ${PROVIDERS[a.provider]}.`}</p>
+      <button class="btn ghosty" id="signOutBtn">${T`התנתקות`}</button>`;
     card.querySelector('#signOutBtn').onclick = signOut;
   }
 }
@@ -2127,7 +2270,7 @@ async function linkAccount(provider) {
   const r = await AUTH.signIn(provider);
   if (!r) return;
   P.auth = { provider, since: Date.now() }; save(false);
-  renderAccount(); toast(`החשבון חובר עם ${PROVIDERS[provider]}`);
+  renderAccount(); toast(T`החשבון חובר עם ${PROVIDERS[provider]}`);
 }
 async function signOut() {
   await AUTH.signOut();
@@ -2153,10 +2296,10 @@ function setProgress(p, text) {
   setProgress(32);
   await loadProfile();
   applySoundPrefs();
-  setProgress(55, 'מכין את השלבים…');
+  setProgress(55, T('מכין את השלבים…'));
   await wait(80);
   await Promise.all([...document.images].map(i => i.decode ? i.decode().catch(() => {}) : null));
-  setProgress(72, 'מדליק את הכוכבים…');
+  setProgress(72, T('מדליק את הכוכבים…'));
   await wait(80);
   setProgress(92);
   // a new player goes straight in as a guest: no sign-in wall, and the very first thing they see is level one
@@ -2167,7 +2310,7 @@ function setProgress(p, text) {
   if (newcomer) { G = session('level', ALL[0], { idx: 0 }); G.t0 = Date.now(); track('start'); renderGame(); show('game'); bonusPending = true; }
   const rest = 800 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
-  setProgress(100, 'מוכן!');
+  setProgress(100, T('מוכן!'));
   await wait(200);
   $('splash').classList.add('gone');
   document.body.classList.remove('splashing');
