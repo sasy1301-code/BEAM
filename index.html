@@ -294,6 +294,19 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 
 /* leaderboard */
 .screen-title{font-size:36px; text-align:center; margin:8px 0 4px}
+.frlist{list-style:none; padding:0; margin:0 0 14px}
+.frlist li{display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7}
+.frlist .dot{width:12px; height:12px; border-radius:50%; background:#B9AFCF; flex:none}
+.frlist .dot.on{background:#2DBE60; box-shadow:0 0 0 4px rgba(45,190,96,.2)}
+.frlist .who{flex:1; min-width:0; display:flex; flex-direction:column; font-weight:700}
+.frlist .who b{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.frlist .who small{color:var(--muted); font-weight:500; font-size:13px}
+.frlist button{border:none; border-radius:12px; font:inherit; font-weight:700; font-size:14px; padding:8px 12px; min-height:38px; flex:none; background:var(--rule); color:var(--ink)}
+.frlist button.go{background:var(--orange,#FF8A1F); color:#fff}
+.frlist button.x{background:none; padding:8px 6px; color:var(--muted); font-size:18px}
+.frlist button:disabled{opacity:.5}
+.frempty{text-align:center; color:#fff; opacity:.85; margin:8px 0 18px}
+@media (prefers-color-scheme: dark){ .frlist li{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
 .screen-sub{text-align:center; color:var(--muted); margin:0 0 16px; font-weight:500}
 .tabs{display:grid; grid-template-columns:1fr 1fr; background:var(--surface); border-radius:999px; padding:4px; box-shadow:0 3px 0 var(--rule); margin-bottom:16px}
 .tabs button{border:none; background:none; color:var(--ink); font-weight:700; font-size:16px; border-radius:999px; min-height:40px}
@@ -513,7 +526,7 @@ body.splashing{overflow:hidden}
 
   <div class="daily duelcard">
     <h2>דו-קרב</h2>
-    <p>מי פותר ראשון? שחקו מול חבר</p>
+    <p id="duelText">מי פותר ראשון? שחקו מול חבר</p>
     <button id="duelBtn">שחק</button>
   </div>
 
@@ -581,6 +594,17 @@ body.splashing{overflow:hidden}
 </section>
 
 <!-- LEADERBOARD -->
+<section id="friends" hidden>
+  <button class="chip" id="frBack">› חזרה</button>
+  <h2 class="screen-title">החברים שלי</h2>
+  <p class="screen-sub" id="frSub">&nbsp;</p>
+  <ul class="frlist" id="frList"></ul>
+  <button class="btn orange" id="frAdd">הוספת חבר בקישור</button>
+  <div class="set" style="margin-top:16px">
+    <label class="toggle" style="border-top:none"><span>הצג אותי כמחובר לחברים</span><input type="checkbox" id="optPresence"><i></i></label>
+  </div>
+</section>
+
 <section id="leader" hidden>
   <button class="chip" id="lbBack">› חזרה</button>
   <h2 class="screen-title">טבלת מובילים</h2>
@@ -762,7 +786,7 @@ const EN = {
   // ---- duel ----
   'דו-קרב': 'Duel', 'מי פותר ראשון? שחקו מול חבר': 'Who solves it first? Play a friend', 'סיבוב {} · עד 3 ניצחונות': 'Round {0} · first to 3',
   'הראשון שמדליק את כל הכוכבים מנצח': 'First to light every star wins',
-  'שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.': 'Two players, the same board. First to light every star takes the round. Best of three.',
+  'שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. מי שמגיע ל-3 ניצחונות מנצח.': 'Two players, the same board. First to light every star takes the round. First to 3 wins takes the duel.',
   'הזמנת חבר': 'Invite a friend', 'קיבלתם קוד מחבר?': 'Got a code from a friend?', 'קוד חדר': 'Room code', 'הצטרפות': 'Join',
   'פותחים חדר…': 'Opening a room…', 'מצטרפים לחדר…': 'Joining the room…', 'החדר הזה כבר מלא': 'This room is already full',
   'צריך לרענן את הדף כדי לשחק מול החבר': 'Refresh the page to play your friend', 'לא מצאנו חדר עם הקוד הזה': 'No room found with that code',
@@ -774,6 +798,17 @@ const EN = {
   'הלוח ייחשף לשניכם באותו רגע.': 'The board appears for both of you at the same moment.', 'פתרתם! בודקים מי היה ראשון…': 'Solved! Checking who was first…',
   'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
+  // ---- friends ----
+  'החברים שלי': 'My friends', 'הוספת חבר בקישור': 'Add a friend by link', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
+  'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
+  'יש לכם בקשת חברות חדשה': 'You have a new friend request', '{} חברים מחוברים עכשיו': '{0} friends online now', 'ההזמנה כבר לא בתוקף': 'That invitation is no longer open',
+  'הזמנה לדו-קרב מ-{}': '{0} invites you to a duel', 'קבל': 'Accept', 'לא עכשיו': 'Not now', '{}: לא עכשיו': '{0}: not now', 'אין תשובה מ-{}': 'No answer from {0}',
+  'טוען…': 'Loading…', 'מחוברים עכשיו: {}': 'Online now: {0}', 'חבר אחד מחובר עכשיו': '1 friend online now', 'עוד אין לכם חברים כאן. שלחו קישור לחבר, או הוסיפו יריב בסוף דו-קרב.': 'No friends here yet. Send a friend your link, or add an opponent after a duel.',
+  'בקשת חברות': 'Friend request', 'ממתין לאישור': 'Waiting for approval', 'לא מחובר': 'Offline', 'בדו-קרב': 'In a duel', 'משחק כרגע': 'Playing now', 'מחובר': 'Online',
+  'אישור': 'Accept', 'דחייה': 'Decline', 'הזמן לדו-קרב': 'Invite', 'הסרת חבר': 'Remove friend', 'ביטול הבקשה': 'Cancel request', 'להסיר את {} מהחברים?': 'Remove {0} from your friends?', 'הסרה': 'Remove',
+  '{} כבר לא מחובר': '{0} is no longer online', 'בואו נהיה חברים ב-BEAM ונשחק דו-קרב!': 'Be my friend on BEAM and let\'s duel!',
+  'זה הקישור שלכם. שלחו אותו לחבר.': 'That is your own link. Send it to a friend.', 'הקישור הזה כבר לא פעיל': 'This link is no longer active',
+  'ההזמנה נשלחה': 'Invitation sent',
   // ---- account & backup ----
   'ההתחברות לא הושלמה': 'Sign-in was not completed', 'בחשבון הזה כבר יש התקדמות': 'This account already has progress',
   'בחשבון: {} כוכבים. במכשיר הזה: {} כוכבים. אם תמשיכו עם החשבון, ההתקדמות שבמכשיר הזה תוחלף.': 'Account: {0} stars. This device: {1} stars. If you continue with the account, the progress on this device is replaced.',
@@ -1673,7 +1708,7 @@ const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
-const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel'];
+const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends'];
 function show(id) { for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game'); }
 let toastTimer;
 function toast(text, amount) {
@@ -2127,13 +2162,15 @@ function duelLink(code) { return (/^https?:$/.test(location.protocol) ? location
 function openDuelMenu() {
   modal(`<svg class="bug" viewBox="-1 -1 2 2" id="duelBug"></svg>
     <h3>${T('דו-קרב')}</h3>
-    <p>${T('שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.')}</p>
+    <p>${T('שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. מי שמגיע ל-3 ניצחונות מנצח.')}</p>
     ${P.duel ? `<p><b>${T`ניצחונות: ${P.duel.w} · הפסדים: ${P.duel.l} · תיקו: ${P.duel.d}`}</b></p>` : ''}
-    <button class="btn orange" id="duelCreate">${T('הזמנת חבר')}</button>
+    <button class="btn green" id="duelFriends">${T('החברים שלי')}</button>
+    <button class="btn orange" id="duelCreate" style="margin-top:10px">${T('הזמנה בקישור')}</button>
     <p style="margin:16px 0 6px">${T('קיבלתם קוד מחבר?')}</p>
     <div class="dueljoin"><input id="duelCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" aria-label="${T('קוד חדר')}" placeholder="ABCDE"><button class="btn blue" id="duelJoinBtn">${T('הצטרפות')}</button></div>`, m => {
       bugInto(m.querySelector('#duelBug'));
       m.querySelector('#duelCreate').onclick = () => { closeModal(); withName(createDuel); };
+      m.querySelector('#duelFriends').onclick = () => { closeModal(); withName(openFriends); };
       const go = () => { const c = m.querySelector('#duelCodeIn').value.trim().toUpperCase(); if (c.length < 5) { m.querySelector('#duelCodeIn').focus(); return; } closeModal(); withName(() => joinDuel(c)); };
       m.querySelector('#duelJoinBtn').onclick = go;
       m.querySelector('#duelCodeIn').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
@@ -2161,7 +2198,7 @@ async function joinDuel(code) {
 }
 function startDuel(code) {
   stopDuel();
-  D = { code, st: null, offset: 0, key: '', fails: 0, rewarded: '', rematch: false, lastCount: null };
+  D = { code, st: null, offset: 0, key: '', fails: 0, rewarded: '', rematch: false, lastCount: null, view: '', invited: '', friendAsked: false };
   duelSync();
   D.timer = setInterval(duelSync, 900);
 }
@@ -2191,8 +2228,8 @@ function duelRender() {
   const vs = `<div class="duelvs"><div class="side"><b>${esc(st.names[me] || '')}</b><i>${st.wins[me]}</i></div><span class="colon">:</span><div class="side"><b>${esc(st.names[opp] || '…')}</b><i>${st.wins[opp]}</i></div></div>`;
   if (st.status === 'waiting') {
     if (D.view === 'waiting') return;
-    D.view = 'waiting'; show('duel'); $('duelSub').textContent = T('שלחו את הקישור או את הקוד לחבר');
-    box.innerHTML = `<h3>${T('ממתינים ליריב…')}</h3><div class="duelcode">${st.code}</div>
+    D.view = 'waiting'; show('duel'); $('duelSub').textContent = D.invited ? T('ההזמנה נשלחה') : T('שלחו את הקישור או את הקוד לחבר');
+    box.innerHTML = `<h3>${D.invited ? T`ממתינים ל-${D.invited}…` : T('ממתינים ליריב…')}</h3><div class="duelcode">${st.code}</div>
       <button class="btn orange" id="duelShare">${T('שליחת הקישור')}</button>
       <p style="margin-top:14px">${T('החדר נשאר פתוח כל עוד המסך הזה פתוח.')}</p>`;
     box.querySelector('#duelShare').onclick = () => shareText(T`בואו לדו-קרב ב-BEAM! מי פותר ראשון?`, duelLink(st.code), T('הקישור הועתק, אפשר להדביק ולשלוח'));
@@ -2231,7 +2268,8 @@ function duelRender() {
     return;
   }
   // done
-  const sig = 'done:' + st.seed + ':' + st.rematch + ':' + D.rematch + ':' + st.left_by;
+  const sig = 'done:' + st.seed + ':' + st.rematch + ':' + D.rematch + ':' + st.left_by + ':' + D.friendAsked;
+  if (D.view.indexOf('done:') !== 0) socialStart();        // from here on the two can find each other as friends
   if (D.view === sig) return;
   D.view = sig;
   clearInterval(timerInt); hideWin();
@@ -2251,7 +2289,16 @@ function duelRender() {
     <h3>${draw_ ? T('תיקו!') : won ? T('ניצחתם בדו-קרב!') : T('הפעם היריב ניצח')}</h3>${vs}
     ${reward ? `<div class="gains"><div class="coin">${ICON_POINTS}<span>+${fmt(reward)}</span></div></div>` : ''}
     ${gone ? `<p><b>${T('היריב יצא, אי אפשר לשחק שוב באותו חדר.')}</b></p>` : `<button class="btn green" id="duelAgain"${D.rematch ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
-    <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>`;
+    <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>
+    ${D.friendAsked || isFriend(st.names[opp]) ? '' : `<button class="linkbtn" id="duelFriend">${T`הוספת ${st.names[opp] || ''} לחברים`}</button>`}`;
+  const fr = box.querySelector('#duelFriend');
+  if (fr) fr.onclick = async () => {
+    D.friendAsked = true; duelRender();
+    let res = null;
+    try { res = await rpc('beam_friend_duel', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_code: st.code }); } catch (e) { /* told below */ }
+    toast(res === 'friends' ? T('אתם חברים עכשיו') : res === 'sent' ? T('בקשת החברות נשלחה') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+    pulse();
+  };
   const again = box.querySelector('#duelAgain');
   if (again) again.onclick = () => { D.rematch = true; duelRender(); duelSync(); };
   box.querySelector('#duelHome').onclick = leaveDuel;
@@ -2281,8 +2328,131 @@ function shareText(text, link, copiedMsg) {
   else copy();
 }
 
-/* ================= sharing ================= */
 const SITE_URL = 'https://beam-game.co.il/';
+/* ================= friends =================
+   Friends see each other while the game is open and can call each other into a duel. Everything goes through one
+   light "pulse" request every few seconds, and only for players who have used friends or played a duel. */
+const Social = { data: null, timer: null, busy: false, invite: null };
+const socialOn = () => !!(P && P.social && P.name) && /^https?:$/.test(location.protocol);
+const isFriend = name => !!(name && Social.data && Social.data.friends.some(f => f.rel === 'ok' && f.name === name));
+function socialStart() { if (!P.social) { P.social = true; save(false); } pulse(); }
+async function pulse() {
+  clearTimeout(Social.timer);
+  if (!socialOn()) return;
+  Social.timer = setTimeout(pulse, !$('friends').hidden || (D && D.invited) ? 3000 : 7000);
+  if (document.hidden || Social.busy) return;
+  Social.busy = true;
+  let r = null;
+  try {
+    r = await rpc('beam_pulse', { p_id: P.id, p_secret: playerKey(), p_name: P.name,
+      p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true });
+  } catch (e) { /* quiet: the next pulse tries again */ }
+  Social.busy = false;
+  if (!r) return;
+  Social.data = r; socialRender();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pulse(); });
+function socialRender() {
+  const d = Social.data, online = d.friends.filter(f => f.online).length, asks = d.friends.filter(f => f.rel === 'in').length;
+  $('duelText').textContent = asks ? T('יש לכם בקשת חברות חדשה') : online === 1 ? T('חבר אחד מחובר עכשיו') : online ? T`${online} חברים מחוברים עכשיו` : T('מי פותר ראשון? שחקו מול חבר');
+  if (!$('friends').hidden) renderFriends();
+  // someone is calling us into a duel
+  const inv = d.invites[0];
+  if (Social.invite && (!inv || inv.id !== Social.invite)) { Social.invite = null; closeModal(); toast(T('ההזמנה כבר לא בתוקף')); }
+  if (inv && !Social.invite && !D && $('overlay').hidden) {
+    Social.invite = inv.id; Sound.play('whoosh'); Haptic.play('win');
+    modal(`<svg class="bug" viewBox="-1 -1 2 2" id="invBug"></svg>
+      <h3>${T`הזמנה לדו-קרב מ-${esc(inv.name)}`}</h3>
+      <button class="btn green" id="invYes">${T('קבל')}</button>
+      <button class="btn ghosty" id="invNo" style="margin-top:12px">${T('לא עכשיו')}</button>`, m => {
+        bugInto(m.querySelector('#invBug'));
+        const answer = async yes => {
+          Social.invite = null; closeModal();
+          let code = null;
+          try { code = await rpc('beam_invite_answer', { p_id: P.id, p_secret: playerKey(), p_invite: inv.id, p_accept: yes }); } catch (e) { /* the room tells */ }
+          if (yes) { G = null; hideWin(); clearInterval(timerInt); joinDuel(code || inv.code); }
+        };
+        m.querySelector('#invYes').onclick = () => answer(true);
+        m.querySelector('#invNo').onclick = () => answer(false);
+      }, true);
+  }
+  // the friend we called said no, or never answered
+  if (D && D.invited && D.st && D.st.status === 'waiting' && d.sent && d.sent.code === D.code && (d.sent.status === 'declined' || d.sent.status === 'expired')) {
+    toast(d.sent.status === 'declined' ? T`${D.invited}: לא עכשיו` : T`אין תשובה מ-${D.invited}`);
+    leaveDuel(); openFriends();
+  }
+}
+function openFriends() {
+  show('friends'); $('optPresence').checked = P.hidePresence !== true;
+  renderFriends(); socialStart();
+}
+function renderFriends() {
+  const d = Social.data, list = $('frList');
+  if (!d) { $('frSub').textContent = T('טוען…'); list.innerHTML = ''; list.dataset.sig = ''; return; }
+  const online = d.friends.filter(f => f.online).length;
+  $('frSub').textContent = d.friends.length ? T`מחוברים עכשיו: ${online}` : ' ';
+  if (!d.friends.length) { list.innerHTML = `<p class="frempty">${T('עוד אין לכם חברים כאן. שלחו קישור לחבר, או הוסיפו יריב בסוף דו-קרב.')}</p>`; list.dataset.sig = ''; return; }
+  const sig = JSON.stringify(d.friends);
+  if (list.dataset.sig === sig) return;
+  list.dataset.sig = sig;
+  list.innerHTML = d.friends.map((f, i) => {
+    const sub = f.rel === 'in' ? T('בקשת חברות') : f.rel === 'out' ? T('ממתין לאישור') : !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
+    const act = f.rel === 'in' ? `<button class="go" data-a="yes" data-i="${i}">${T('אישור')}</button><button data-a="no" data-i="${i}">${T('דחייה')}</button>`
+      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button><button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
+      : `<button class="x" data-a="remove" data-i="${i}" aria-label="${T('ביטול הבקשה')}">✕</button>`;
+    return `<li><span class="dot${f.online ? ' on' : ''}"></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
+  }).join('');
+  for (const b of list.querySelectorAll('button')) b.onclick = () => friendAction(b.dataset.a, d.friends[+b.dataset.i]);
+}
+async function friendAction(a, f) {
+  const base = { p_id: P.id, p_secret: playerKey() };
+  if (a === 'invite') return inviteFriend(f);
+  if (a === 'remove') {
+    modal(`<h3>${T`להסיר את ${esc(f.name)} מהחברים?`}</h3>
+      <button class="btn danger" id="rmGo">${T('הסרה')}</button>
+      <button class="btn ghosty" id="rmNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+        m.querySelector('#rmNo').onclick = closeModal;
+        m.querySelector('#rmGo').onclick = async () => { closeModal(); try { await rpc('beam_friend_remove', { ...base, p_friend: f.id }); } catch (e) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); } pulse(); };
+      });
+    return;
+  }
+  try { await rpc('beam_friend_answer', { ...base, p_friend: f.id, p_accept: a === 'yes' }); if (a === 'yes') toast(T('אתם חברים עכשיו')); }
+  catch (e) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); }
+  pulse();
+}
+/* open a room and ring the friend; they get a pop-up wherever they are in the game */
+async function inviteFriend(f) {
+  show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
+  let code = null, res = null;
+  try {
+    code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN });
+    if (code) res = await rpc('beam_invite_send', { p_id: P.id, p_secret: playerKey(), p_friend: f.id, p_code: code });
+  } catch (e) { /* handled below */ }
+  if (res !== 'ok') {
+    if (code) rpc('beam_duel_sync', { p_code: code, p_id: P.id, p_secret: playerKey(), p_leave: true }).catch(() => {});
+    toast(res === 'offline' ? T`${f.name} כבר לא מחובר` : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+    openFriends(); return;
+  }
+  startDuel(code); D.invited = f.name; pulse();
+}
+const friendLink = () => (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL) + '#friend=' + Social.data.fcode;
+async function shareFriendLink() {
+  if (!Social.data) { await pulse(); }
+  if (!Social.data) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+  shareText(T('בואו נהיה חברים ב-BEAM ונשחק דו-קרב!'), friendLink(), T('הקישור הועתק, אפשר להדביק ולשלוח'));
+}
+/* a friend link was opened: sharing it was the consent, so the two become friends straight away */
+async function acceptFriendLink(fcode) {
+  let res = null;
+  try { res = await rpc('beam_friend_link', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_fcode: fcode }); } catch (e) { /* told below */ }
+  toast(res === 'ok' ? T('אתם חברים עכשיו') : res === 'self' ? T('זה הקישור שלכם. שלחו אותו לחבר.') : res === 'missing' ? T('הקישור הזה כבר לא פעיל') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+  openFriends();
+}
+$('frBack').onclick = goHome;
+$('frAdd').onclick = shareFriendLink;
+$('optPresence').onchange = e => { P.hidePresence = !e.target.checked; save(false); pulse(); };
+
+/* ================= sharing ================= */
 function shareDaily(d) {
   if (!d) return;
   const t = todayStr().split('-').reverse().join('.');
@@ -2423,7 +2593,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
@@ -2721,6 +2891,12 @@ function setProgress(p, text) {
   // the personal link keeps its key after the #, which browsers never send to any server
   const restore = new URLSearchParams(location.hash.replace(/^#/, '')).get('restore');
   if (await finishSignIn()) { bonusPending = true; return; }
+  const friend = new URLSearchParams(location.hash.replace(/^#/, '')).get('friend');
+  if (friend && /^[a-f0-9]{8,32}$/.test(friend)) {
+    try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays */ }
+    bonusPending = true; withName(() => acceptFriendLink(friend)); return;
+  }
+  pulse();
   if (restore && /^[A-Za-z0-9]{6,64}\.[a-f0-9]{16,128}$/.test(restore)) {
     try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays */ }
     bonusPending = true; restoreFrom(restore); return;

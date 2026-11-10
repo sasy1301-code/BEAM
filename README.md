@@ -33,6 +33,7 @@
 - `beam_event` – אירוע אנונימי של התחלת שלב או סיומו, בלי מזהה שחקן. התצוגה `level_stats` מסכמת לכל שלב כמה התחילו, כמה סיימו, ממוצע מהלכים וזמן.
 
 - `beam_duel_create`, `beam_duel_join`, `beam_duel_sync` – דו-קרב בין שני שחקנים (טבלת `duels`). השרת הוא השופט: הוא מחזיק את השעון, קובע מי סיים ראשון ומזהה מי התנתק. כל שחקן שואל אותו בערך פעם בשנייה. הלוח עצמו לא נשלח: שני הצדדים בונים אותו מאותו זרע (`duelLevel`), ולכן כשמשנים את מחולל השלבים צריך להעלות את `DUEL_GEN` בקוד.
+- `beam_pulse` – דופק כל כמה שניות לשחקנים שמשתמשים בחברים: מעדכן נוכחות ומחזיר רשימת חברים, הזמנות לדו-קרב ומצב ההזמנה ששלחתי (טבלאות `social`, `friends`, `invites`). `beam_friend_link` (קישור `#friend=קוד`), `beam_friend_duel` (בקשה ליריב מדו-קרב), `beam_friend_answer`, `beam_friend_remove`, `beam_invite_send`, `beam_invite_answer`.
 - `beam_save`, `beam_load` – גיבוי ההתקדמות של כל שחקן, גם אורח (טבלת `saves`). הלקוח שולח גיבוי כמה שניות אחרי כל שינוי. קישור אישי (`#restore=מזהה.מפתח`) משחזר במכשיר אחר.
 - `beam_account`, `beam_account_link`, `beam_account_unlink` – קישור הגיבוי לחשבון Google או Facebook (Supabase Auth). `beam_forget_me` – מחיקת כל המידע של שחקן.
 
