@@ -323,6 +323,23 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frlist button:disabled{opacity:.5}
 .frempty{text-align:center; color:#fff; opacity:.85; margin:8px 0 18px}
 @media (prefers-color-scheme: dark){ .frlist li{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
+/* the firefly's garden */
+.gscene{position:relative; width:100%; aspect-ratio:3/4; border-radius:24px; overflow:hidden; background:#2A0F66 center/cover no-repeat; box-shadow:0 8px 0 #2A0A6E, 0 0 30px rgba(170,90,255,.45), 0 0 0 2px rgba(255,214,90,.35)}
+.gscene img.gi{position:absolute; transform:translate(-50%,-100%); pointer-events:auto; user-select:none; -webkit-user-drag:none; filter:drop-shadow(0 6px 8px rgba(20,0,60,.45))}
+.gscene img.gi.flip{transform:translate(-50%,-100%) scaleX(-1)}
+.gscene img.gi.new{animation:gPop .6s cubic-bezier(.3,1.5,.6,1) both}
+.gscene img.gi.hop{animation:gHop .45s ease}
+@keyframes gPop{from{opacity:0; margin-top:-30px; scale:.4}to{opacity:1; margin-top:0; scale:1}}
+@keyframes gHop{50%{margin-top:-10px}}
+.gscene .gbug{position:absolute; width:17%; left:20%; top:22%; z-index:500; pointer-events:none; filter:drop-shadow(0 0 12px rgba(255,214,90,.8)); animation:gFly 22s ease-in-out infinite, gBob 2.4s ease-in-out infinite}
+@keyframes gFly{0%{left:14%; top:20%} 20%{left:60%; top:14%} 40%{left:74%; top:52%} 60%{left:34%; top:60%} 80%{left:8%; top:44%} 100%{left:14%; top:20%}}
+@keyframes gBob{50%{translate:0 -8px}}
+.gscene .ghint{position:absolute; inset-inline:10%; top:44%; text-align:center; color:#fff; font-weight:700; font-size:18px; text-shadow:0 2px 8px #1a0550; z-index:600}
+.shopitem img.thumb{height:64px; width:100%; object-fit:contain}
+.shopitem small{color:var(--muted); font-weight:600; font-size:13px; margin-top:-4px}
+.daily.gardencard{background:linear-gradient(180deg,#B98BFF 0%,#8A55F0 50%,#6A3AD6 100%); box-shadow:0 6px 0 #4A239F, 0 12px 24px rgba(106,58,214,.3)}
+.daily.gardencard button{color:#4A239F}
+@media (prefers-reduced-motion: reduce){ .gscene .gbug{animation:none} }
 /* shop: looks only, never an advantage */
 .bm-classic{--beam:#FF3D7F} .bm-gold{--beam:#FFC83A} .bm-ice{--beam:#3FD0FF} .bm-lime{--beam:#6BEA4B} .bm-violet{--beam:#B36BFF}
 .bm-fire{--beam:#FF5A1F} .bm-fire .glow{stroke:#FFB02E; animation:bmFlick .45s ease-in-out infinite alternate}
@@ -588,6 +605,12 @@ body.splashing{overflow:hidden}
     <div class="duelbtns"><button id="friendsBtn">חברים</button><button id="duelBtn">שחק</button></div>
   </div>
 
+  <div class="daily gardencard">
+    <h2>הגן של הגחלילית</h2>
+    <p id="gardenText">בנו לה בית וקשטו את הגן</p>
+    <button id="gardenBtn">כניסה</button>
+  </div>
+
   <button class="btn orange" id="playBtn">שחק</button>
   <div class="minis four">
     <button id="lbBtn"><svg viewBox="0 0 1 1"><rect x=".1" y=".5" width=".24" height=".4" rx=".05" fill="var(--blue)"/><rect x=".38" y=".25" width=".24" height=".65" rx=".05" fill="var(--orange)"/><rect x=".66" y=".6" width=".24" height=".3" rx=".05" fill="var(--green)"/></svg>טבלת מובילים</button>
@@ -662,6 +685,15 @@ body.splashing{overflow:hidden}
   <div class="set" style="margin-top:16px">
     <label class="toggle" style="border-top:none"><span>הצג אותי כמחובר לחברים</span><input type="checkbox" id="optPresence"><i></i></label>
   </div>
+</section>
+
+<section id="garden" hidden>
+  <button class="chip" id="gardenBack">› חזרה</button>
+  <h2 class="screen-title">הגן של הגחלילית</h2>
+  <div class="shopwallet"><div class="coin" id="gardenPoints"></div></div>
+  <div class="gscene" id="gScene"></div>
+  <h3 class="shoph">מה מוסיפים לגן?</h3>
+  <div class="shopgrid" id="gShop"></div>
 </section>
 
 <section id="shop" hidden>
@@ -874,6 +906,11 @@ const EN = {
   'משחקים על {} נקודות. המנצח לוקח {}.': 'Playing for {0} points. The winner takes {1}.',
   'זהירות! עוד פגיעה בפצצה והיא מתפוצצת.': 'Careful! One more hit and the bomb blows up.', 'בום! הפצצה התפוצצה, והלוח התאפס.': 'Boom! The bomb blew up and the board was wiped.', 'בום! הפצצה התפוצצה.': 'Boom! The bomb blew up.',
   'הקרן נגעה בפצצה פעמיים. מתחילים את השלב מחדש.': 'The beam touched a bomb twice. The level starts over.', 'הקרן על פצצה! הזיזו את המראה מהר.': 'The beam is on a bomb! Move the mirror quickly.', 'נסו שוב': 'Try again',
+  // ---- garden ----
+  'בנו לה בית וקשטו את הגן': 'Build her a house and decorate the garden', 'כניסה': 'Enter', 'מה מוסיפים לגן?': 'What goes in the garden?', '{} מתוך {} פריטים בגן': '{0} of {1} items in the garden',
+  'הגן עוד ריק. התחילו מבית לגחלילית!': 'The garden is empty. Start with a house for the firefly!', 'הושלם': 'Complete', 'שדרוג הבית': 'House upgrade', 'הבית הראשון': 'The first house', 'הבית הכי גדול': 'The biggest house',
+  'בית קטן': 'Small house', 'בית משפחתי': 'Family house', 'ארמון': 'Palace', 'פרח': 'Flower', 'אבן': 'Stone', 'פטריה זוהרת': 'Glowing mushroom', 'פנס': 'Lamp', 'שיח פרחים': 'Flower bush', 'צמח אורות': 'Light plant',
+  'משפחת פטריות': 'Mushroom family', 'אדנית פרחים': 'Flower box', 'הבית מוכן!': 'The house is ready!', 'נוסף לגן': 'Added to the garden', 'הגן מושלם!': 'The garden is complete!',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -1800,7 +1837,7 @@ const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
-const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'shop'];
+const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'shop', 'garden'];
 function show(id) { for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game'); }
 let toastTimer;
 function toast(text, amount) {
@@ -1854,6 +1891,61 @@ function dailyBonus() {
     }, true);
 }
 
+/* ================= the firefly's garden =================
+   A place to spend points that has nothing to do with solving levels: a house that grows in three steps, and plants,
+   lamps and mushrooms that each have their own spots in the picture. Every spot is (x%, y% of the item's foot, width%). */
+const G_DIR = 'media/garden/';
+const GARDEN = {
+  house: { at: [61, 64], levels: [{ img: 'house1', price: 2000, w: 44, name: 'בית קטן' }, { img: 'house2', price: 5000, w: 54, name: 'בית משפחתי' }, { img: 'house3', price: 12000, w: 47, name: 'ארמון' }] },
+  items: [
+    { id: 'flower', name: 'פרח', price: 250, slots: [[27, 76, 10], [80, 78, 10], [9, 82, 9], [92, 71, 8], [44, 72, 8]] },
+    { id: 'stone', name: 'אבן', price: 200, slots: [[33, 86, 14], [70, 93, 15, 1]] },
+    { id: 'mush', name: 'פטריה זוהרת', price: 400, slots: [[17, 73, 13], [88, 84, 12], [38, 97, 12]] },
+    { id: 'lamp', name: 'פנס', price: 700, slots: [[36, 68, 12], [87, 66, 12, 1]] },
+    { id: 'bush', name: 'שיח פרחים', price: 600, slots: [[21, 99, 30], [82, 100, 30]] },
+    { id: 'orb', name: 'צמח אורות', price: 800, slots: [[7, 70, 14], [96, 93, 14]] },
+    { id: 'mushes', name: 'משפחת פטריות', price: 900, slots: [[13, 91, 24], [76, 75, 16]] },
+    { id: 'box', name: 'אדנית פרחים', price: 1000, slots: [[46, 67, 17]] },
+  ],
+};
+const gState = () => (P.garden = P.garden || { house: 0, items: {} });
+const gCount = () => { const g = gState(); return g.house + Object.values(g.items).reduce((a, b) => a + b, 0); };
+const gTotal = GARDEN.house.levels.length + GARDEN.items.reduce((n, it) => n + it.slots.length, 0);
+function openGarden() { show('garden'); renderGarden(); }
+function renderGarden(fresh) {
+  const g = gState(), scene = $('gScene');
+  $('gardenPoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
+  scene.style.backgroundImage = `url(${G_DIR}bg.webp)`;
+  const put = (img, x, y, w, flip, key) => `<img class="gi${flip ? ' flip' : ''}${fresh === key ? ' new' : ''}" alt="" src="${G_DIR}${img}.webp" style="left:${x}%;top:${y}%;width:${w}%;z-index:${Math.round(y)}">`;
+  let html = '';
+  if (g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 'house'); }
+  for (const it of GARDEN.items) for (let i = 0; i < (g.items[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(it.id, x, y, w, f, it.id + ':' + i); }
+  html += `<img class="gbug" alt="" src="${avatarSrc(P.avatar)}">`;
+  if (!gCount()) html += `<p class="ghint">${T('הגן עוד ריק. התחילו מבית לגחלילית!')}</p>`;
+  scene.innerHTML = html;
+  for (const im of scene.querySelectorAll('img.gi')) im.onclick = () => { im.classList.remove('new', 'hop'); void im.offsetWidth; im.classList.add('hop'); Sound.play('tap'); };
+  // the list of things to add: the next step of the house first, then whatever still has a free spot
+  const card = (key, img, name, sub, price, done) => `<div class="shopitem"><img class="thumb" alt="" src="${G_DIR}${img}.webp"><b>${T(name)}</b><small>${sub}</small>` +
+    (done ? `<button class="act on" disabled>${T('הושלם')}</button>` : `<button class="act" data-g="${key}"${P.balance < price ? ' disabled' : ''}>${ICON_POINTS}${fmt(price)}</button>`) + '</div>';
+  const next = GARDEN.house.levels[g.house], last = GARDEN.house.levels[GARDEN.house.levels.length - 1];
+  $('gShop').innerHTML = (next ? card('house', next.img, next.name, g.house ? T('שדרוג הבית') : T('הבית הראשון'), next.price) : card('house', last.img, last.name, T('הבית הכי גדול'), 0, true)) +
+    GARDEN.items.map(it => { const n = g.items[it.id] || 0; return card(it.id, it.id, it.name, `${n}/${it.slots.length}`, it.price, n >= it.slots.length); }).join('');
+  for (const b of $('gShop').querySelectorAll('[data-g]')) b.onclick = () => buyGarden(b.dataset.g);
+}
+function buyGarden(key) {
+  const g = gState(), it = GARDEN.items.find(x => x.id === key);
+  const price = key === 'house' ? GARDEN.house.levels[g.house].price : it.price;
+  if (P.balance < price) return;
+  let fresh;
+  if (key === 'house') { g.house++; fresh = 'house'; } else { fresh = key + ':' + (g.items[key] || 0); g.items[key] = (g.items[key] || 0) + 1; }
+  P.balance -= price; save(false);
+  Sound.play('purchase'); Haptic.play('win');
+  renderGarden(fresh); renderHome();
+  $('gScene').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  toast(key === 'house' ? T('הבית מוכן!') : T('נוסף לגן'), `-${fmt(price)}`);
+  if (gCount() === gTotal) setTimeout(() => { winFx('fireworks'); toast(T('הגן מושלם!')); }, 900);
+}
+
 /* ================= shop =================
    Points buy looks, never an advantage: the beam's colour, the board's theme and the win effect today; characters
    and the firefly's garden next. Buying comes out of the spending balance only, so it never costs a leaderboard place. */
@@ -1890,7 +1982,7 @@ function renderShop() {
       : `<button class="act" data-buy="${cat}:${it.id}"${P.balance < it.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(it.price)}</button>`;
     return `<div class="shopitem ${PREFIX[cat]}${it.id}">${sampleOf(cat, it)}<b>${T(it.name)}</b>${btn}</div>`;
   }).join('') + '</div>').join('') +
-    `<h3 class="shoph">${T('בקרוב')}</h3><div class="shopgrid">` + [['🧚', 'דמויות'], ['🌷', 'הגן של הגחלילית']].map(([e, n]) => `<div class="shopitem soon"><span class="big">${e}</span><b>${T(n)}</b></div>`).join('') + '</div>';
+    `<h3 class="shoph">${T('בקרוב')}</h3><div class="shopgrid">` + [['🧚', 'דמויות']].map(([e, n]) => `<div class="shopitem soon"><span class="big">${e}</span><b>${T(n)}</b></div>`).join('') + '</div>';
   const find = key => { const [cat, id] = key.split(':'); return [cat, SHOP[cat].items.find(x => x.id === id)]; };
   for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[cat] = it.id; save(false); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); };
   for (const el of $('shopBody').querySelectorAll('[data-buy]')) el.onclick = () => buyLook(...find(el.dataset.buy));
@@ -1970,6 +2062,7 @@ function renderHome() {
   $('meRank').textContent = r.name;
   $('meBug').src = avatarSrc(P.avatar);
   $('homePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
+  $('gardenText').textContent = gCount() ? T`${gCount()} מתוך ${gTotal} פריטים בגן` : T('בנו לה בית וקשטו את הגן');
   if (r.next) {
     $('rankFill').style.width = Math.max(3, (P.earned - r.at) / (r.next.at - r.at) * 100) + '%';
     $('rankNow').textContent = T`${r.name}, ${fmt(P.earned)} נקודות שנצברו`;
@@ -2748,6 +2841,7 @@ async function acceptFriendLink(fcode) {
   openFriends();
 }
 $('frBack').onclick = goHome;
+$('gardenBack').onclick = goHome; $('gardenBtn').onclick = openGarden;
 $('shopBack').onclick = goHome; $('shopBtn').onclick = openShop; $('homePoints').onclick = openShop;
 $('helpBug').src = POSE.point;
 $('friendsBtn').onclick = friendsEntry;
@@ -2895,7 +2989,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, beam: P.beam, board: P.board, fx: P.fx, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, garden: P.garden, beam: P.beam, board: P.board, fx: P.fx, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
