@@ -2348,7 +2348,7 @@ async function pulse() {
       p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true });
   } catch (e) { /* quiet: the next pulse tries again */ }
   Social.busy = false;
-  if (!r) return;
+  if (!r || !Array.isArray(r.friends) || !Array.isArray(r.invites)) return;
   Social.data = r; socialRender();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) pulse(); });
