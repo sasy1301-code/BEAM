@@ -575,7 +575,7 @@ body.splashing{overflow:hidden}
     <p>מוחק שלבים, כוכבים, נקודות והישגים. רכישות נשמרות.</p>
     <button class="btn danger" id="setReset">איפוס</button>
   </div>
-  <p class="legal"><a href="https://beam-game.co.il/privacy/" target="_blank" rel="noopener">מדיניות פרטיות</a> · <a href="https://beam-game.co.il/support/" target="_blank" rel="noopener">תמיכה</a></p>
+  <p class="legal"><a id="legalPrivacy" href="https://beam-game.co.il/privacy/" target="_blank" rel="noopener">מדיניות פרטיות</a> · <a id="legalSupport" href="https://beam-game.co.il/support/" target="_blank" rel="noopener">תמיכה</a></p>
 </section>
 
 <!-- HELP -->
@@ -1944,6 +1944,7 @@ function applySoundPrefs() {
   $('muteBtn').setAttribute('aria-label', muted ? 'הפעלת צלילים' : 'השתקה');
 }
 $('optSfx').onchange = e => { P.sfx = e.target.checked; applySoundPrefs(); save(false); if (P.sfx) Sound.play('tap'); };
+if (/^https?:$/.test(location.protocol)) { $('legalPrivacy').href = 'privacy/'; $('legalSupport').href = 'support/'; }   // on the web the pages sit next to the game
 $('optHaptic').onchange = e => { P.haptic = e.target.checked; applySoundPrefs(); save(false); if (P.haptic) Haptic.play('win'); };
 $('optMusic').onchange = e => { P.music = e.target.checked; applySoundPrefs(); save(false); if (P.music) previewMusic(); };
 // choosing a style in settings plays a short preview
