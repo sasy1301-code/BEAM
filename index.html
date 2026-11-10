@@ -527,7 +527,7 @@ body.splashing{overflow:hidden}
 
   <div class="daily duelcard">
     <h2>דו-קרב</h2>
-    <p id="duelText">מי פותר ראשון? שחקו מול חבר</p>
+    <p id="duelText">מי פותר ראשון?<br>שחקו מול חברים</p>
     <div class="duelbtns"><button id="friendsBtn">חברים</button><button id="duelBtn">שחק</button></div>
   </div>
 
@@ -785,7 +785,7 @@ const EN = {
   'שבוע של אתגרים': 'A week of challenges', 'סיימו 7 אתגרים יומיים': 'Finish 7 daily challenges', 'חוזרים לאור': 'Back to the light', 'היכנסו שלושה ימים ברצף': 'Come back three days in a row',
   'שבוע זוהר': 'A glowing week', 'היכנסו שבעה ימים ברצף': 'Come back seven days in a row', 'פרק {}': '{0} chapter', 'השלימו את כל שלבי פרק {}': 'Finish every level in chapter {0}',
   // ---- duel ----
-  'דו-קרב': 'Duel', 'מי פותר ראשון? שחקו מול חבר': 'Who solves it first? Play a friend', 'סיבוב {} · עד 3 ניצחונות': 'Round {0} · first to 3',
+  'דו-קרב': 'Duel', 'מי פותר ראשון?': 'Who solves it first?', 'שחקו מול חברים': 'Play your friends', 'סיבוב {} · עד 3 ניצחונות': 'Round {0} · first to 3',
   'הראשון שמדליק את כל הכוכבים מנצח': 'First to light every star wins',
   'שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. מי שמגיע ל-3 ניצחונות מנצח.': 'Two players, the same board. First to light every star takes the round. First to 3 wins takes the duel.',
   'הזמנת חבר': 'Invite a friend', 'קיבלתם קוד מחבר?': 'Got a code from a friend?', 'קוד חדר': 'Room code', 'הצטרפות': 'Join',
@@ -2374,7 +2374,8 @@ async function pulse() {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) pulse(); });
 function socialRender() {
   const d = Social.data, online = d.friends.filter(f => f.online).length, asks = d.friends.filter(f => f.rel === 'in').length;
-  $('duelText').textContent = asks ? T('יש לכם בקשת חברות חדשה') : online === 1 ? T('חבר אחד מחובר עכשיו') : online ? T`${online} חברים מחוברים עכשיו` : T('מי פותר ראשון? שחקו מול חבר');
+  if (asks || online) $('duelText').textContent = asks ? T('יש לכם בקשת חברות חדשה') : online === 1 ? T('חבר אחד מחובר עכשיו') : T`${online} חברים מחוברים עכשיו`;
+  else $('duelText').innerHTML = T('מי פותר ראשון?') + '<br>' + T('שחקו מול חברים');
   if (!$('friends').hidden) renderFriends();
   // someone is calling us into a duel
   const inv = d.invites[0];
