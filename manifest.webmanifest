@@ -1,0 +1,19 @@
+{
+  "name": "BEAM · משחק חשיבה",
+  "short_name": "BEAM",
+  "description": "מציבים מראות כדי שקרן האור של הגחלילית תדליק את כל הכוכבים.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#24086A",
+  "theme_color": "#24086A",
+  "categories": ["games", "puzzle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

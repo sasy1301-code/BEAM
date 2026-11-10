@@ -1,0 +1,38 @@
+/* BEAM service worker: the game keeps working with no connection.
+   The page itself is fetched fresh whenever the network answers, so updates arrive on the next visit;
+   everything else (clips, icons) is served from the cache first. Bump VERSION when those files change. */
+const VERSION = 'beam-v1';
+const SHELL = ['./', 'manifest.webmanifest', 'icon.webp', 'icons/icon-192.png', 'icons/icon-512.png', 'media/cheer.mp4'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(VERSION).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  // video elements ask for byte ranges; answer those from the cached file so clips also play offline
+  if (req.headers.has('range')) {
+    e.respondWith(caches.match(req.url).then(async hit => {
+      if (!hit) return fetch(req);
+      const buf = await hit.arrayBuffer(), m = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range')) || [];
+      const start = m[1] ? +m[1] : 0, end = m[2] ? Math.min(+m[2], buf.byteLength - 1) : buf.byteLength - 1;
+      return new Response(buf.slice(start, end + 1), { status: 206, headers: {
+        'Content-Type': hit.headers.get('Content-Type') || 'video/mp4', 'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${start}-${end}/${buf.byteLength}`, 'Content-Length': String(end - start + 1) } });
+    }));
+    return;
+  }
+  const page = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  if (page) {
+    e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return r; })
+      .catch(() => caches.match(req).then(r => r || caches.match('./'))));
+    return;
+  }
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {
+    if (r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
+    return r;
+  })));
+});
