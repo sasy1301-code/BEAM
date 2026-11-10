@@ -760,7 +760,7 @@ const EN = {
   'שבוע של אתגרים': 'A week of challenges', 'סיימו 7 אתגרים יומיים': 'Finish 7 daily challenges', 'חוזרים לאור': 'Back to the light', 'היכנסו שלושה ימים ברצף': 'Come back three days in a row',
   'שבוע זוהר': 'A glowing week', 'היכנסו שבעה ימים ברצף': 'Come back seven days in a row', 'פרק {}': '{0} chapter', 'השלימו את כל שלבי פרק {}': 'Finish every level in chapter {0}',
   // ---- duel ----
-  'דו-קרב': 'Duel', 'מי פותר ראשון? שחקו מול חבר': 'Who solves it first? Play a friend', 'סיבוב {} מתוך 3': 'Round {0} of 3',
+  'דו-קרב': 'Duel', 'מי פותר ראשון? שחקו מול חבר': 'Who solves it first? Play a friend', 'סיבוב {} · עד 3 ניצחונות': 'Round {0} · first to 3',
   'הראשון שמדליק את כל הכוכבים מנצח': 'First to light every star wins',
   'שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.': 'Two players, the same board. First to light every star takes the round. Best of three.',
   'הזמנת חבר': 'Invite a friend', 'קיבלתם קוד מחבר?': 'Got a code from a friend?', 'קוד חדר': 'Room code', 'הצטרפות': 'Join',
@@ -1862,7 +1862,7 @@ function renderGame(flash) {
   G.prevSt = st;
   G.lastSt = st;
   $('duelBar').hidden = G.mode !== 'duel';
-  if (G.mode === 'duel') { $('lvTitle').textContent = T`סיבוב ${G.round} מתוך 3`; $('lvChapter').textContent = T('הראשון שמדליק את כל הכוכבים מנצח'); renderDuelBar(); }
+  if (G.mode === 'duel') { $('lvTitle').textContent = T`סיבוב ${G.round} · עד 3 ניצחונות`; $('lvChapter').textContent = T('הראשון שמדליק את כל הכוכבים מנצח'); renderDuelBar(); }
   else if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
   else { $('lvTitle').textContent = T`שלב ${G.idx + 1}`; $('lvChapter').textContent = T`פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
   $('tip').textContent = lv.tip || '';
@@ -2103,7 +2103,7 @@ function goHome() {
 }
 
 /* ================= duel =================
-   Two players, the same generated board, first to light every star takes the round; best of three.
+   Two players, the same generated board, first to light every star takes the round; first to three wins (at most five rounds).
    The server is the referee (clock, who finished first, who went quiet). This side asks it about once a second
    and draws whatever it answers: waiting room, countdown, the race, the result. */
 const DUEL_GEN = 1;   // raise whenever duelLevel() or the level generator changes, so mismatched versions cannot meet
@@ -2206,7 +2206,7 @@ function duelRender() {
       ? (st.last_winner === 0 ? T('הסיבוב נגמר בתיקו') : st.last_winner - 1 === me ? T('ניצחתם בסיבוב!') : T('היריב היה מהיר יותר'))
       : T('יריב נמצא!');
     if (D.view !== 'countdown') {
-      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = T`סיבוב ${st.round} מתוך 3`;
+      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = T`סיבוב ${st.round} · עד 3 ניצחונות`;
       box.innerHTML = `<h3>${head}</h3>${vs}<div class="duelcount" id="duelCount"></div><p>${T('הלוח ייחשף לשניכם באותו רגע.')}</p>`;
       if (st.round > 1 && st.last_winner != null) Sound.play(st.last_winner - 1 === me ? 'win' : 'unlit', 1);
       D.lastCount = null;
