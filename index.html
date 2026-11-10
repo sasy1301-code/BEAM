@@ -660,7 +660,7 @@ body.splashing{overflow:hidden}
   <div class="rule"><svg viewBox="0 0 1 1" id="icCount"></svg>
     <div><h3>שלושה כוכבים</h3><p>כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ופי שניים נקודות.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icShop"></svg>
-    <div><h3>מה עושים עם הנקודות</h3><p>הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות: מראה נוספת ב-150, פטיש ב-200, רמז ב-350.</p></div></div>
+    <div><h3>מה עושים עם הנקודות</h3><p>הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות: מראה נוספת ב-150, פטיש ב-200, רמז ב-350. רמזים יכולים להציב עד חצי מהמראות בשלב.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icHammer"></svg>
     <div><h3>פטיש</h3><p>מופיע רק בשלבים שבהם שבירת חסימה באמת עוזרת, כלומר מאפשרת פתרון עם פחות מראות. לחצו על הפטיש, והחסימות ששווה לשבור יתחילו להבהב.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icDaily"></svg>
@@ -725,7 +725,7 @@ const EN = {
   'זכוכית מפצלת': 'Splitter glass', 'חלק מהאור ממשיך ישר וחלק מוחזר הצידה. מקרן אחת נוצרות שתיים, וכל אחת מהן יכולה להדליק כוכבים או לפגוע בפצצה.': 'Part of the light goes straight on and part is turned aside. One beam becomes two, and each can light stars or hit a bomb.',
   'שתי גחליליות': 'Two fireflies', 'בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.': 'Later levels have two beams. Every mirror affects both.',
   'שלושה כוכבים': 'Three stars', 'כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ופי שניים נקודות.': 'Every tap is a move. Solve without help and within the move target for three stars and double points.',
-  'מה עושים עם הנקודות': 'What points are for', 'הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות: מראה נוספת ב-150, פטיש ב-200, רמז ב-350.': 'The points you earn set your rank and leaderboard place, and never go down. Alongside them you have a balance to spend: an extra mirror for 150, a hammer for 200, a hint for 350.',
+  'מה עושים עם הנקודות': 'What points are for', 'הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות: מראה נוספת ב-150, פטיש ב-200, רמז ב-350. רמזים יכולים להציב עד חצי מהמראות בשלב.': 'The points you earn set your rank and leaderboard place, and never go down. Alongside them you have a balance to spend: an extra mirror for 150, a hammer for 200, a hint for 350. Hints can place up to half of a level\'s mirrors.',
   'פטיש': 'Hammer', 'מופיע רק בשלבים שבהם שבירת חסימה באמת עוזרת, כלומר מאפשרת פתרון עם פחות מראות. לחצו על הפטיש, והחסימות ששווה לשבור יתחילו להבהב.': 'Appears only in levels where breaking a block really helps, meaning it allows a solution with fewer mirrors. Tap the hammer and the blocks worth breaking start to blink.',
   'שלב חדש בכל יום, זהה לכל השחקנים. הניקוד תלוי במהירות ובמספר המהלכים, ונכנס לטבלת המובילים.': 'A new level every day, the same for all players. Your score depends on speed and move count, and goes on the leaderboard.',
   'נסו בעצמכם': 'Try it yourself', 'הציבו מראה אחת כך שהקרן תפנה למעלה אל הכוכב.': 'Place one mirror so the beam turns up toward the star.', 'טיפים': 'Tips',
@@ -1399,6 +1399,8 @@ const Sound = (() => {
 /* ================= economy ================= */
 const PRICE = { mirror: 150, hammer: 200, hint: 350 };
 const LIMIT = { mirror: 2, hammer: 3 };
+/* hints can place at most half of a level's mirrors (at least one), so no level can be bought outright */
+const hintLimit = lv => Math.max(1, Math.floor(lv.max / 2));
 const START_POINTS = 500;
 const REMOVE_ADS = { id: 'remove_ads', price: '14.90 ₪', bonus: 2000 };
 const AD_EVERY = 3;
@@ -1735,7 +1737,7 @@ function centerCard(card, smooth) {
 /* ================= game ================= */
 let G = null, timerInt = null, DAILY_CACHE = null;
 function session(mode, lv, extra) {
-  return { mode, lv: { ...lv, rows: [...lv.rows] }, mirrors: {}, locked: new Set(), extra: 0, hammers: 0, hammerMode: false, helped: false, moves: 0, done: false, ...extra };
+  return { mode, lv: { ...lv, rows: [...lv.rows] }, mirrors: {}, locked: new Set(), extra: 0, hammers: 0, hints: 0, hammerMode: false, helped: false, moves: 0, done: false, ...extra };
 }
 function openLevel(i) { G = session('level', ALL[i], { idx: i }); startGame(); }
 function openDaily() {
@@ -1806,7 +1808,8 @@ function renderGame(flash) {
   $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done;
   $('pwMirror').innerHTML = `${ICON_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(PRICE.mirror)}</span>`;
   $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(PRICE.hammer)}</span>`;
-  $('pwHint').innerHTML = `${ICON_HINT}<span>${T`רמז`}</span><span class="price">${fmt(PRICE.hint)}</span>`;
+  const hintsLeft = Math.max(0, hintLimit(lv) - G.hints);
+  $('pwHint').innerHTML = `${ICON_HINT}<span>${T`רמז`} ×${hintsLeft}</span><span class="price">${fmt(PRICE.hint)}</span>`;
   $('pwMirror').disabled = P.balance < PRICE.mirror || G.extra >= LIMIT.mirror;
   // the hammer only exists where breaking a wall can actually save a mirror
   const hammerHere = G.mode !== 'daily' && G.mode !== 'duel' && !!(lv.hammer && lv.hammer.length);
@@ -1814,7 +1817,7 @@ function renderGame(flash) {
   document.querySelector('.powers').classList.toggle('two', !hammerHere);
   $('pwHammer').disabled = !G.hammerMode && (P.balance < PRICE.hammer || !breakable().size || G.hammers >= LIMIT.hammer);
   $('pwHammer').setAttribute('aria-pressed', G.hammerMode);
-  $('pwHint').disabled = P.balance < PRICE.hint || !nextHint();
+  $('pwHint').disabled = P.balance < PRICE.hint || !nextHint() || hintsLeft === 0;
   if (!G.done) hideWin();
 
   if (st.allLit && !G.done) finish();
@@ -1857,7 +1860,8 @@ function breakWall(x, y) {
   toast(T('החסימה נשברה'), `-${fmt(PRICE.hammer)}`); renderGame();
 }
 function buyHint() {
-  const h = nextHint(); if (!h || !spend(PRICE.hint)) return;
+  const h = nextHint(); if (!h || G.hints >= hintLimit(G.lv) || !spend(PRICE.hint)) return;
+  G.hints++;
   const [k, m] = h;
   const solKeys = new Set(G.lv.sol.map(s => s[0]));
   if (!G.mirrors[k] && Object.keys(G.mirrors).length >= maxMirrors()) {
