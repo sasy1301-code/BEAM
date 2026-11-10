@@ -2302,12 +2302,9 @@ function setProgress(p, text) {
   setProgress(72, T('מדליק את הכוכבים…'));
   await wait(80);
   setProgress(92);
-  // a new player goes straight in as a guest: no sign-in wall, and the very first thing they see is level one
-  const firstRun = !P.auth;
-  if (firstRun) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
-  const newcomer = firstRun && !Object.keys(P.levels).length;
+  // a new player comes in as a guest with no sign-in wall, and starts on the home screen like everyone else
+  if (!P.auth) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
   renderHome();
-  if (newcomer) { G = session('level', ALL[0], { idx: 0 }); G.t0 = Date.now(); track('start'); renderGame(); show('game'); bonusPending = true; }
   const rest = 800 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
   setProgress(100, T('מוכן!'));
@@ -2320,7 +2317,6 @@ function setProgress(p, text) {
   idle(() => { preloadWinVideos(); const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
   // on the web the game installs to the home screen and keeps working offline
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
-  if (newcomer) return;
   await wait(500);
   dailyBonus();
   checkAchievements();
