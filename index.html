@@ -173,8 +173,10 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelcode{font:700 40px Fredoka,system-ui,sans-serif; letter-spacing:.14em; direction:ltr; background:#F5F0FF; border-radius:16px; padding:10px 8px; margin:6px 0 14px; color:#5B2BC7}
 .duelvs{display:flex; align-items:center; justify-content:center; gap:14px; margin:8px 0 14px; font-weight:700; font-size:18px}
 .duelvs b{display:block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.duelvs .sc{font-size:34px; font-variant-numeric:tabular-nums; color:var(--ink); display:inline-flex; gap:8px}
-.duelvs .sc i,.duelbar .mid b i{font-style:normal}
+.duelvs .side{display:flex; flex-direction:column; align-items:center; gap:2px; min-width:72px}
+.duelvs .side i,.duelbar .dp i{font-style:normal; font-variant-numeric:tabular-nums; color:var(--ink); line-height:1}
+.duelvs .side i{font-size:38px}
+.duelvs .colon{font-size:30px; align-self:flex-end; line-height:1.2; color:var(--muted)}
 .duelcount{font:700 96px/1 Fredoka,system-ui,sans-serif; color:var(--orange,#FF8A1F); margin:6px 0 10px; font-variant-numeric:tabular-nums}
 .duelcount.pop{animation:cardPop .35s cubic-bezier(.3,1.4,.6,1) both}
 .dueljoin{display:flex; gap:8px; margin-top:8px}
@@ -182,13 +184,16 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .dueljoin .btn{margin:0; width:auto; flex:none; padding:0 18px}
 .duelbar{color:var(--ink); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin:10px 0 2px; background:var(--surface); border-radius:18px; padding:8px 12px; box-shadow:0 3px 0 var(--rule)}
 .duelbar[hidden]{display:none}
-.duelbar .dp{display:flex; flex-direction:column; min-width:0; font-weight:700}
+.duelbar .dp{display:flex; align-items:center; gap:10px; min-width:0; font-weight:700}
+.duelbar .dp div{display:flex; flex-direction:column; min-width:0; flex:1}
+.duelbar .dp i{font-size:24px}
+.duelbar .dp.opp{flex-direction:row-reverse}
 .duelbar .dp b{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px}
 .duelbar .dp span{color:var(--muted); font-size:14px; font-variant-numeric:tabular-nums}
 .duelbar .dp.opp{text-align:end}
 .duelbar .dp.opp span.fin{color:var(--orange-d,#C45A00)}
 .duelbar .mid{text-align:center; font-weight:700; line-height:1.15}
-.duelbar .mid b{font-size:22px; display:inline-flex; gap:6px; font-variant-numeric:tabular-nums}
+.duelbar .mid b{font-size:22px; color:var(--muted)}
 .duelbar .mid small{color:var(--muted); font-variant-numeric:tabular-nums}
 .winlayer .win{margin-top:0; width:100%; max-width:400px; animation:cardPop .4s cubic-bezier(.3,1.4,.6,1) both; box-shadow:0 6px 0 var(--rule), 0 24px 50px rgba(20,5,60,.5)}
 .winlayer .win .ribbon{padding-top:26px}
@@ -782,6 +787,7 @@ const EN = {
   'הקישור הועתק. פתחו אותו במכשיר השני.': 'Link copied. Open it on the other device.', 'התנתקתם. ההתקדמות נשארת במכשיר הזה.': 'Signed out. Your progress stays on this device.',
   'מחיקת כל המידע שלי מהשרת': 'Delete all my data from the server', 'למחוק את כל המידע?': 'Delete all your data?', 'מחיקה': 'Delete',
   'הגיבוי, השם והניקוד יימחקו מהשרת, וההתקדמות תימחק גם מהמכשיר הזה. אי אפשר לבטל את זה.': 'Your backup, name and score are deleted from the server, and progress is erased from this device too. This cannot be undone.',
+  'היריב כבר יצא מהמשחק': 'Your opponent has already left', 'היריב יצא, אי אפשר לשחק שוב באותו חדר.': 'Your opponent left, so this room cannot be replayed.',
   'ניצחונות: {} · הפסדים: {} · תיקו: {}': 'Wins: {0} · Losses: {1} · Draws: {2}',
   // ---- messages ----
   'חסימה': 'Block', 'משבצת': 'Tile', '{} {}, {}': '{0} {1}, {2}', 'אין חיבור כרגע. נסו שוב מאוחר יותר.': 'No connection right now. Try again later.',
@@ -2181,7 +2187,8 @@ async function duelSync() {
 }
 function duelRender() {
   const st = D.st, me = st.me - 1, opp = 1 - me, box = $('duelBox');
-  const vs = `<div class="duelvs"><b>${esc(st.names[me] || '')}</b><span class="sc"><i>${st.wins[me]}</i><i>:</i><i>${st.wins[opp]}</i></span><b>${esc(st.names[opp] || '…')}</b></div>`;
+  // each score sits inside its own player's block, so no text direction can ever pair it with the other name
+  const vs = `<div class="duelvs"><div class="side"><b>${esc(st.names[me] || '')}</b><i>${st.wins[me]}</i></div><span class="colon">:</span><div class="side"><b>${esc(st.names[opp] || '…')}</b><i>${st.wins[opp]}</i></div></div>`;
   if (st.status === 'waiting') {
     if (D.view === 'waiting') return;
     D.view = 'waiting'; show('duel'); $('duelSub').textContent = T('שלחו את הקישור או את הקוד לחבר');
@@ -2224,7 +2231,7 @@ function duelRender() {
     return;
   }
   // done
-  const sig = 'done:' + st.seed + ':' + st.rematch + ':' + D.rematch;
+  const sig = 'done:' + st.seed + ':' + st.rematch + ':' + D.rematch + ':' + st.left_by;
   if (D.view === sig) return;
   D.view = sig;
   clearInterval(timerInt); hideWin();
@@ -2238,11 +2245,12 @@ function duelRender() {
     Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
     track('done', { p_stars: won ? 3 : draw_ ? 2 : 1, p_helped: false });
   }
+  if (gone && D.rematch) { D.rematch = false; toast(T('היריב כבר יצא מהמשחק')); }
   show('duel'); $('duelSub').textContent = gone ? T('היריב עזב את המשחק') : ' ';
   box.innerHTML = `<img class="dbug" alt="" src="${WIN_BUG[won ? 'cheer' : draw_ ? 'think' : 'shrug']}">
     <h3>${draw_ ? T('תיקו!') : won ? T('ניצחתם בדו-קרב!') : T('הפעם היריב ניצח')}</h3>${vs}
     ${reward ? `<div class="gains"><div class="coin">${ICON_POINTS}<span>+${fmt(reward)}</span></div></div>` : ''}
-    ${gone ? '' : `<button class="btn green" id="duelAgain"${D.rematch ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
+    ${gone ? `<p><b>${T('היריב יצא, אי אפשר לשחק שוב באותו חדר.')}</b></p>` : `<button class="btn green" id="duelAgain"${D.rematch ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
     <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>`;
   const again = box.querySelector('#duelAgain');
   if (again) again.onclick = () => { D.rematch = true; duelRender(); duelSync(); };
@@ -2251,9 +2259,9 @@ function duelRender() {
 function renderDuelBar() {
   if (!D || !D.st) return;
   const st = D.st, me = st.me - 1, opp = 1 - me, total = G && G.lastSt ? G.lastSt.total : 3;
-  $('duelBar').innerHTML = `<div class="dp"><b>${esc(st.names[me] || '')}</b><span>★ ${G && G.lastSt ? G.lastSt.lit : 0}/${total}</span></div>
-    <div class="mid"><b><i>${st.wins[me]}</i><i>:</i><i>${st.wins[opp]}</i></b></div>
-    <div class="dp opp"><b>${esc(st.names[opp] || '')}</b><span class="${st.done[opp] ? 'fin' : ''}">★ ${Math.min(st.lit[opp], total)}/${total}</span></div>`;
+  $('duelBar').innerHTML = `<div class="dp"><div><b>${esc(st.names[me] || '')}</b><span>★ ${G && G.lastSt ? G.lastSt.lit : 0}/${total}</span></div><i>${st.wins[me]}</i></div>
+    <div class="mid"><b>:</b></div>
+    <div class="dp opp"><div><b>${esc(st.names[opp] || '')}</b><span class="${st.done[opp] ? 'fin' : ''}">★ ${Math.min(st.lit[opp], total)}/${total}</span></div><i>${st.wins[opp]}</i></div>`;
 }
 /* you lit every star: freeze the board and tell the referee straight away, without waiting for the next tick */
 function duelSolved() {
