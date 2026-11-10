@@ -173,7 +173,8 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelcode{font:700 40px Fredoka,system-ui,sans-serif; letter-spacing:.14em; direction:ltr; background:#F5F0FF; border-radius:16px; padding:10px 8px; margin:6px 0 14px; color:var(--purple-d,#5B2BC7)}
 .duelvs{display:flex; align-items:center; justify-content:center; gap:14px; margin:8px 0 14px; font-weight:700; font-size:18px}
 .duelvs b{display:block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.duelvs .sc{font-size:34px; font-variant-numeric:tabular-nums; direction:ltr; color:var(--ink)}
+.duelvs .sc{font-size:34px; font-variant-numeric:tabular-nums; color:var(--ink); display:inline-flex; gap:8px}
+.duelvs .sc i,.duelbar .mid b i{font-style:normal}
 .duelcount{font:700 96px/1 Fredoka,system-ui,sans-serif; color:var(--orange,#FF8A1F); margin:6px 0 10px; font-variant-numeric:tabular-nums}
 .duelcount.pop{animation:cardPop .35s cubic-bezier(.3,1.4,.6,1) both}
 .dueljoin{display:flex; gap:8px; margin-top:8px}
@@ -187,7 +188,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbar .dp.opp{text-align:end}
 .duelbar .dp.opp span.fin{color:var(--orange-d,#C45A00)}
 .duelbar .mid{text-align:center; font-weight:700; line-height:1.15}
-.duelbar .mid b{font-size:22px; direction:ltr; display:block; font-variant-numeric:tabular-nums}
+.duelbar .mid b{font-size:22px; display:inline-flex; gap:6px; font-variant-numeric:tabular-nums}
 .duelbar .mid small{color:var(--muted); font-variant-numeric:tabular-nums}
 .winlayer .win{margin-top:0; width:100%; max-width:400px; animation:cardPop .4s cubic-bezier(.3,1.4,.6,1) both; box-shadow:0 6px 0 var(--rule), 0 24px 50px rgba(20,5,60,.5)}
 .winlayer .win .ribbon{padding-top:26px}
@@ -2116,7 +2117,7 @@ async function duelSync() {
 }
 function duelRender() {
   const st = D.st, me = st.me - 1, opp = 1 - me, box = $('duelBox');
-  const vs = `<div class="duelvs"><b>${esc(st.names[me] || '')}</b><span class="sc">${st.wins[me]} : ${st.wins[opp]}</span><b>${esc(st.names[opp] || '…')}</b></div>`;
+  const vs = `<div class="duelvs"><b>${esc(st.names[me] || '')}</b><span class="sc"><i>${st.wins[me]}</i><i>:</i><i>${st.wins[opp]}</i></span><b>${esc(st.names[opp] || '…')}</b></div>`;
   if (st.status === 'waiting') {
     if (D.view === 'waiting') return;
     D.view = 'waiting'; show('duel'); $('duelSub').textContent = T('שלחו את הקישור או את הקוד לחבר');
@@ -2185,7 +2186,7 @@ function renderDuelBar() {
   if (!D || !D.st) return;
   const st = D.st, me = st.me - 1, opp = 1 - me, total = G && G.lastSt ? G.lastSt.total : 3;
   $('duelBar').innerHTML = `<div class="dp"><b>${esc(st.names[me] || '')}</b><span>★ ${G && G.lastSt ? G.lastSt.lit : 0}/${total}</span></div>
-    <div class="mid"><b>${st.wins[me]} : ${st.wins[opp]}</b></div>
+    <div class="mid"><b><i>${st.wins[me]}</i><i>:</i><i>${st.wins[opp]}</i></b></div>
     <div class="dp opp"><b>${esc(st.names[opp] || '')}</b><span class="${st.done[opp] ? 'fin' : ''}">★ ${Math.min(st.lit[opp], total)}/${total}</span></div>`;
 }
 /* you lit every star: freeze the board and tell the referee straight away, without waiting for the next tick */
