@@ -323,6 +323,30 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frlist button:disabled{opacity:.5}
 .frempty{text-align:center; color:#fff; opacity:.85; margin:8px 0 18px}
 @media (prefers-color-scheme: dark){ .frlist li{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
+/* shop: looks only, never an advantage */
+.bm-classic{--beam:#FF3D7F} .bm-gold{--beam:#FFC83A} .bm-ice{--beam:#3FD0FF} .bm-lime{--beam:#6BEA4B} .bm-violet{--beam:#B36BFF}
+.bm-fire{--beam:#FF5A1F} .bm-fire .glow{stroke:#FFB02E; animation:bmFlick .45s ease-in-out infinite alternate}
+@keyframes bmFlick{from{opacity:.4; stroke-width:.24}to{opacity:.8; stroke-width:.38}}
+.bm-rainbow .beamline,.bm-rainbow .glow{animation:bmHue 2.5s linear infinite}
+@keyframes bmHue{to{filter:hue-rotate(360deg)}}
+.bm-star{--beam:#FFC400} .bm-star .glow{stroke:#FF6FE0; stroke-dasharray:.1 .24; opacity:.95; animation:bmDash .9s linear infinite}
+@keyframes bmDash{to{stroke-dashoffset:-.68}}
+@media (prefers-reduced-motion: reduce){ .bm-fire .glow,.bm-rainbow .beamline,.bm-rainbow .glow,.bm-star .glow{animation:none} }
+.shopwallet{display:flex; justify-content:center; margin:0 0 14px}
+.shoph{color:#FFE9A8; font-size:20px; font-weight:700; margin:18px 4px 10px}
+.shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.shopitem{background:var(--surface); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7; border-radius:18px; padding:10px; box-shadow:0 4px 0 var(--rule); text-align:center; display:flex; flex-direction:column; gap:6px}
+.shopitem svg{width:100%; height:64px; background:#241047; border-radius:12px}
+.shopitem b{font-size:16px}
+.shopitem button{border:none; border-radius:12px; font:inherit; font-weight:700; font-size:15px; min-height:40px; background:var(--orange,#FF8A1F); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px}
+.shopitem button svg{width:18px; height:18px; background:none}
+.shopitem button.have{background:var(--rule); color:var(--ink)}
+.shopitem button.on{background:#2DBE60; color:#fff}
+.shopitem button:disabled{opacity:.55}
+.shopitem.soon{opacity:.75} .shopitem.soon .big{font-size:34px; line-height:64px}
+@media (prefers-color-scheme: dark){ .shopitem{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
+.minis.four{grid-template-columns:repeat(4,1fr); gap:8px} .minis.four button{font-size:13px; padding:10px 2px 8px}
+#homePoints{cursor:pointer}
 .screen-sub{text-align:center; color:var(--muted); margin:0 0 16px; font-weight:500}
 .tabs{display:grid; grid-template-columns:1fr 1fr; background:var(--surface); border-radius:999px; padding:4px; box-shadow:0 3px 0 var(--rule); margin-bottom:16px}
 .tabs button{border:none; background:none; color:var(--ink); font-weight:700; font-size:16px; border-radius:999px; min-height:40px}
@@ -547,10 +571,11 @@ body.splashing{overflow:hidden}
   </div>
 
   <button class="btn orange" id="playBtn">שחק</button>
-  <div class="minis">
+  <div class="minis four">
     <button id="lbBtn"><svg viewBox="0 0 1 1"><rect x=".1" y=".5" width=".24" height=".4" rx=".05" fill="var(--blue)"/><rect x=".38" y=".25" width=".24" height=".65" rx=".05" fill="var(--orange)"/><rect x=".66" y=".6" width=".24" height=".3" rx=".05" fill="var(--green)"/></svg>טבלת מובילים</button>
     <button id="achBtn"><svg viewBox="0 0 1 1"><circle cx=".5" cy=".42" r=".3" fill="var(--star)" stroke="var(--star-d)" stroke-width=".06"/><path d="M.34 .66L.28 .95L.5 .84L.72 .95L.66 .66" fill="var(--purple)"/></svg><span id="achLabel">הישגים</span></button>
     <button id="helpBtn"><svg viewBox="0 0 1 1"><circle cx=".5" cy=".5" r=".4" fill="var(--purple)"/><text x=".5" y=".66" text-anchor="middle" font-size=".5" font-weight="700" fill="#fff" font-family="Fredoka">?</text></svg>איך משחקים</button>
+    <button id="shopBtn"><svg viewBox="0 0 1 1"><path d="M.2 .36h.6l.06 .5a.06 .06 0 0 1-.06 .06H.2a.06 .06 0 0 1-.06-.06z" fill="var(--orange)"/><path d="M.36 .4V.28a.14 .14 0 0 1 .28 0V.4" fill="none" stroke="var(--purple)" stroke-width=".07" stroke-linecap="round"/></svg>חנות</button>
   </div>
   <div class="adslot" id="adBanner"><b>מקום לפרסומת</b>כאן יוצג באנר פרסומי<br><button id="adBannerRemove">הסרת פרסומות</button></div>
   <p class="progress" id="progress"></p>
@@ -619,6 +644,17 @@ body.splashing{overflow:hidden}
   <div class="set" style="margin-top:16px">
     <label class="toggle" style="border-top:none"><span>הצג אותי כמחובר לחברים</span><input type="checkbox" id="optPresence"><i></i></label>
   </div>
+</section>
+
+<section id="shop" hidden>
+  <button class="chip" id="shopBack">› חזרה</button>
+  <h2 class="screen-title">חנות</h2>
+  <p class="screen-sub">קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.</p>
+  <div class="shopwallet"><div class="coin" id="shopPoints"></div></div>
+  <h3 class="shoph">צבע הקרן</h3>
+  <div class="shopgrid" id="shopBeams"></div>
+  <h3 class="shoph">בקרוב</h3>
+  <div class="shopgrid" id="shopSoon"></div>
 </section>
 
 <section id="leader" hidden>
@@ -816,6 +852,11 @@ const EN = {
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
   'הפרופיל שלי': 'My profile', 'בחרו דמות': 'Choose your character', 'דמות': 'Character', 'דו-קרב: {} ניצחונות': 'Duels: {0} wins', 'שם ודמות': 'Name and character',
   '★ {} · {} שלבים · {} בלי עזרה': '★ {0} · {1} levels · {2} unaided',
+  // ---- shop ----
+  'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
+  'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
+  'בשימוש': 'In use', 'בחירה': 'Use', 'דמויות': 'Characters', 'לוחות': 'Boards', 'הגן של הגחלילית': 'The firefly\'s garden', 'אפקטי ניצחון': 'Win effects',
+  'קרן {}': '{0} beam', 'המחיר: {} נקודות. יישארו לכם {}.': 'Price: {0} points. You will have {1} left.', 'קנייה': 'Buy', 'הקרן החדשה שלכם מוכנה': 'Your new beam is ready',
   // ---- friends ----
   'החברים שלי': 'My friends', 'חברים': 'Friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
@@ -1735,7 +1776,7 @@ const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
-const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends'];
+const SCREENS = ['home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'shop'];
 function show(id) { for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game'); }
 let toastTimer;
 function toast(text, amount) {
@@ -1787,6 +1828,52 @@ function dailyBonus() {
     <button class="btn green" id="bonusOk">${T`איסוף`}</button>`, m => {
             m.querySelector('#bonusOk').onclick = () => { Sound.play('bonus'); closeModal(); renderHome(); checkAchievements(); };
     }, true);
+}
+
+/* ================= shop =================
+   Points buy looks, never an advantage: the beam's colour today, characters, boards and the firefly's garden next.
+   Buying comes out of the spending balance only, so it never costs a place on the leaderboard. */
+const BEAMS = [
+  { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
+  { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 },
+];
+const owns = id => id === 'classic' || !!(P.own && P.own['beam:' + id]);
+function applyLook() {
+  const b = BEAMS.some(x => x.id === P.beam) && owns(P.beam) ? P.beam : 'classic';
+  for (const el of [$('game'), $('help')]) {          // only where a beam is drawn, so the shop's samples keep their own colours
+    for (const c of [...el.classList]) if (c.indexOf('bm-') === 0) el.classList.remove(c);
+    if (b !== 'classic') el.classList.add('bm-' + b);
+  }
+}
+function openShop() { show('shop'); renderShop(); }
+function renderShop() {
+  $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
+  const cur = owns(P.beam) ? P.beam || 'classic' : 'classic';
+  $('shopBeams').innerHTML = BEAMS.map(b => {
+    const btn = b.id === cur ? `<button class="on" disabled>${T('בשימוש')}</button>`
+      : owns(b.id) ? `<button class="have" data-use="${b.id}">${T('בחירה')}</button>`
+      : `<button data-buy="${b.id}"${P.balance < b.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(b.price)}</button>`;
+    return `<div class="shopitem bm-${b.id}"><svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg><b>${T(b.name)}</b>${btn}</div>`;
+  }).join('');
+  for (const el of $('shopBeams').querySelectorAll('[data-use]')) el.onclick = () => { P.beam = el.dataset.use; save(false); applyLook(); Sound.play('tap'); renderShop(); };
+  for (const el of $('shopBeams').querySelectorAll('[data-buy]')) el.onclick = () => buyBeam(BEAMS.find(b => b.id === el.dataset.buy));
+  $('shopSoon').innerHTML = [['🧚', 'דמויות'], ['🌌', 'לוחות'], ['🌷', 'הגן של הגחלילית'], ['🎆', 'אפקטי ניצחון']]
+    .map(([e, n]) => `<div class="shopitem soon"><span class="big">${e}</span><b>${T(n)}</b></div>`).join('');
+}
+function buyBeam(b) {
+  modal(`<div class="shopitem bm-${b.id}" style="box-shadow:none;padding:0"><svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg></div>
+    <h3>${T`קרן ${T(b.name)}`}</h3>
+    <p>${T`המחיר: ${fmt(b.price)} נקודות. יישארו לכם ${fmt(P.balance - b.price)}.`}</p>
+    <button class="btn orange" id="buyGo">${T('קנייה')}</button>
+    <button class="btn ghosty" id="buyNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+      m.querySelector('#buyNo').onclick = closeModal;
+      m.querySelector('#buyGo').onclick = () => {
+        if (P.balance < b.price) { closeModal(); return; }
+        P.balance -= b.price; P.own = P.own || {}; P.own['beam:' + b.id] = 1; P.beam = b.id;
+        save(false); applyLook(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
+        toast(T('הקרן החדשה שלכם מוכנה'), `-${fmt(b.price)}`);
+      };
+    });
 }
 
 /* ================= my profile ================= */
@@ -2537,6 +2624,7 @@ async function acceptFriendLink(fcode) {
   openFriends();
 }
 $('frBack').onclick = goHome;
+$('shopBack').onclick = goHome; $('shopBtn').onclick = openShop; $('homePoints').onclick = openShop;
 $('helpBug').src = POSE.point;
 $('friendsBtn').onclick = friendsEntry;
 $('frAdd').onclick = shareFriendLink;
@@ -2683,7 +2771,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, beam: P.beam, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
@@ -2953,6 +3041,7 @@ function setProgress(p, text) {
   try { await Promise.race([document.fonts.ready, wait(1500)]); } catch (e) { /* fonts are optional */ }
   setProgress(32);
   await loadProfile();
+  applyLook();
   applySoundPrefs();
   setProgress(55, T('מכין את השלבים…'));
   await wait(80);
