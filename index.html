@@ -477,7 +477,7 @@ body.splashing{overflow:hidden}
       <div class="or"><span>או</span></div>
       <button class="sso guest" id="loginGuest">כניסה כאורח</button>
     </div>
-    <p class="login-note">כאורח ההתקדמות נשמרת רק במכשיר הזה. אפשר לחבר חשבון בכל רגע מההגדרות.</p>
+    <p class="login-note">גם כאורח ההתקדמות נשמרת ומגובה. אפשר לחבר חשבון בכל רגע מההגדרות.</p>
   </div>
 </section>
 
@@ -704,7 +704,7 @@ const EN = {
   // ---- static page text ----
   'טוען את האור…': 'Lighting up…', 'עזרו לגחלילית להדליק את כל הכוכבים': 'Help the firefly light every star',
   'המשך עם Google': 'Continue with Google', 'המשך עם Facebook': 'Continue with Facebook', 'או': 'or', 'כניסה כאורח': 'Play as a guest',
-  'כאורח ההתקדמות נשמרת רק במכשיר הזה. אפשר לחבר חשבון בכל רגע מההגדרות.': 'As a guest your progress stays on this device. You can connect an account any time in Settings.',
+  'גם כאורח ההתקדמות נשמרת ומגובה. אפשר לחבר חשבון בכל רגע מההגדרות.': 'Guest progress is saved and backed up too. You can connect an account any time in Settings.',
   'פרופיל ושם': 'Profile and name', 'הגדרות': 'Settings', 'נקודות לקניות': 'Points to spend', 'אתגר יומי': 'Daily challenge', 'שחק': 'Play',
   'טבלת מובילים': 'Leaderboard', 'הישגים': 'Achievements', 'איך משחקים': 'How to play', 'מקום לפרסומת': 'Ad space', 'כאן יוצג באנר פרסומי': 'A banner ad will appear here',
   'הסרת פרסומות': 'Remove ads', 'שלבים': 'Levels', 'פרקים, החליקו לצדדים': 'Chapters, swipe sideways', 'מעבר בין פרקים': 'Switch chapter',
@@ -769,6 +769,20 @@ const EN = {
   'הלוח ייחשף לשניכם באותו רגע.': 'The board appears for both of you at the same moment.', 'פתרתם! בודקים מי היה ראשון…': 'Solved! Checking who was first…',
   'היריב עזב את המשחק': 'Your opponent left the game', 'תיקו!': 'A draw!', 'ניצחתם בדו-קרב!': 'You won the duel!', 'הפעם היריב ניצח': 'Your opponent won this time',
   'היריב רוצה משחק חוזר. לשחק!': 'Your opponent wants a rematch. Play!', 'משחק חוזר': 'Rematch', 'חזרה לבית': 'Back home',
+  // ---- account & backup ----
+  'ההתחברות לא הושלמה': 'Sign-in was not completed', 'בחשבון הזה כבר יש התקדמות': 'This account already has progress',
+  'בחשבון: {} כוכבים. במכשיר הזה: {} כוכבים. אם תמשיכו עם החשבון, ההתקדמות שבמכשיר הזה תוחלף.': 'Account: {0} stars. This device: {1} stars. If you continue with the account, the progress on this device is replaced.',
+  'המשך עם החשבון': 'Continue with the account', 'ביטול והתנתקות': 'Cancel and sign out', 'לא מצאנו גיבוי לקישור הזה': 'No backup found for this link',
+  'לשחזר את ההתקדמות?': 'Restore your progress?', 'ההתקדמות שבמכשיר הזה תוחלף בהתקדמות מהקישור.': 'The progress on this device will be replaced by the progress from the link.', 'שחזור': 'Restore',
+  'ההתקדמות נשמרת בחשבון, ואפשר להמשיך אותה מכל מכשיר.': 'Your progress is saved to the account, and you can continue it on any device.',
+  'גיבוי והמשך במכשיר אחר': 'Backup and other devices', 'ההתקדמות שלכם נשמרת במכשיר הזה ומגובה בשרת.': 'Your progress is saved on this device and backed up on the server.',
+  'חיבור עם {}': 'Connect {0}', 'קישור אישי להמשך במכשיר אחר': 'Personal link to continue on another device',
+  'הקישור אישי: מי שמחזיק בו יכול לשחק בשמכם. אל תשתפו אותו.': 'The link is personal: whoever holds it can play as you. Do not share it.',
+  'עוד אין מה לגבות. שחקו שלב אחד קודם.': 'Nothing to back up yet. Play a level first.', 'הקישור האישי שלי ל-BEAM': 'My personal BEAM link',
+  'הקישור הועתק. פתחו אותו במכשיר השני.': 'Link copied. Open it on the other device.', 'התנתקתם. ההתקדמות נשארת במכשיר הזה.': 'Signed out. Your progress stays on this device.',
+  'מחיקת כל המידע שלי מהשרת': 'Delete all my data from the server', 'למחוק את כל המידע?': 'Delete all your data?', 'מחיקה': 'Delete',
+  'הגיבוי, השם והניקוד יימחקו מהשרת, וההתקדמות תימחק גם מהמכשיר הזה. אי אפשר לבטל את זה.': 'Your backup, name and score are deleted from the server, and progress is erased from this device too. This cannot be undone.',
+  'ניצחונות: {} · הפסדים: {} · תיקו: {}': 'Wins: {0} · Losses: {1} · Draws: {2}',
   // ---- messages ----
   'חסימה': 'Block', 'משבצת': 'Tile', '{} {}, {}': '{0} {1}, {2}', 'אין חיבור כרגע. נסו שוב מאוחר יותר.': 'No connection right now. Try again later.',
   'השם והניקוד הוסרו מהטבלה': 'Your name and score were removed', 'הישג חדש: {}': 'New achievement: {0}', 'מהלך אחד': '1 move', '{} מהלכים': '{0} moves',
@@ -1492,21 +1506,69 @@ async function flushSave(attempt) {
   }
   saving = false;
   if (ok && publish && P.name) publishScore();
+  cloudSoon();
 }
+/* replace the whole profile (a restored backup, an account's save, a fresh guest) and start the page again on it */
+async function switchProfile(next) {
+  clearTimeout(saveTimer); clearTimeout(cloudTimer); cloudTimer = null;
+  P = next;
+  try { await window.storage.set('beam-profile', JSON.stringify(next), false); } catch (e) { /* the reload shows whatever was stored */ }
+  location.replace(location.pathname);
+}
+/* every player, guest or signed in, is backed up on the server a few seconds after a change */
+let cloudTimer = null;
+const hasProgress = () => !!(P && (P.name || Object.keys(P.levels || {}).length || Object.keys(P.daily || {}).length));
+function cloudSoon() { if (!cloudTimer && hasProgress()) cloudTimer = setTimeout(cloudSave, 4000); }
+async function cloudSave() {
+  clearTimeout(cloudTimer); cloudTimer = null;
+  if (!hasProgress() || !/^https?:$/.test(location.protocol)) return false;
+  const data = { ...P }; delete data.key;                     // the device key never leaves the device
+  try { return !!(await rpc('beam_save', { p_id: P.id, p_secret: playerKey(), p_data: data })); } catch (e) { return false; }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && cloudTimer) cloudSave(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); flushSave(0); } });
 /* ---- online leaderboard ----
    Shared scores live in a small database. Players stay anonymous: this device keeps a random id and a secret key,
    and the key is what lets it update or delete its own row. The publishable key below is meant to be public.
    When the server cannot be reached, the table falls back to what this device knows (just this player). */
 const BACKEND = { url: 'https://lwtimaunczpjfvppmudd.supabase.co', key: 'sb_publishable_ll8ay08mufmaqKP1NHBnVQ_Xtn2EXBW' };
+/* the signed-in session, if any: kept in this browser, refreshed shortly before it runs out */
+const Session = (() => {
+  let s = null, refreshing = null;
+  try { s = JSON.parse(localStorage.getItem('beam:session') || 'null'); } catch (e) { /* storage blocked: guests only */ }
+  const store = v => { s = v; try { if (v) localStorage.setItem('beam:session', JSON.stringify(v)); else localStorage.removeItem('beam:session'); } catch (e) { /* stays in memory */ } };
+  async function token() {
+    if (!s) return null;
+    if (Date.now() < s.expires_at - 60000) return s.access_token;
+    if (!refreshing) refreshing = (async () => {
+      try {
+        const r = await fetch(`${BACKEND.url}/auth/v1/token?grant_type=refresh_token`, { method: 'POST',
+          headers: { apikey: BACKEND.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
+        if (r.status === 400 || r.status === 401) { store(null); return null; }       // the sign-in was revoked or expired for good
+        if (!r.ok) return null;
+        const j = await r.json();
+        store({ ...s, access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + j.expires_in * 1000 });
+        return j.access_token;
+      } catch (e) { return null; } finally { refreshing = null; }
+    })();
+    return refreshing;
+  }
+  return { get: () => s, store, token };
+})();
 async function rpc(fn, args) {
-  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 8000);
-  try {
-    const r = await fetch(`${BACKEND.url}/rest/v1/rpc/${fn}`, { method: 'POST', signal: ctl.signal,
-      headers: { apikey: BACKEND.key, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
-    if (!r.ok) throw new Error(fn + ' ' + r.status);
-    return await r.json();
-  } finally { clearTimeout(timer); }
+  const call = async tk => {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 8000);
+    try {
+      const headers = { apikey: BACKEND.key, 'Content-Type': 'application/json' };
+      if (tk) headers.Authorization = 'Bearer ' + tk;
+      return await fetch(`${BACKEND.url}/rest/v1/rpc/${fn}`, { method: 'POST', signal: ctl.signal, headers, body: JSON.stringify(args) });
+    } finally { clearTimeout(timer); }
+  };
+  const tk = await Session.token();
+  let r = await call(tk);
+  if (r.status === 401 && tk) r = await call(null);          // a stale session must not lock a player out of their own device
+  if (!r.ok) throw new Error(fn + ' ' + r.status);
+  return await r.json();
 }
 /* anonymous play statistics: which level was started or finished and how it went. No player id is sent,
    and nothing is sent at all when the browser asks not to be tracked. */
@@ -2060,6 +2122,7 @@ function openDuelMenu() {
   modal(`<svg class="bug" viewBox="-1 -1 2 2" id="duelBug"></svg>
     <h3>${T('דו-קרב')}</h3>
     <p>${T('שני שחקנים, אותו לוח. הראשון שמדליק את כל הכוכבים מנצח בסיבוב. הטוב משלושה.')}</p>
+    ${P.duel ? `<p><b>${T`ניצחונות: ${P.duel.w} · הפסדים: ${P.duel.l} · תיקו: ${P.duel.d}`}</b></p>` : ''}
     <button class="btn orange" id="duelCreate">${T('הזמנת חבר')}</button>
     <p style="margin:16px 0 6px">${T('קיבלתם קוד מחבר?')}</p>
     <div class="dueljoin"><input id="duelCodeIn" maxlength="5" autocomplete="off" autocapitalize="characters" aria-label="${T('קוד חדר')}" placeholder="ABCDE"><button class="btn blue" id="duelJoinBtn">${T('הצטרפות')}</button></div>`, m => {
@@ -2169,7 +2232,9 @@ function duelRender() {
   const played = st.wins[0] + st.wins[1] > 0 || st.round > 1;          // walking out before a single round earns nobody anything
   const reward = !played ? 0 : draw_ ? DUEL_REWARD.draw : won ? DUEL_REWARD.win : DUEL_REWARD.lose;
   if (D.rewarded !== st.seed) {                           // once per match, into the spending balance only
-    D.rewarded = st.seed; gain(reward, false); save(false);
+    D.rewarded = st.seed; gain(reward, false);
+    if (played) { P.duel = P.duel || { w: 0, l: 0, d: 0 }; P.duel[draw_ ? 'd' : won ? 'w' : 'l']++; }
+    save(false);
     Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
     track('done', { p_stars: won ? 3 : draw_ ? 2 : 1, p_helped: false });
   }
@@ -2350,7 +2415,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
@@ -2469,64 +2534,144 @@ $('overlay').addEventListener('click', e => { if (e.target === $('overlay') && $
 /* AUTH: replace with a real provider (e.g. Firebase Authentication with Google and Facebook)
    when publishing; the official buttons and sign-in windows come from those SDKs. */
 const PROVIDERS = { google: 'Google', facebook: 'Facebook' };
+/* ================= account =================
+   Guests are backed up through their device key. Signing in with Google or Facebook (Supabase Auth) ties the same
+   save to an account, so another device can pick it up. A provider's button only appears once it is switched on
+   in the Supabase project, so nothing here pretends to work before it does. */
 const AUTH = {
-  demo: true,   // no real provider is connected yet; while this is true the sign-in screen and the account card stay hidden
-  signIn(provider) {
-    return new Promise(resolve => {
-      modal(`<h3>${T`התחברות עם ${PROVIDERS[provider]}`}</h3>
-        <p>${T`כאן ייפתח חלון ההתחברות של ${PROVIDERS[provider]}.`}</p>
-        <p class="demo-note">${T`גרסת הדגמה: אין חיבור אמיתי לחשבון. במשחק המפורסם ההתקדמות תישמר בחשבון ותעבור בין מכשירים.`}</p>
-        <button class="btn orange" id="authOk" style="margin-top:12px">${T`המשך`}</button>
-        <button class="btn ghosty" id="authCancel" style="margin-top:12px">${T`ביטול`}</button>`, m => {
-          m.querySelector('#authOk').onclick = () => { closeModal(); resolve({ provider }); };
-          m.querySelector('#authCancel').onclick = () => { closeModal(); resolve(null); };
-        }, true);
-    });
+  enabled: {},
+  async detect() {
+    try {
+      const r = await fetch(`${BACKEND.url}/auth/v1/settings`, { headers: { apikey: BACKEND.key } });
+      const ext = (await r.json()).external || {};
+      AUTH.enabled = { google: !!ext.google, facebook: !!ext.facebook };
+    } catch (e) { AUTH.enabled = {}; }
+    if (!$('settings').hidden) renderAccount();
   },
-  async signOut() { return true; },
+  async signIn(provider) {
+    await cloudSave();                                        // whatever was played as a guest is safe before we leave the page
+    location.href = `${BACKEND.url}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(location.origin + location.pathname)}`;
+  },
+  async signOut() {
+    const tk = await Session.token();
+    if (tk) { try { await fetch(`${BACKEND.url}/auth/v1/logout`, { method: 'POST', headers: { apikey: BACKEND.key, Authorization: 'Bearer ' + tk } }); } catch (e) { /* signed out locally anyway */ } }
+    Session.store(null);
+  },
 };
-async function loginWith(provider) {
-  if (provider === 'guest') P.auth = { provider: 'guest', since: Date.now() };
-  else {
-    const r = await AUTH.signIn(provider);
-    if (!r) return;
-    P.auth = { provider, since: Date.now() };
-    toast(T`התחברתם עם ${PROVIDERS[provider]}`);
+/* coming back from Google / Facebook: the address carries the new session after the # */
+async function finishSignIn() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  if (!h.get('access_token') && !h.get('error')) return false;
+  try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays */ }
+  if (!h.get('access_token')) { toast(T('ההתחברות לא הושלמה')); return false; }
+  const sess = { access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), expires_at: Date.now() + (+h.get('expires_in') || 3600) * 1000, provider: 'google', email: '' };
+  try {
+    const u = await (await fetch(`${BACKEND.url}/auth/v1/user`, { headers: { apikey: BACKEND.key, Authorization: 'Bearer ' + sess.access_token } })).json();
+    sess.provider = (u.app_metadata && u.app_metadata.provider) || 'google'; sess.email = u.email || '';
+  } catch (e) { /* the name of the provider is a nicety */ }
+  Session.store(sess);
+  await accountSync();
+  return true;
+}
+/* after signing in: either this account already has a save (continue it here) or this device's save becomes the account's */
+async function accountSync() {
+  const sess = Session.get(); if (!sess) return;
+  let acct = null;
+  try { acct = await rpc('beam_account', {}); } catch (e) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+  const stars = d => Object.values((d && d.levels) || {}).reduce((n, l) => n + (l.stars || 0), 0);
+  if (acct && acct.id !== P.id) {
+    const adopt = async () => {
+      const next = { ...acct.data, id: acct.id, key: playerKey(), viaAccount: true, auth: { provider: sess.provider, email: sess.email, since: Date.now() } };
+      await switchProfile(next);
+    };
+    if (!hasProgress()) return adopt();
+    modal(`<svg class="bug" viewBox="-1 -1 2 2" id="acctBug"></svg>
+      <h3>${T('בחשבון הזה כבר יש התקדמות')}</h3>
+      <p>${T`בחשבון: ${stars(acct.data)} כוכבים. במכשיר הזה: ${stars(P)} כוכבים. אם תמשיכו עם החשבון, ההתקדמות שבמכשיר הזה תוחלף.`}</p>
+      <button class="btn orange" id="acctUse">${T('המשך עם החשבון')}</button>
+      <button class="btn ghosty" id="acctCancel" style="margin-top:12px">${T('ביטול והתנתקות')}</button>`, m => {
+        bugInto(m.querySelector('#acctBug'));
+        m.querySelector('#acctUse').onclick = adopt;
+        m.querySelector('#acctCancel').onclick = async () => { closeModal(); await AUTH.signOut(); renderAccount(); };
+      }, true);
+    return;
   }
-  save(false);
-  renderHome(); show('home');
-  setTimeout(() => { dailyBonus(); checkAchievements(); }, 450);
+  P.auth = { provider: sess.provider, email: sess.email, since: Date.now() }; save(false);
+  if (!acct) { await cloudSave(); try { await rpc('beam_account_link', { p_id: P.id, p_secret: playerKey() }); } catch (e) { /* linked on the next visit */ } }
+  toast(T`התחברתם עם ${PROVIDERS[sess.provider] || sess.provider}`);
+  if (!$('settings').hidden) renderAccount();
+}
+function restoreLink() { return (/^https?:$/.test(location.protocol) ? location.origin + location.pathname : SITE_URL) + '#restore=' + P.id + '.' + playerKey(); }
+/* a personal link opened on another device: bring the whole save over, device key included */
+async function restoreFrom(code) {
+  const [id, key] = code.split('.');
+  if (!id || !key || id === P.id) return;
+  let data = null;
+  try { data = await rpc('beam_load', { p_id: id, p_secret: key }); } catch (e) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+  if (!data) { toast(T('לא מצאנו גיבוי לקישור הזה')); return; }
+  const go = () => switchProfile({ ...data, id, key });
+  if (!hasProgress()) return go();
+  modal(`<h3>${T('לשחזר את ההתקדמות?')}</h3>
+    <p>${T('ההתקדמות שבמכשיר הזה תוחלף בהתקדמות מהקישור.')}</p>
+    <button class="btn orange" id="resGo">${T('שחזור')}</button>
+    <button class="btn ghosty" id="resNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+      m.querySelector('#resGo').onclick = go; m.querySelector('#resNo').onclick = closeModal;
+    });
 }
 function renderAccount() {
-  const card = $('accountCard'), a = P.auth || { provider: 'guest' };
-  card.hidden = !!AUTH.demo; if (AUTH.demo) return;
-  if (a.provider === 'guest') {
-    card.innerHTML = `<h3>${T`חשבון`}</h3>
-      <p>${T`אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.`}</p>
-      <button class="sso google small" id="linkGoogle">${T`חיבור עם Google`}</button>
-      <button class="sso facebook small" id="linkFacebook" style="margin-top:12px">${T`חיבור עם Facebook`}</button>`;
-    card.querySelector('#linkGoogle').onclick = () => linkAccount('google');
-    card.querySelector('#linkFacebook').onclick = () => linkAccount('facebook');
-  } else {
-    card.innerHTML = `<h3>${T`חשבון`}</h3><p>${T`מחוברים עם ${PROVIDERS[a.provider]}.`}</p>
-      <button class="btn ghosty" id="signOutBtn">${T`התנתקות`}</button>`;
+  const card = $('accountCard'), sess = Session.get();
+  const on = Object.keys(AUTH.enabled).filter(p => AUTH.enabled[p]);
+  card.hidden = false;
+  if (sess) {
+    card.innerHTML = `<h3>${T`חשבון`}</h3><p>${T`מחוברים עם ${PROVIDERS[sess.provider] || sess.provider}.`}${sess.email ? ' ' + esc(sess.email) : ''}</p>
+      <p>${T('ההתקדמות נשמרת בחשבון, ואפשר להמשיך אותה מכל מכשיר.')}</p>
+      <button class="btn ghosty" id="signOutBtn">${T`התנתקות`}</button>
+      <button class="linkbtn" id="forgetBtn">${T('מחיקת כל המידע שלי מהשרת')}</button>`;
     card.querySelector('#signOutBtn').onclick = signOut;
+    card.querySelector('#forgetBtn').onclick = forgetMe;
+    return;
   }
+  card.innerHTML = `<h3>${T('גיבוי והמשך במכשיר אחר')}</h3>
+    <p>${T('ההתקדמות שלכם נשמרת במכשיר הזה ומגובה בשרת.')}</p>
+    ${on.map(p => `<button class="sso ${p} small" data-p="${p}" style="margin-bottom:12px">${T`חיבור עם ${PROVIDERS[p]}`}</button>`).join('')}
+    <button class="btn blue" id="restoreBtn2">${T('קישור אישי להמשך במכשיר אחר')}</button>
+    <p class="powernote" style="margin-top:10px">${T('הקישור אישי: מי שמחזיק בו יכול לשחק בשמכם. אל תשתפו אותו.')}</p>
+    <button class="linkbtn" id="forgetBtn">${T('מחיקת כל המידע שלי מהשרת')}</button>`;
+  card.querySelector('#forgetBtn').onclick = forgetMe;
+  for (const btn of card.querySelectorAll('[data-p]')) btn.onclick = () => AUTH.signIn(btn.dataset.p);
+  card.querySelector('#restoreBtn2').onclick = async () => {
+    if (!hasProgress()) { toast(T('עוד אין מה לגבות. שחקו שלב אחד קודם.')); return; }
+    if (!(await cloudSave())) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+    shareText(T('הקישור האישי שלי ל-BEAM'), restoreLink(), T('הקישור הועתק. פתחו אותו במכשיר השני.'));
+  };
 }
-async function linkAccount(provider) {
-  const r = await AUTH.signIn(provider);
-  if (!r) return;
-  P.auth = { provider, since: Date.now() }; save(false);
-  renderAccount(); toast(T`החשבון חובר עם ${PROVIDERS[provider]}`);
+/* the player's right to be forgotten: backup, leaderboard row and daily results go, and the device starts over */
+function forgetMe() {
+  modal(`<h3>${T('למחוק את כל המידע?')}</h3>
+    <p>${T('הגיבוי, השם והניקוד יימחקו מהשרת, וההתקדמות תימחק גם מהמכשיר הזה. אי אפשר לבטל את זה.')}</p>
+    <button class="btn danger" id="fgGo">${T('מחיקה')}</button>
+    <button class="btn ghosty" id="fgNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+      m.querySelector('#fgNo').onclick = closeModal;
+      m.querySelector('#fgGo').onclick = async () => {
+        clearTimeout(saveTimer); clearTimeout(cloudTimer); cloudTimer = null;
+        try { await rpc('beam_forget_me', { p_id: P.id, p_secret: playerKey() }); } catch (e) { closeModal(); toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+        await AUTH.signOut();
+        await switchProfile({ ...newProfile(), auth: { provider: 'guest', since: Date.now() } });
+      };
+    });
 }
 async function signOut() {
+  await cloudSave();
   await AUTH.signOut();
-  P.auth = null; save(false);
-  show('login');
+  if (P.viaAccount) {       // this device only had the save through the account: without it, it starts as a new guest
+    await switchProfile({ ...newProfile(), auth: { provider: 'guest', since: Date.now() } }); return;
+  }
+  P.auth = { provider: 'guest', since: Date.now() }; save(false);
+  renderAccount(); toast(T('התנתקתם. ההתקדמות נשארת במכשיר הזה.'));
 }
-$('loginGoogle').onclick = () => loginWith('google');
-$('loginFacebook').onclick = () => loginWith('facebook');
-$('loginGuest').onclick = () => loginWith('guest');
+$('loginGoogle').onclick = () => AUTH.signIn('google');
+$('loginFacebook').onclick = () => AUTH.signIn('facebook');
+$('loginGuest').onclick = () => goHome();
 
 /* ---- boot: splash with a real loader, then into the game ---- */
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -2564,6 +2709,14 @@ function setProgress(p, text) {
   idle(() => { preloadWinVideos(); const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
   // on the web the game installs to the home screen and keeps working offline
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  AUTH.detect();
+  // the personal link keeps its key after the #, which browsers never send to any server
+  const restore = new URLSearchParams(location.hash.replace(/^#/, '')).get('restore');
+  if (await finishSignIn()) { bonusPending = true; return; }
+  if (restore && /^[A-Za-z0-9]{6,64}\.[a-f0-9]{16,128}$/.test(restore)) {
+    try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays */ }
+    bonusPending = true; restoreFrom(restore); return;
+  }
   const invite = (new URLSearchParams(location.search).get('duel') || '').trim().toUpperCase();
   if (/^[A-Z0-9]{5}$/.test(invite)) {
     try { history.replaceState(null, '', location.pathname); } catch (e) { /* address stays as it was */ }
