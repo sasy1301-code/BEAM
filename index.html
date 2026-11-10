@@ -535,6 +535,7 @@ body.splashing{overflow:hidden}
     <button role="tab" id="tabAll" aria-selected="true">כל הזמנים</button>
     <button role="tab" id="tabDay" aria-selected="false">האתגר של היום</button>
   </div>
+  <p class="privacy" id="lbOffline" hidden>אין חיבור לטבלה כרגע. מוצגות רק התוצאות שלכם.</p>
   <ol class="lb" id="lbList"></ol>
   <p class="privacy">השם והניקוד שלכם גלויים לכל מי שמשחק במשחק הזה.</p>
   <button class="btn blue" id="renameBtn">שנו שם</button>
@@ -572,6 +573,7 @@ body.splashing{overflow:hidden}
     <h3>שם בטבלת המובילים</h3>
     <p id="setName"></p>
     <button class="btn blue" id="setRename">שינוי שם</button>
+    <button class="linkbtn" id="setLeave">הסרת השם והניקוד מהטבלה</button>
   </div>
   <div class="set">
     <h3>איפוס התקדמות</h3>
@@ -1289,15 +1291,48 @@ async function flushSave(attempt) {
   if (ok && publish && P.name) publishScore();
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); flushSave(0); } });
-async function publishScore() {
-  if (!window.storage || !P.name) return;
+/* ---- online leaderboard ----
+   Shared scores live in a small database. Players stay anonymous: this device keeps a random id and a secret key,
+   and the key is what lets it update or delete its own row. The publishable key below is meant to be public.
+   When the server cannot be reached, the table falls back to what this device knows (just this player). */
+const BACKEND = { url: 'https://lwtimaunczpjfvppmudd.supabase.co', key: 'sb_publishable_ll8ay08mufmaqKP1NHBnVQ_Xtn2EXBW' };
+async function rpc(fn, args) {
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 8000);
   try {
-    await window.storage.set('lb:' + P.id, JSON.stringify({ name: P.name, total: P.earned, stars: totalStars() }), true);
-    const d = P.daily[todayStr()];
-    if (d) await window.storage.set(`day:${todayStr()}:${P.id}`, JSON.stringify({ name: P.name, score: d.score, moves: d.moves, time: d.time }), true);
+    const r = await fetch(`${BACKEND.url}/rest/v1/rpc/${fn}`, { method: 'POST', signal: ctl.signal,
+      headers: { apikey: BACKEND.key, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+    if (!r.ok) throw new Error(fn + ' ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+/* anonymous play statistics: which level was started or finished and how it went. No player id is sent,
+   and nothing is sent at all when the browser asks not to be tracked. */
+function track(kind, extra) {
+  if (!G || navigator.doNotTrack === '1' || !/^https?:$/.test(location.protocol)) return;
+  rpc('beam_event', { p_kind: kind, p_level: G.mode === 'daily' ? 'daily' : G.lv.id, ...extra }).catch(() => {});
+}
+function playerKey() {
+  if (!P.key) {
+    const a = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(a);
+    P.key = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); save(false);
+  }
+  return P.key;
+}
+async function publishScore() {
+  if (!P.name) return;
+  const t = todayStr(), d = P.daily[t];
+  try {   // this device's own copy, so the table still shows you when offline
+    if (window.storage) {
+      await window.storage.set('lb:' + P.id, JSON.stringify({ name: P.name, total: P.earned, stars: totalStars() }), true);
+      if (d) await window.storage.set(`day:${t}:${P.id}`, JSON.stringify({ name: P.name, score: d.score, moves: d.moves, time: d.time }), true);
+    }
+  } catch (e) { /* local copy is optional */ }
+  try {
+    const ok = await rpc('beam_submit_score', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_total: P.earned, p_stars: totalStars() });
+    if (ok && d) await rpc('beam_submit_daily', { p_id: P.id, p_secret: playerKey(), p_day: t, p_score: d.score, p_moves: d.moves, p_time: d.time });
   } catch (e) { if (!saveWarned) console.warn('Leaderboard update skipped for now.'); }
 }
-async function readBoard(prefix) {
+async function readLocalBoard(prefix) {
   if (!window.storage) return [];
   try {
     const res = await window.storage.list(prefix, true);
@@ -1307,7 +1342,25 @@ async function readBoard(prefix) {
       catch (e) { return null; }
     }));
     return rows.filter(Boolean);
-  } catch (e) { console.warn('Leaderboard could not be loaded right now.'); return []; }
+  } catch (e) { return []; }
+}
+/* rows come back ranked by the server, with your own row included wherever it stands */
+async function readBoard(tab) {
+  try {
+    const rows = tab === 'all' ? await rpc('beam_leaderboard', { p_id: P.id, p_limit: 25 })
+      : await rpc('beam_leaderboard_day', { p_day: todayStr(), p_id: P.id, p_limit: 25 });
+    return { online: true, rows: rows.map(r => ({ ...r, time: r.time_s })) };
+  } catch (e) {
+    const val = r => tab === 'all' ? r.total : r.score;
+    const rows = (await readLocalBoard(tab === 'all' ? 'lb:' : `day:${todayStr()}:`)).sort((a, b) => val(b) - val(a)).map((r, n) => ({ ...r, rank: n + 1 }));
+    return { online: false, rows };
+  }
+}
+async function leaveLeaderboard() {
+  try { await rpc('beam_delete_me', { p_id: P.id, p_secret: playerKey() }); }
+  catch (e) { toast('אין חיבור כרגע. נסו שוב מאוחר יותר.'); return; }
+  try { if (window.storage) { await window.storage.delete('lb:' + P.id, true); await window.storage.delete(`day:${todayStr()}:${P.id}`, true); } } catch (e) { /* nothing stored */ }
+  P.name = ''; save(false); renderHome(); openSettings(); toast('השם והניקוד הוסרו מהטבלה');
 }
 
 /* ================= achievements ================= */
@@ -1496,6 +1549,7 @@ function startGame() {
   clearInterval(timerInt);
   Sound.play('whoosh');
   if (G.mode === 'daily') timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
+  G.t0 = Date.now(); track('start');
   renderGame(); show('game');
 }
 const elapsed = () => Math.floor((Date.now() - G.start) / 1000);
@@ -1713,6 +1767,7 @@ function finish() {
     const score = 500 + Math.max(0, 500 - time * 3) + Math.max(0, 500 - Math.max(0, G.moves - par(G.lv)) * 50);
     // daily has no stars: a fast, clean solve is perfect; slow and wasteful gets the shrug
     const clean = G.moves <= par(G.lv);
+    track('done', { p_moves: G.moves, p_time: time, p_helped: !!G.helped });
     mood = clean && time <= 60 ? 'cheer' : clean || time <= 120 ? 'think' : 'shrug';
     const t = todayStr(), prev = P.daily[t];
     if (!prev || score > prev.score) { earned = score - (prev ? prev.score : 0); P.daily[t] = { score, moves: G.moves, time }; }
@@ -1734,6 +1789,7 @@ function finish() {
     const lv = G.lv, i = G.idx;
     const stars = G.helped ? 1 : G.moves <= par(lv) ? 3 : 2;
     mood = stars === 3 ? 'cheer' : stars === 2 ? 'think' : 'shrug';
+    track('done', { p_stars: stars, p_moves: G.moves, p_time: Math.round((Date.now() - (G.t0 || Date.now())) / 1000), p_helped: !!G.helped });
     const pts = levelPoints(lv, stars), prev = recOf(i);
     if (!prev || stars > prev.stars) { earned = pts - (prev ? prev.pts : 0); P.levels[lv.id] = { stars, pts }; }
     gain(earned);
@@ -1794,23 +1850,22 @@ async function openLeaderboard(tab) {
   list.innerHTML = '<li class="empty">טוען…</li>';
   $('lbSub').textContent = lbTab === 'all' ? 'כל הנקודות שנצברו במשחק' : `האתגר של ${todayStr().split('-').reverse().join('.')}`;
   if (P.name) await publishScore();
-  const rows = lbTab === 'all' ? await readBoard('lb:') : await readBoard(`day:${todayStr()}:`);
+  const asked = lbTab, { online, rows } = await readBoard(lbTab);
+  if (asked !== lbTab || $('leader').hidden) return;   // the player moved on while the table was loading
   const val = r => lbTab === 'all' ? r.total : r.score;
-  rows.sort((a, b) => val(b) - val(a));
+  $('lbOffline').hidden = online;
   list.innerHTML = '';
   if (!rows.length) { list.innerHTML = `<li class="empty">${lbTab === 'all' ? 'עוד אין שחקנים בטבלה. היו הראשונים!' : 'אף אחד עוד לא פתר את האתגר של היום.'}</li>`; return; }
   const row = (r, n) => {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
-    li.innerHTML = `<span class="pos">${n + 1}</span><span class="nm"><span></span><small></small></span><span class="sc"></span>`;
+    li.innerHTML = `<span class="pos">${r.rank || n + 1}</span><span class="nm"><span></span><small></small></span><span class="sc"></span>`;
     li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? ' (אתם)' : '');
     li.querySelector('.nm small').textContent = lbTab === 'all' ? `${r.stars || 0} כוכבים, ${rankOf(r.total).name}` : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
     li.querySelector('.sc').textContent = fmt(val(r));
     return li;
   };
-  rows.slice(0, 25).forEach((r, n) => list.appendChild(row(r, n)));
-  const my = rows.findIndex(r => r.id === P.id);
-  if (my >= 25) list.appendChild(row(rows[my], my));
+  rows.filter((r, n) => (r.rank || n + 1) <= 25 || r.id === P.id).forEach((r, n) => list.appendChild(row(r, n)));
 }
 
 /* ================= achievements screen ================= */
@@ -1892,7 +1947,7 @@ function openSettings() {
     card.querySelector('#buyAds').onclick = buyRemoveAds;
     card.querySelector('#restoreBtn').onclick = restorePurchases;
   }
-  $('setName').textContent = P.name ? `כרגע: ${P.name}` : 'עוד לא בחרתם שם.';
+  $('setName').textContent = P.name ? `כרגע: ${P.name}` : 'עוד לא בחרתם שם.'; $('setLeave').hidden = !P.name;
   renderAccount();
   show('settings');
 }
@@ -1903,7 +1958,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">ביטול</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, auth: P.auth, id: P.id, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, auth: P.auth, id: P.id, key: P.key, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast('ההתקדמות אופסה');
       };
@@ -1986,6 +2041,7 @@ function applySoundPrefs() {
 }
 $('optSfx').onchange = e => { P.sfx = e.target.checked; applySoundPrefs(); save(false); if (P.sfx) Sound.play('tap'); };
 if (/^https?:$/.test(location.protocol)) { $('legalPrivacy').href = 'privacy/'; $('legalSupport').href = 'support/'; }   // on the web the pages sit next to the game
+$('setLeave').onclick = leaveLeaderboard;
 $('optHaptic').onchange = e => { P.haptic = e.target.checked; applySoundPrefs(); save(false); if (P.haptic) Haptic.play('win'); };
 $('optMusic').onchange = e => { P.music = e.target.checked; applySoundPrefs(); save(false); if (P.music) previewMusic(); };
 // choosing a style in settings plays a short preview
@@ -2102,7 +2158,7 @@ function setProgress(p, text) {
   if (firstRun) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
   const newcomer = firstRun && !Object.keys(P.levels).length;
   renderHome();
-  if (newcomer) { G = session('level', ALL[0], { idx: 0 }); renderGame(); show('game'); bonusPending = true; }
+  if (newcomer) { G = session('level', ALL[0], { idx: 0 }); G.t0 = Date.now(); track('start'); renderGame(); show('game'); bonusPending = true; }
   const rest = 800 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
   setProgress(100, 'מוכן!');
