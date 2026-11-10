@@ -632,7 +632,6 @@ body.splashing{overflow:hidden}
   <p class="privacy" id="lbOffline" hidden>אין חיבור לטבלה כרגע. מוצגות רק התוצאות שלכם.</p>
   <ol class="lb" id="lbList"></ol>
   <p class="privacy">השם והניקוד שלכם גלויים לכל מי שמשחק במשחק הזה.</p>
-  <button class="btn blue" id="renameBtn">שנו שם</button>
 </section>
 
 <!-- ACHIEVEMENTS -->
@@ -2744,7 +2743,6 @@ $('lbBtn').onclick = () => openLeaderboard('all');
 $('lbBack').onclick = goHome;
 $('tabAll').onclick = () => openLeaderboard('all');
 $('tabDay').onclick = () => openLeaderboard('day');
-$('renameBtn').onclick = () => openProfile(() => openLeaderboard());
 $('achBtn').onclick = openAchievements;
 $('achBack').onclick = goHome;
 $('meBtn').onclick = () => openProfile();
