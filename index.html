@@ -337,12 +337,30 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .shopitem{background:var(--surface); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7; border-radius:18px; padding:10px; box-shadow:0 4px 0 var(--rule); text-align:center; display:flex; flex-direction:column; gap:6px}
 .shopitem svg{width:100%; height:64px; background:#241047; border-radius:12px}
+.shopitem svg.bsample{background:none}
+.shopitem button.fxtry{border:none; width:100%; height:64px; border-radius:12px; background:#241047; font-size:34px; min-height:0}
+.bd-candy{--t-blue:#FFC1DD; --t-green:#BDF3DF; --t-purple:#FFF0A8; --t-orange:#C4E4FF; --tray:#FFF7FB; --tray-edge:#F3A9CC; --t-shade:rgba(160,40,110,.18)}
+.bd-ocean{--t-blue:#8FD3F4; --t-green:#7FE3D4; --t-purple:#A9C4FF; --t-orange:#C9F2FF; --tray:#EAF8FF; --tray-edge:#5FA8D8; --t-shade:rgba(10,60,110,.2)}
+.bd-forest{--t-blue:#B9E38A; --t-green:#8FCB7A; --t-purple:#E3D7A3; --t-orange:#D9B58A; --tray:#F4F8E6; --tray-edge:#7FA35C; --t-shade:rgba(40,70,20,.2)}
+.bd-night{--t-blue:#3D4F99; --t-green:#2F6F78; --t-purple:#5B429B; --t-orange:#7A4A72; --tray:#1B1540; --tray-edge:#0D0A26; --t-shade:rgba(0,0,0,.4)}
+.bd-royal{--t-blue:#F6E3A1; --t-green:#EAC56B; --t-purple:#FFF3CF; --t-orange:#DDB04E; --tray:#3A1B66; --tray-edge:#240E45; --t-shade:rgba(60,30,0,.28)}
+.bd-candy .boardwrap{background:linear-gradient(160deg,#FFE6F2,#FFC9E3)} .bd-ocean .boardwrap{background:linear-gradient(160deg,#D9F3FF,#9FD5F5)}
+.bd-forest .boardwrap{background:linear-gradient(160deg,#EAF5D3,#BFDD9B)} .bd-night .boardwrap{background:linear-gradient(160deg,#2A2160,#120D33)}
+.bd-royal .boardwrap{background:linear-gradient(160deg,#5A2D99,#34125F)}
+.fxbox{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
+.fxbox i{position:absolute; top:-30px; width:var(--s); height:calc(var(--s) * .6); background:var(--c); border-radius:2px; font-style:normal; animation:fxFall 2.6s linear both}
+.fx-stars i,.fx-hearts i{background:none; color:var(--c); font-size:calc(var(--s) * 1.8); width:auto; height:auto; text-shadow:0 0 8px var(--c)}
+.fx-bubbles i{top:auto; bottom:-50px; height:var(--s); border-radius:50%; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(160,220,255,.35) 60%,rgba(120,190,255,.15)); border:1px solid rgba(255,255,255,.6); animation-name:fxRise}
+.fx-fireworks i{width:7px; height:7px; border-radius:50%; box-shadow:0 0 8px currentColor; opacity:0; animation:fxBurst 1.1s ease-out both}
+@keyframes fxFall{to{transform:translate(var(--sway),110vh) rotate(var(--r))}}
+@keyframes fxRise{to{transform:translate(var(--sway),-115vh); opacity:.2}}
+@keyframes fxBurst{0%{opacity:1; transform:translate(0,0) scale(1)} 80%{opacity:1} 100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(.3)}}
 .shopitem b{font-size:16px}
-.shopitem button{border:none; border-radius:12px; font:inherit; font-weight:700; font-size:15px; min-height:40px; background:var(--orange,#FF8A1F); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px}
-.shopitem button svg{width:18px; height:18px; background:none}
-.shopitem button.have{background:var(--rule); color:var(--ink)}
-.shopitem button.on{background:#2DBE60; color:#fff}
-.shopitem button:disabled{opacity:.55}
+.shopitem button.act{border:none; border-radius:12px; font:inherit; font-weight:700; font-size:15px; min-height:40px; background:var(--orange,#FF8A1F); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px}
+.shopitem button.act svg{width:18px; height:18px; background:none}
+.shopitem button.act.have{background:var(--rule); color:var(--ink)}
+.shopitem button.act.on{background:#2DBE60; color:#fff}
+.shopitem button.act:disabled{opacity:.55}
 .shopitem.soon{opacity:.75} .shopitem.soon .big{font-size:34px; line-height:64px}
 @media (prefers-color-scheme: dark){ .shopitem{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
 .minis.four{grid-template-columns:repeat(4,1fr); gap:8px} .minis.four button{font-size:13px; padding:10px 2px 8px}
@@ -651,10 +669,7 @@ body.splashing{overflow:hidden}
   <h2 class="screen-title">חנות</h2>
   <p class="screen-sub">קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.</p>
   <div class="shopwallet"><div class="coin" id="shopPoints"></div></div>
-  <h3 class="shoph">צבע הקרן</h3>
-  <div class="shopgrid" id="shopBeams"></div>
-  <h3 class="shoph">בקרוב</h3>
-  <div class="shopgrid" id="shopSoon"></div>
+  <div id="shopBody"></div>
 </section>
 
 <section id="leader" hidden>
@@ -856,7 +871,9 @@ const EN = {
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
   'בשימוש': 'In use', 'בחירה': 'Use', 'דמויות': 'Characters', 'לוחות': 'Boards', 'הגן של הגחלילית': 'The firefly\'s garden', 'אפקטי ניצחון': 'Win effects',
-  'קרן {}': '{0} beam', 'המחיר: {} נקודות. יישארו לכם {}.': 'Price: {0} points. You will have {1} left.', 'קנייה': 'Buy', 'הקרן החדשה שלכם מוכנה': 'Your new beam is ready',
+  'עיצוב הלוח': 'Board theme', 'אפקט ניצחון': 'Win effect', 'קלאסי': 'Classic', 'ממתקים': 'Candy', 'אוקיינוס': 'Ocean', 'יער': 'Forest', 'לילה': 'Night', 'מלכותי': 'Royal',
+  'בלי אפקט': 'No effect', 'קונפטי': 'Confetti', 'בועות': 'Bubbles', 'גשם כוכבים': 'Star shower', 'לבבות': 'Hearts', 'זיקוקים': 'Fireworks', 'תצוגה מקדימה': 'Preview', 'נוסף לאוסף שלכם': 'Added to your collection',
+  'המחיר: {} נקודות. יישארו לכם {}.': 'Price: {0} points. You will have {1} left.', 'קנייה': 'Buy', 'הקרן החדשה שלכם מוכנה': 'Your new beam is ready',
   // ---- friends ----
   'החברים שלי': 'My friends', 'חברים': 'Friends', 'שליחת קישור לחבר': 'Send a link to a friend', 'שליחה בוואטסאפ': 'Send on WhatsApp', 'שיתוף באפליקציה אחרת': 'Share with another app', 'העתקת הקישור': 'Copy the link', 'סגירה': 'Close', 'הצג אותי כמחובר לחברים': 'Show me as online to friends', 'הזמנה בקישור': 'Invite by link',
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
@@ -1831,49 +1848,83 @@ function dailyBonus() {
 }
 
 /* ================= shop =================
-   Points buy looks, never an advantage: the beam's colour today, characters, boards and the firefly's garden next.
-   Buying comes out of the spending balance only, so it never costs a place on the leaderboard. */
-const BEAMS = [
-  { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
-  { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 },
-];
-const owns = id => id === 'classic' || !!(P.own && P.own['beam:' + id]);
+   Points buy looks, never an advantage: the beam's colour, the board's theme and the win effect today; characters
+   and the firefly's garden next. Buying comes out of the spending balance only, so it never costs a leaderboard place. */
+const SHOP = {
+  beam: { title: 'צבע הקרן', items: [
+    { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
+    { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 }] },
+  board: { title: 'עיצוב הלוח', items: [
+    { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'candy', name: 'ממתקים', price: 1500 }, { id: 'ocean', name: 'אוקיינוס', price: 1500 }, { id: 'forest', name: 'יער', price: 2000 },
+    { id: 'night', name: 'לילה', price: 3000 }, { id: 'royal', name: 'מלכותי', price: 5000 }] },
+  fx: { title: 'אפקט ניצחון', items: [
+    { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
+    { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'fireworks', name: 'זיקוקים', price: 4000, icon: '🎆' }] },
+};
+const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-' };
+const owns = (cat, id) => id === 'classic' || !!(P.own && P.own[cat + ':' + id]);
+const lookOf = cat => SHOP[cat].items.some(x => x.id === P[cat]) && owns(cat, P[cat]) ? P[cat] : 'classic';
 function applyLook() {
-  const b = BEAMS.some(x => x.id === P.beam) && owns(P.beam) ? P.beam : 'classic';
-  for (const el of [$('game'), $('help')]) {          // only where a beam is drawn, so the shop's samples keep their own colours
-    for (const c of [...el.classList]) if (c.indexOf('bm-') === 0) el.classList.remove(c);
-    if (b !== 'classic') el.classList.add('bm-' + b);
+  for (const el of [$('game'), $('help')]) {          // only where a board is drawn, so the shop's samples keep their own look
+    for (const c of [...el.classList]) if (/^b[md]-/.test(c)) el.classList.remove(c);
+    for (const cat of ['beam', 'board']) if (lookOf(cat) !== 'classic') el.classList.add(PREFIX[cat] + lookOf(cat));
   }
 }
+const BEAM_SAMPLE = '<svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg>';
+const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" height="1.2" fill="var(--tray)"/>' +
+  [0, 1, 2, 3, 4, 5].map(i => `<rect x="${.27 + i * .42}" y=".12" width=".36" height=".4" rx=".08" fill="var(--t-${['blue', 'green', 'purple', 'orange'][i % 4]})"/><rect x="${.27 + i * .42}" y=".66" width=".36" height=".4" rx=".08" fill="var(--t-${['purple', 'orange', 'blue', 'green'][i % 4]})"/>`).join('') + '</svg>';
+const sampleOf = (cat, it) => cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.icon}</button>`;
 function openShop() { show('shop'); renderShop(); }
 function renderShop() {
   $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
-  const cur = owns(P.beam) ? P.beam || 'classic' : 'classic';
-  $('shopBeams').innerHTML = BEAMS.map(b => {
-    const btn = b.id === cur ? `<button class="on" disabled>${T('בשימוש')}</button>`
-      : owns(b.id) ? `<button class="have" data-use="${b.id}">${T('בחירה')}</button>`
-      : `<button data-buy="${b.id}"${P.balance < b.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(b.price)}</button>`;
-    return `<div class="shopitem bm-${b.id}"><svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg><b>${T(b.name)}</b>${btn}</div>`;
-  }).join('');
-  for (const el of $('shopBeams').querySelectorAll('[data-use]')) el.onclick = () => { P.beam = el.dataset.use; save(false); applyLook(); Sound.play('tap'); renderShop(); };
-  for (const el of $('shopBeams').querySelectorAll('[data-buy]')) el.onclick = () => buyBeam(BEAMS.find(b => b.id === el.dataset.buy));
-  $('shopSoon').innerHTML = [['🧚', 'דמויות'], ['🌌', 'לוחות'], ['🌷', 'הגן של הגחלילית'], ['🎆', 'אפקטי ניצחון']]
-    .map(([e, n]) => `<div class="shopitem soon"><span class="big">${e}</span><b>${T(n)}</b></div>`).join('');
+  $('shopBody').innerHTML = Object.keys(SHOP).map(cat => `<h3 class="shoph">${T(SHOP[cat].title)}</h3><div class="shopgrid">` + SHOP[cat].items.map(it => {
+    const btn = it.id === lookOf(cat) ? `<button class="act on" disabled>${T('בשימוש')}</button>`
+      : owns(cat, it.id) ? `<button class="act have" data-use="${cat}:${it.id}">${T('בחירה')}</button>`
+      : `<button class="act" data-buy="${cat}:${it.id}"${P.balance < it.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(it.price)}</button>`;
+    return `<div class="shopitem ${PREFIX[cat]}${it.id}">${sampleOf(cat, it)}<b>${T(it.name)}</b>${btn}</div>`;
+  }).join('') + '</div>').join('') +
+    `<h3 class="shoph">${T('בקרוב')}</h3><div class="shopgrid">` + [['🧚', 'דמויות'], ['🌷', 'הגן של הגחלילית']].map(([e, n]) => `<div class="shopitem soon"><span class="big">${e}</span><b>${T(n)}</b></div>`).join('') + '</div>';
+  const find = key => { const [cat, id] = key.split(':'); return [cat, SHOP[cat].items.find(x => x.id === id)]; };
+  for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[cat] = it.id; save(false); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); };
+  for (const el of $('shopBody').querySelectorAll('[data-buy]')) el.onclick = () => buyLook(...find(el.dataset.buy));
+  for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
 }
-function buyBeam(b) {
-  modal(`<div class="shopitem bm-${b.id}" style="box-shadow:none;padding:0"><svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg></div>
-    <h3>${T`קרן ${T(b.name)}`}</h3>
-    <p>${T`המחיר: ${fmt(b.price)} נקודות. יישארו לכם ${fmt(P.balance - b.price)}.`}</p>
+function buyLook(cat, it) {
+  modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<span class="big" style="font-size:54px">${it.icon}</span>` : sampleOf(cat, it)}</div>
+    <h3>${T(it.name)}</h3>
+    <p>${T`המחיר: ${fmt(it.price)} נקודות. יישארו לכם ${fmt(P.balance - it.price)}.`}</p>
     <button class="btn orange" id="buyGo">${T('קנייה')}</button>
     <button class="btn ghosty" id="buyNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
       m.querySelector('#buyNo').onclick = closeModal;
       m.querySelector('#buyGo').onclick = () => {
-        if (P.balance < b.price) { closeModal(); return; }
-        P.balance -= b.price; P.own = P.own || {}; P.own['beam:' + b.id] = 1; P.beam = b.id;
+        if (P.balance < it.price) { closeModal(); return; }
+        P.balance -= it.price; P.own = P.own || {}; P.own[cat + ':' + it.id] = 1; P[cat] = it.id;
         save(false); applyLook(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
-        toast(T('הקרן החדשה שלכם מוכנה'), `-${fmt(b.price)}`);
+        toast(T('נוסף לאוסף שלכם'), `-${fmt(it.price)}`);
+        if (cat === 'fx') winFx(it.id);
       };
     });
+}
+/* the win effect: a short shower of particles over the screen, drawn with plain elements so it costs nothing when idle */
+function winFx(kind) {
+  if (!kind || kind === 'classic' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  const box = document.createElement('div'); box.className = 'fxbox fx-' + kind;
+  const rnd = (a, b) => a + Math.random() * (b - a), COLORS = ['#FF3D7F', '#FFC83A', '#3FD0FF', '#6BEA4B', '#B36BFF', '#FF8A1F'];
+  const add = (style, text) => { const i = document.createElement('i'); i.style.cssText = style; if (text) i.textContent = text; box.appendChild(i); };
+  if (kind === 'fireworks') {
+    for (let b = 0; b < 5; b++) {
+      const x = rnd(15, 85), y = rnd(15, 55), c = COLORS[b % COLORS.length], n = 16;
+      for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, d = rnd(60, 120); add(`left:${x}%;top:${y}%;background:${c};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${b * .35}s`); }
+    }
+  } else {
+    const n = kind === 'bubbles' ? 26 : 44, glyph = kind === 'stars' ? '★' : kind === 'hearts' ? '♥' : '';
+    for (let k = 0; k < n; k++) {
+      const c = kind === 'stars' ? '#FFC83A' : kind === 'hearts' ? ['#FF5FA2', '#B36BFF', '#FF3D7F'][k % 3] : COLORS[k % COLORS.length], size = rnd(kind === 'bubbles' ? 14 : 8, kind === 'bubbles' ? 42 : 16);
+      add(`left:${rnd(0, 100)}%;--c:${c};--s:${size}px;--r:${rnd(-360, 360)}deg;--sway:${rnd(-40, 40)}px;animation-duration:${rnd(1.8, 3.2)}s;animation-delay:${rnd(0, .9)}s`, glyph);
+    }
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4300);
 }
 
 /* ================= my profile ================= */
@@ -2222,6 +2273,7 @@ function showWin(mood, delay, onCard) {
     if (!still()) return;
     bug.className = 'winbug ' + mood + ' perch'; film.className = 'winbug ' + mood + ' perch anim';
     $('winbox').hidden = false;
+    if (mood !== 'shrug') winFx(lookOf('fx'));
     if (onCard) onCard();
     $('nextBtn').focus({ preventScroll: true });
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
@@ -2771,7 +2823,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, beam: P.beam, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, beam: P.beam, board: P.board, fx: P.fx, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
