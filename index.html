@@ -1712,19 +1712,25 @@ function playWinVideo(mood, canvas, onFail) {
         got = true;
       } catch (e) { fail(); }
     };
+    let last = 0;
     const tick = () => {
       if (my !== winPlay || failed) return;
-      paint();
+      paint(); last = performance.now();
       if (v.ended) return;
       if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(tick); else requestAnimationFrame(tick);
     };
+    // frame callbacks pause when the browser decides nothing is on screen; a plain timer keeps the canvas fed
+    const guard = setInterval(() => {
+      if (my !== winPlay || failed || v.ended) { clearInterval(guard); return; }
+      if (performance.now() - last > 120) { paint(); last = performance.now(); }
+    }, 60);
     v.onended = () => { if (my === winPlay) paint(); };
     v.onerror = fail;
     try { v.currentTime = 0; } catch (e) { /* not seekable yet: it starts from zero anyway */ }
     const pr = v.play();
     if (pr && pr.catch) pr.catch(fail);
     tick();
-    setTimeout(() => { if (!got) fail(); }, 1200);
+    setTimeout(() => { if (!got) fail(); }, 2500);   // a slow connection gets a little longer before the still takes over
   } catch (e) { fail(); }
 }
 let winTimers = [];
