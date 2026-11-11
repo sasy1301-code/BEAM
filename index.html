@@ -635,7 +635,9 @@ body.splashing{overflow:hidden}
 
 /* ---- inner pages of the shell ---- */
 #hud .wallet{flex-direction:row-reverse}
-.tabs.three{grid-template-columns:repeat(3,1fr)}
+.tabs.four{grid-template-columns:repeat(4,1fr)} .tabs.four button{font-size:15px}
+.shopitem img.thumb.char{height:104px}
+.avgrid button.lock{opacity:.45} .avgrid button.lock img{filter:grayscale(1)}
 .lb li.pod{display:flex; align-items:flex-end; justify-content:center; gap:8px; background:none; box-shadow:none; padding:46px 0 0; margin-bottom:12px}
 .lb li.pod div{position:relative; flex:1; max-width:112px; border-radius:18px 18px 0 0; text-align:center; color:#fff; font-weight:700; padding:40px 4px 8px; box-shadow:inset 0 3px 0 rgba(255,255,255,.35); min-width:0}
 .lb li.pod .p1{background:linear-gradient(180deg,#FFD86B,#F0A012); height:150px} .lb li.pod .p2{background:linear-gradient(180deg,#C9D3E6,#8E9BB8); height:120px} .lb li.pod .p3{background:linear-gradient(180deg,#F0B58A,#C9793F); height:100px}
@@ -1042,6 +1044,8 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'דמויות': 'Characters', 'גחלילית': 'Firefly', 'שועלה חוקרת': 'Fox explorer', 'ארנבת ממציאה': 'Bunny inventor', 'ינשוף קוסם': 'Owl wizard', 'חתול נינג\'ה': 'Ninja cat', 'קיפודה גננת': 'Hedgehog gardener', 'צפרדע אלכימאי': 'Frog alchemist',
+  'דביבון מכונאי': 'Raccoon mechanic', 'איילה שומרת': 'Deer guardian', 'נסיכת העשים': 'Moth princess', 'דרקונצ\'יק': 'Baby dragon', 'חד-קרן': 'Unicorn', 'הדמות הזאת מחכה לכם בחנות': 'This character is waiting for you in the shop',
   'מראה אחת': '1 mirror',
   'בואו נשחק': 'Let\'s play', 'כבר שיחקתם? התחברו וההתקדמות תחזור': 'Played before? Sign in and your progress comes back', 'ההתקדמות נשמרת ומגובה גם בלי חשבון. אפשר לחבר חשבון בכל רגע מההגדרות.': 'Your progress is saved and backed up even without an account. You can connect one any time in Settings.', 'קרן': 'Beam', 'לוח': 'Board', 'אפקט': 'Effect',
   'כל הפרקים': 'All chapters', 'בונוס יומי': 'Daily bonus', 'הזמנת חבר': 'Invite a friend', 'מובילים': 'Leaders', 'בית': 'Home', 'קישוט': 'Decorate',
@@ -2126,7 +2130,7 @@ function show(id) {
 function hudSync() {
   $('meName').textContent = P.name || T('שחקן חדש');
   $('meRank').textContent = rankOf(P.earned).name;
-  $('meBug').src = avatarSrc(P.avatar);
+  $('meBug').src = avatarSrc(lookOf('char'));
   $('homePoints').innerHTML = `<img alt="" src="media/ui/star.webp"><span>${fmt(P.balance)}</span><u>+</u>`;
 }
 let toastTimer;
@@ -2331,7 +2335,7 @@ function renderGarden(fresh) {
   if (!inside && g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(G_DIR + h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 'house', 0, ' door'); }
   for (const it of list) for (let i = 0; i < (have[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(dir + it.id, x, y, w, f, it.id + ':' + i, it.flat ? 1 : 0); }
   if (inside) html += `<button class="gdoor" id="gDoor" aria-label="${T('יציאה לגן')}"></button>`;
-  html += `<img class="gbug" alt="" src="${avatarSrc(P.avatar)}">`;
+  html += `<img class="gbug" alt="" src="${OLD_POSES.includes(P.avatar) ? avatarSrc(P.avatar) : BUG_SRC}">`;
   if (!inside && !gCount()) html += `<p class="ghint">${T('הגן עוד ריק. התחילו מבית לגחלילית!')}</p>`;
   if (!inside && g.house && !Object.keys(g.room).length) html += `<p class="ghint low">${T('הקישו על הבית כדי להיכנס')}</p>`;
   scene.innerHTML = html;
@@ -2376,11 +2380,18 @@ const SHOP = {
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
     { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'fireworks', name: 'זיקוקים', price: 4000, icon: '🎆' }] },
+  // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
+  char: { title: 'דמויות', items: [
+    { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועלה חוקרת', price: 0 }, { id: 'bunny', name: 'ארנבת ממציאה', price: 0 },
+    { id: 'owl', name: 'ינשוף קוסם', price: 1500 }, { id: 'cat', name: 'חתול נינג\'ה', price: 1500 }, { id: 'hedgehog', name: 'קיפודה גננת', price: 2000 }, { id: 'frog', name: 'צפרדע אלכימאי', price: 2000 },
+    { id: 'raccoon', name: 'דביבון מכונאי', price: 2500 }, { id: 'deer', name: 'איילה שומרת', price: 3000 }, { id: 'moth', name: 'נסיכת העשים', price: 4000 }, { id: 'dragon', name: 'דרקונצ\'יק', price: 5000 }, { id: 'unicorn', name: 'חד-קרן', price: 8000 }] },
 };
-const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-' };
-const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט' };
-const owns = (cat, id) => id === 'classic' || !!(P.own && P.own[cat + ':' + id]);
-const lookOf = cat => SHOP[cat].items.some(x => x.id === P[cat]) && owns(cat, P[cat]) ? P[cat] : 'classic';
+const CHAR_IDS = new Set(SHOP.char.items.map(x => x.id).filter(x => x !== 'bug'));
+const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-', char: 'ch-' };
+const P_KEY = cat => cat === 'char' ? 'avatar' : cat, BASE = cat => cat === 'char' ? 'bug' : 'classic';
+const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות' };
+const owns = (cat, id) => (SHOP[cat].items.find(x => x.id === id) || {}).price === 0 || !!(P.own && P.own[cat + ':' + id]);
+const lookOf = cat => SHOP[cat].items.some(x => x.id === P[P_KEY(cat)]) && owns(cat, P[P_KEY(cat)]) ? P[P_KEY(cat)] : BASE(cat);
 function applyLook() {
   for (const el of [$('game'), $('help')]) {          // only where a board is drawn, so the shop's samples keep their own look
     for (const c of [...el.classList]) if (/^b[md]-/.test(c)) el.classList.remove(c);
@@ -2390,12 +2401,12 @@ function applyLook() {
 const BEAM_SAMPLE = '<svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg>';
 const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" height="1.2" fill="var(--tray)"/>' +
   [0, 1, 2, 3, 4, 5].map(i => `<rect x="${.27 + i * .42}" y=".12" width=".36" height=".4" rx=".08" fill="var(--t-${['blue', 'green', 'purple', 'orange'][i % 4]})"/><rect x="${.27 + i * .42}" y=".66" width=".36" height=".4" rx=".08" fill="var(--t-${['purple', 'orange', 'blue', 'green'][i % 4]})"/>`).join('') + '</svg>';
-const sampleOf = (cat, it) => cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.icon}</button>`;
+const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.icon}</button>`;
 function openShop() { show('shop'); renderShop(); }
 let shopCat = 'beam';
 function renderShop() {
   $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance); hudSync();
-  $('shopBody').innerHTML = `<div class="tabs three" role="tablist">` + Object.keys(SHOP).map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
+  $('shopBody').innerHTML = `<div class="tabs four" role="tablist">` + Object.keys(SHOP).map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
     [shopCat].map(cat => `<div class="shopgrid">` + SHOP[cat].items.map(it => {
     const btn = it.id === lookOf(cat) ? `<button class="act on" disabled>${T('בשימוש')}</button>`
       : owns(cat, it.id) ? `<button class="act have" data-use="${cat}:${it.id}">${T('בחירה')}</button>`
@@ -2404,7 +2415,7 @@ function renderShop() {
   }).join('') + '</div>').join('');
   for (const el of $('shopBody').querySelectorAll('[data-cat]')) el.onclick = () => { shopCat = el.dataset.cat; Sound.play('tap'); renderShop(); };
   const find = key => { const [cat, id] = key.split(':'); return [cat, SHOP[cat].items.find(x => x.id === id)]; };
-  for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[cat] = it.id; save(false); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); };
+  for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[P_KEY(cat)] = it.id; save(cat === 'char'); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); if (cat === 'char') pulse(); };
   for (const el of $('shopBody').querySelectorAll('[data-buy]')) el.onclick = () => buyLook(...find(el.dataset.buy));
   for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
 }
@@ -2417,8 +2428,8 @@ function buyLook(cat, it) {
       m.querySelector('#buyNo').onclick = closeModal;
       m.querySelector('#buyGo').onclick = () => {
         if (P.balance < it.price) { closeModal(); return; }
-        P.balance -= it.price; P.own = P.own || {}; P.own[cat + ':' + it.id] = 1; P[cat] = it.id;
-        save(false); applyLook(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
+        P.balance -= it.price; P.own = P.own || {}; P.own[cat + ':' + it.id] = 1; P[P_KEY(cat)] = it.id;
+        save(cat === 'char'); applyLook(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
         toast(T('נוסף לאוסף שלכם'), `-${fmt(it.price)}`);
         if (cat === 'fx') winFx(it.id);
       };
@@ -2447,20 +2458,21 @@ function winFx(kind) {
 }
 
 /* ================= my profile ================= */
-const AVATARS = ['bug', 'welcome', 'hero', 'power', 'cheer', 'thumbs', 'think', 'point', 'shrug', 'sleep'];
-function avatarSrc(k) { return k === 'cheer' || k === 'think' || k === 'shrug' ? WIN_BUG[k] : POSE[k] || BUG_SRC; }
+const AVATARS = SHOP.char.items.map(x => x.id), OLD_POSES = ['welcome', 'hero', 'power', 'cheer', 'thumbs', 'think', 'point', 'shrug', 'sleep'];
+function avatarSrc(k) { if (CHAR_IDS.has(k)) return `media/chars/${k}.webp`; return k === 'cheer' || k === 'think' || k === 'shrug' ? WIN_BUG[k] : POSE[k] || BUG_SRC; }
 function openProfile(after) {
-  let pick = AVATARS.includes(P.avatar) ? P.avatar : 'bug';
+  let pick = lookOf('char');
   const r = rankOf(P.earned), def = P.name || T`גחלילית ${Math.floor(100 + Math.random() * 900)}`;
   modal(`<img class="bug me" id="profMe" alt="" src="${avatarSrc(pick)}">
     <h3>${T('הפרופיל שלי')}</h3>
     <div class="profstats"><span>${esc(r.name)}</span><span>★ ${totalStars()}</span>${P.duel ? `<span>${T`דו-קרב: ${P.duel.w} ניצחונות`}</span>` : ''}</div>
     <input id="nameInput" maxlength="16" aria-label="${T`שם`}">
     <p style="margin:14px 0 0">${T('בחרו דמות')}</p>
-    <div class="avgrid">${AVATARS.map(a => `<button data-a="${a}" aria-pressed="${a === pick}" aria-label="${T('דמות')} ${a}"><img alt="" src="${avatarSrc(a)}"></button>`).join('')}</div>
+    <div class="avgrid">${SHOP.char.items.map(c => `<button data-a="${c.id}" class="${owns('char', c.id) ? '' : 'lock'}" aria-pressed="${c.id === pick}" aria-label="${T(c.name)}"><img alt="" src="${avatarSrc(c.id)}"></button>`).join('')}</div>
     <button class="btn orange" id="nameSave">${T`שמירה`}</button>`, m => {
       const inp = m.querySelector('#nameInput'); inp.value = P.name || ''; inp.placeholder = def;
       for (const b of m.querySelectorAll('.avgrid button')) b.onclick = () => {
+        if (b.classList.contains('lock')) { Sound.play('tap'); return toast(T('הדמות הזאת מחכה לכם בחנות')); }
         pick = b.dataset.a; Sound.play('tap');
         for (const o of m.querySelectorAll('.avgrid button')) o.setAttribute('aria-pressed', o === b);
         m.querySelector('#profMe').src = avatarSrc(pick);
@@ -2555,7 +2567,7 @@ function homeScene() {
   let html = '';
   if (g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(G_DIR + h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 0, ' door'); }
   for (const it of GARDEN.items) for (let i = 0; i < (g.items[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(G_DIR + it.id, x, y, w, f, it.flat ? 1 : 0); }
-  html += `<img class="gbug" alt="" src="${avatarSrc(P.avatar)}">`;
+  html += `<img class="gbug" alt="" src="${OLD_POSES.includes(P.avatar) ? avatarSrc(P.avatar) : BUG_SRC}">`;
   if (scene.dataset.sig === html) return;
   scene.dataset.sig = html; scene.innerHTML = html;
   for (const im of scene.querySelectorAll('img.gi')) im.onclick = () => {
@@ -3288,7 +3300,7 @@ async function pulse() {
   let r = null;
   try {
     r = await rpc('beam_pulse', { p_id: P.id, p_secret: playerKey(), p_name: P.name,
-      p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true, p_avatar: AVATARS.includes(P.avatar) ? P.avatar : 'bug' });
+      p_state: D ? 'duel' : !$('game').hidden ? 'level' : 'home', p_visible: P.hidePresence !== true, p_avatar: lookOf('char') });
   } catch (e) { /* quiet: the next pulse tries again */ }
   Social.busy = false;
   if (!r || !Array.isArray(r.friends) || !Array.isArray(r.invites)) return;
@@ -3475,7 +3487,7 @@ async function openLeaderboard(tab) {
   const top = rows.length >= 3 && rows.slice(0, 3).every((r, n) => (r.rank || n + 1) === n + 1) ? rows.slice(0, 3) : [];
   if (top.length) {
     const pod = document.createElement('li'); pod.className = 'pod';
-    pod.innerHTML = [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}"><u>${['👑', '🥈', '🥉'][k]}</u><i><img alt="" src="${avatarSrc(top[k].id === P.id ? P.avatar : null)}"></i><b></b><small>${fmt(val(top[k]))}</small></div>`).join('');
+    pod.innerHTML = [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}"><u>${['👑', '🥈', '🥉'][k]}</u><i><img alt="" src="${avatarSrc(top[k].id === P.id ? lookOf('char') : null)}"></i><b></b><small>${fmt(val(top[k]))}</small></div>`).join('');
     [1, 0, 2].forEach((k, j) => { pod.children[j].querySelector('b').textContent = top[k].name; });
     list.appendChild(pod);
   }
