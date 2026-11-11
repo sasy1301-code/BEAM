@@ -702,6 +702,12 @@ body.paused .boardwrap{filter:blur(16px)}
 .lb li.pod b{display:block; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .lb li.pod small{display:block; font-size:13px}
 .lb li.pod .mine{box-shadow:0 0 0 3px #fff, inset 0 3px 0 rgba(255,255,255,.35)}
 body.tabbed .lb li.mine{position:sticky; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:2; background:linear-gradient(180deg,#C77DFF,#8A3DF0); color:#fff; --ink:#fff; --muted:#EBDDFF; outline:3px solid #FFD23F}
+#homeFly{position:absolute; left:0; top:0; width:min(44%,210px); height:auto; z-index:4; pointer-events:none; opacity:0; transition:opacity .4s; filter:drop-shadow(0 0 12px rgba(255,214,90,.55)); animation:hfPath 20s ease-in-out infinite}
+#homeFly.live{opacity:1} #home:has(#homeFly.live) .hscene .gbug{display:none}
+@keyframes hfPath{
+  0%,100%{transform:translate(18%,150%) rotate(-4deg)} 15%{transform:translate(120%,120%) rotate(6deg) scale(.85)} 30%{transform:translate(60%,210%) rotate(-6deg) scale(1.1)}
+  45%{transform:translate(-8%,250%) rotate(5deg)} 60%{transform:translate(70%,160%) rotate(-3deg) scale(.9)} 80%{transform:translate(110%,240%) rotate(7deg)} }
+@media (prefers-reduced-motion:reduce){ #homeFly{animation:none; transform:translate(18%,160%)} }
 /* the way in */
 #loginFly{position:fixed; left:0; top:0; width:min(52vw,250px); height:auto; z-index:1; pointer-events:none; filter:drop-shadow(0 0 14px rgba(255,214,90,.55)); animation:lfPath 16s ease-in-out infinite}
 @keyframes lfPath{
@@ -886,6 +892,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 <!-- HOME: the firefly's garden fills the screen; everything else floats over it -->
 <section id="home">
   <div class="gscene hscene" id="hScene"></div>
+  <canvas id="homeFly" width="320" height="320" aria-hidden="true"></canvas>
   <div class="hchap">
     <button id="chapBtn"><b id="chapName"></b><i aria-hidden="true">›</i></button>
     <div class="hprog"><i id="chapFill"></i><span id="chapCount"></span></div>
@@ -2220,26 +2227,28 @@ const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 /* ================= ui helpers ================= */
 const SCREENS = ['allch', 'home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'shop', 'garden', 'map'];
 /* the firefly on the entry page: a looping clip with its mask stacked underneath, painted onto a canvas so the forest shows through */
-let loginFlyOn = false;
-function loginFly(on) {
-  const c = $('loginFly'); if (on === loginFlyOn) return; loginFlyOn = on;
-  let v = loginFly.v;
-  if (!on) { if (v) v.pause(); return; }
-  if (!v) { v = loginFly.v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto'; v.src = 'media/fly.mp4'; }
-  const N = c.width, work = document.createElement('canvas'); work.width = N; work.height = 2 * N;
-  const wctx = work.getContext('2d', { willReadFrequently: true }), ctx = c.getContext('2d');
+let flyTarget = null;
+function flyShow(c) {
+  if (c === flyTarget) return;
+  const was = flyTarget; flyTarget = c;
+  let v = flyShow.v;
+  if (!c) { if (v) v.pause(); return; }
+  if (!v) { v = flyShow.v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.preload = 'auto'; v.src = 'media/fly.mp4'; }
+  const N = 320, work = flyShow.work || (flyShow.work = document.createElement('canvas')); work.width = N; work.height = 2 * N;
+  const wctx = work.getContext('2d', { willReadFrequently: true });
   const tick = () => {
-    if (!loginFlyOn) return;
+    const to = flyTarget; if (!to) { flyShow.run = false; return; }
     if (v.readyState >= 2) try {
       wctx.drawImage(v, 0, 0, N, 2 * N);
       const img = wctx.getImageData(0, 0, N, 2 * N), d = img.data, half = N * N * 4;
       for (let i = 0; i < half; i += 4) d[i + 3] = d[half + i];
-      ctx.putImageData(img, 0, 0, 0, 0, N, N);
-    } catch (e) { loginFlyOn = false; return; }
+      to.getContext('2d').putImageData(img, 0, 0, 0, 0, N, N);
+      if (!to.classList.contains('live')) to.classList.add('live');
+    } catch (e) { flyTarget = null; flyShow.run = false; return; }
     if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(tick); else requestAnimationFrame(tick);
   };
   const go = v.play(); if (go && go.catch) go.catch(() => {});
-  tick(); requestAnimationFrame(tick);
+  if (!flyShow.run) { flyShow.run = true; tick(); requestAnimationFrame(tick); }
 }
 const TAB_OF = { allch: 'home', shop: 'shop', leader: 'leader', home: 'home', friends: 'duel', garden: 'garden' };       // the screens that carry the two bars
 function show(id) {
@@ -2248,7 +2257,7 @@ function show(id) {
   $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game');
   for (const b of $('tabbar').children) b.classList.toggle('on', b.dataset.tab === tab);
   if (tab) hudSync();
-  loginFly(id === 'login');
+  flyShow(id === 'login' ? $('loginFly') : id === 'home' ? $('homeFly') : null);
 }
 function hudSync() {
   $('meName').textContent = P.name || T('שחקן חדש');
@@ -2697,7 +2706,7 @@ function homeScene() {
   let html = '';
   if (g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(G_DIR + h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 0, ' door'); }
   for (const it of GARDEN.items) for (let i = 0; i < (g.items[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(G_DIR + it.id, x, y, w, f, it.flat ? 1 : 0); }
-  html += `<img class="gbug" alt="" src="${OLD_POSES.includes(P.avatar) ? avatarSrc(P.avatar) : BUG_SRC}">`;
+  html += `<img class="gbug" alt="" src="${BUG_SRC}">`;
   if (scene.dataset.sig === html) return;
   scene.dataset.sig = html; scene.innerHTML = html;
   for (const im of scene.querySelectorAll('img.gi')) im.onclick = () => {
