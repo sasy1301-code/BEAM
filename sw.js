@@ -1,7 +1,7 @@
 /* BEAM service worker: the game keeps working with no connection.
    The page itself is fetched fresh whenever the network answers, so updates arrive on the next visit;
    everything else (clips, icons) is served from the cache first. Bump VERSION when those files change. */
-const VERSION = 'beam-v16';
+const VERSION = 'beam-v17';
 const SHELL = ['./', 'manifest.webmanifest', 'icon.webp', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/favicon-96.png', 'icons/apple-180.png', 'media/cheer2.mp4', 'media/fly.mp4', 'media/hero.webp', 'media/garden/bg.webp', 'media/map/bg.webp', 'media/ui/shop.webp', 'media/ui/home.webp', 'media/ui/invite.webp', 'media/ui/trophy.webp', 'media/ui/decor.webp', 'media/ui/duel.webp', 'media/ui/medal.webp', 'media/ui/calendar.webp', 'media/ui/gift.webp', 'media/ui/help.webp', 'media/ui/gear.webp', 'media/ui/star.webp'];
 
 self.addEventListener('install', e => {

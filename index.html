@@ -722,7 +722,8 @@ body.tabbed .lb li.mine{position:sticky; bottom:calc(96px + env(safe-area-inset-
 #login .login-hero img{height:100%; width:auto; max-width:none; display:block; margin-left:-5%; filter:drop-shadow(0 10px 18px rgba(0,0,0,.4)); animation:lhIn .9s cubic-bezier(.2,1.2,.4,1) both, gBob 3s 1s ease-in-out infinite}
 @keyframes lhIn{from{transform:translateX(-70%); opacity:0}}
 @media (min-width:520px){ #login .login-hero{-webkit-mask-image:linear-gradient(90deg,#000 78%,transparent); mask-image:linear-gradient(90deg,#000 78%,transparent)} }
-#login .login-btns{margin-top:0; width:100%} #login .btn.green{font-size:22px; min-height:60px}
+#login .login-btns{margin-top:0; width:100%}
+body.linked #loginOr,body.linked #loginGoogle,body.linked #loginFacebook,body.linked #login .login-note{display:none} #login .btn.green{font-size:22px; min-height:60px}
 #login .or{font-size:14px; margin:14px 0} #login .or[hidden],.sso[hidden]{display:none}
 #login .login-note{margin-top:14px; font-size:13px}
 /* ---- the shell: one top bar and one bottom bar on every main screen ---- */
@@ -4042,7 +4043,7 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   setProgress(92);
   // a new player comes in as a guest with no sign-in wall, and starts on the home screen like everyone else
   if (!P.auth) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
-  renderHome(); show('home');          // the bars belong to the screen, so it is shown properly and not just left visible
+  renderHome(); show(location.hash.length > 1 || location.search.length > 1 ? 'home' : 'login');          // a plain visit opens on the title page; a link (invite, sign-in, restore) goes on to where it leads
   const rest = 1900 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
   setProgress(100, T('מוכן!'));
@@ -4077,9 +4078,10 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
     return;
   }
   await wait(500);
-  if (isNewcomer()) { bonusPending = true; show('login'); return; }       // first visit: the way in, then the lesson
-  dailyBonus();
-  checkAchievements();
+  // every visit opens on the title page; a player who is already signed in to an account only sees the way in
+  const linked = P.auth && P.auth.provider && P.auth.provider !== 'guest';
+  if (linked) document.body.classList.add('linked');
+  bonusPending = true; show('login');
 })();
 
 </script>
