@@ -452,9 +452,14 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .bd-royal .boardwrap{background:linear-gradient(160deg,#5A2D99,#34125F)}
 .fxbox{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
 .fxbox i{position:absolute; top:-30px; width:var(--s); height:calc(var(--s) * .6); background:var(--c); border-radius:2px; font-style:normal; animation:fxFall 2.6s linear both}
-.fx-stars i,.fx-hearts i{background:none; color:var(--c); font-size:calc(var(--s) * 1.8); width:auto; height:auto; text-shadow:0 0 8px var(--c)}
+.fx-stars i,.fx-hearts i,.fx-dust i,.fx-snow i,.fx-lightning i{background:none; color:var(--c); font-size:calc(var(--s) * 1.8); width:auto; height:auto; text-shadow:0 0 8px var(--c)}
 .fx-bubbles i{top:auto; bottom:-50px; height:var(--s); border-radius:50%; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(160,220,255,.35) 60%,rgba(120,190,255,.15)); border:1px solid rgba(255,255,255,.6); animation-name:fxRise}
-.fx-fireworks i{width:7px; height:7px; border-radius:50%; box-shadow:0 0 8px currentColor; opacity:0; animation:fxBurst 1.1s ease-out both}
+.fx-dust i{top:auto; bottom:-40px; animation-name:fxRise} .fx-lightning i{font-size:calc(var(--s) * 3)}
+.fx-rainbow i{width:calc(var(--s) * .55); height:calc(var(--s) * 4.5); border-radius:999px; box-shadow:0 0 10px var(--c)}
+.fxbox.fx-lightning::before{content:""; position:absolute; inset:0; background:#fff; opacity:0; animation:fxFlash .9s ease-out}
+@keyframes fxFlash{8%{opacity:.75} 20%{opacity:.1} 30%{opacity:.6} 100%{opacity:0}}
+.fxtry img{height:58px; display:block; margin:0 auto; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.fx-fireworks i,.fx-portal i{width:7px; height:7px; border-radius:50%; box-shadow:0 0 8px currentColor; opacity:0; animation:fxBurst 1.1s ease-out both}
 @keyframes fxFall{to{transform:translate(var(--sway),110vh) rotate(var(--r))}}
 @keyframes fxRise{to{transform:translate(var(--sway),-115vh); opacity:.2}}
 @keyframes fxBurst{0%{opacity:1; transform:translate(0,0) scale(1)} 80%{opacity:1} 100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(.3)}}
@@ -1103,6 +1108,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'אבקת קסם': 'Magic dust', 'שלג קריסטל': 'Crystal snow', 'שובל קשת': 'Rainbow trail', 'ברק': 'Lightning', 'שער האור': 'Gate of light',
   'פרק {}': 'Chapter {0}', '{} מתוך {} כוכבים': '{0} of {1} stars',
   'ממשיכים כאן · שלב {}': 'Continue here · level {0}', 'הושלם': 'Done',
   'הפסקה': 'Paused', 'חזרה למפה': 'Back to the map', 'יציאה': 'Leave', 'חינם': 'Free', 'השהיה': 'Pause', 'שלב עם עזרה שווה כוכב אחד ורבע מהנקודות': 'A level with help is worth one star and a quarter of the points',
@@ -2443,7 +2449,8 @@ const SHOP = {
     { id: 'night', name: 'לילה', price: 3000 }, { id: 'royal', name: 'מלכותי', price: 5000 }] },
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
-    { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'fireworks', name: 'זיקוקים', price: 4000, icon: '🎆' }] },
+    { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 3000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 3000, icon: '❄️' },
+    { id: 'rainbow', name: 'שובל קשת', price: 3500, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 4000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 4500, icon: '⚡' }, { id: 'portal', name: 'שער האור', price: 6000, icon: '🌀' }] },
   // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
   char: { title: 'דמויות', items: [
     { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועלה חוקרת', price: 0 }, { id: 'bunny', name: 'ארנבת ממציאה', price: 0 },
@@ -2465,7 +2472,7 @@ function applyLook() {
 const BEAM_SAMPLE = '<svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg>';
 const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" height="1.2" fill="var(--tray)"/>' +
   [0, 1, 2, 3, 4, 5].map(i => `<rect x="${.27 + i * .42}" y=".12" width=".36" height=".4" rx=".08" fill="var(--t-${['blue', 'green', 'purple', 'orange'][i % 4]})"/><rect x="${.27 + i * .42}" y=".66" width=".36" height=".4" rx=".08" fill="var(--t-${['purple', 'orange', 'blue', 'green'][i % 4]})"/>`).join('') + '</svg>';
-const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.icon}</button>`;
+const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.id === 'classic' ? it.icon : `<img alt="" src="media/fx/${it.id}.webp">`}</button>`;
 function openShop() { show('shop'); renderShop(); }
 let shopCat = 'beam';
 function renderShop() {
@@ -2484,7 +2491,7 @@ function renderShop() {
   for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
 }
 function buyLook(cat, it) {
-  modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<span class="big" style="font-size:54px">${it.icon}</span>` : sampleOf(cat, it)}</div>
+  modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<img alt="" src="media/fx/${it.id}.webp" style="height:110px">` : sampleOf(cat, it)}</div>
     <h3>${T(it.name)}</h3>
     <p>${T`המחיר: ${fmt(it.price)} נקודות. יישארו לכם ${fmt(P.balance - it.price)}.`}</p>
     <button class="btn orange" id="buyGo">${T('קנייה')}</button>
@@ -2505,16 +2512,20 @@ function winFx(kind) {
   const box = document.createElement('div'); box.className = 'fxbox fx-' + kind;
   const rnd = (a, b) => a + Math.random() * (b - a), COLORS = ['#FF3D7F', '#FFC83A', '#3FD0FF', '#6BEA4B', '#B36BFF', '#FF8A1F'];
   const add = (style, text) => { const i = document.createElement('i'); i.style.cssText = style; if (text) i.textContent = text; box.appendChild(i); };
-  if (kind === 'fireworks') {
+  if (kind === 'portal') {                 // rings of light opening from the middle of the screen
+    for (let w = 0; w < 4; w++) for (let k = 0; k < 26; k++) { const a = k / 26 * Math.PI * 2 + w * .3, d = 90 + w * 70; add(`left:50%;top:42%;background:${['#FFD23F', '#C77DFF', '#fff', '#FF8AD8'][w]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${w * .28}s`); }
+  } else if (kind === 'fireworks') {
     for (let b = 0; b < 5; b++) {
       const x = rnd(15, 85), y = rnd(15, 55), c = COLORS[b % COLORS.length], n = 16;
       for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, d = rnd(60, 120); add(`left:${x}%;top:${y}%;background:${c};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${b * .35}s`); }
     }
   } else {
-    const n = kind === 'bubbles' ? 26 : 44, glyph = kind === 'stars' ? '★' : kind === 'hearts' ? '♥' : '';
+    const n = kind === 'bubbles' ? 26 : kind === 'lightning' ? 22 : 44, glyph = { stars: '★', hearts: '♥', dust: '✦', snow: '❄', lightning: '⚡' }[kind] || '';
+    const TINT = { stars: ['#FFC83A'], hearts: ['#FF5FA2', '#B36BFF', '#FF3D7F'], dust: ['#FFE27A', '#FFB8F0', '#fff'], snow: ['#fff', '#BFEFFF', '#D9C9FF'], lightning: ['#FFE23F', '#FFF6B0'], rainbow: ['#FF3D3D', '#FF8A1F', '#FFD23F', '#4BD964', '#3FD0FF', '#6B7BFF', '#B36BFF'] }[kind];
     for (let k = 0; k < n; k++) {
-      const c = kind === 'stars' ? '#FFC83A' : kind === 'hearts' ? ['#FF5FA2', '#B36BFF', '#FF3D7F'][k % 3] : COLORS[k % COLORS.length], size = rnd(kind === 'bubbles' ? 14 : 8, kind === 'bubbles' ? 42 : 16);
-      add(`left:${rnd(0, 100)}%;--c:${c};--s:${size}px;--r:${rnd(-360, 360)}deg;--sway:${rnd(-40, 40)}px;animation-duration:${rnd(1.8, 3.2)}s;animation-delay:${rnd(0, .9)}s`, glyph);
+      const c = TINT ? TINT[k % TINT.length] : COLORS[k % COLORS.length], size = rnd(kind === 'bubbles' ? 14 : 8, kind === 'bubbles' ? 42 : 16);
+      const slow = kind === 'snow' ? 1.7 : kind === 'lightning' ? .45 : 1;
+      add(`left:${rnd(0, 100)}%;--c:${c};--s:${size}px;--r:${kind === 'snow' || kind === 'lightning' ? rnd(-30, 30) : rnd(-360, 360)}deg;--sway:${rnd(-40, 40)}px;animation-duration:${rnd(1.8, 3.2) * slow}s;animation-delay:${rnd(0, .9)}s`, glyph);
     }
   }
   document.body.appendChild(box);
