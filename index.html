@@ -1536,6 +1536,33 @@ const Sound = (() => {
       tone({ f: f * 3.01, type: 'sine', dur: .3, vol: .03, wet: .9, delay: .02 });
     },
     unlit()  { tone({ f: 700, f2: 350, type: 'sine', dur: .2, vol: .08 }); },
+    // ---- the map: everything there glitters ----
+    pop(n)   {            // a stop bouncing in: a round pluck that climbs the scale from stop to stop, with a glint on top
+      const f = PENTA[(n || 0) % PENTA.length];
+      tone({ f: f * .5, f2: f, type: 'triangle', dur: .17, vol: .17, wet: .45 });
+      tone({ f: f * 4, type: 'sine', dur: .16, vol: .035, wet: 1, delay: .035 });
+      noise({ dur: .025, vol: .05, type: 'highpass', f: 6500 });
+    },
+    sparkle(n) {          // a handful of tiny bells scattered high up
+      for (let k = 0; k < (n || 7); k++) {
+        const f = PENTA[Math.floor(Math.random() * PENTA.length)] * (Math.random() < .5 ? 2 : 4);
+        tone({ f, type: 'sine', dur: .16 + Math.random() * .22, vol: .03 + Math.random() * .02, wet: 1, delay: k * .045 + Math.random() * .03 });
+      }
+    },
+    chime()  { const a = Math.floor(Math.random() * 6); tone({ f: PENTA[a] * 2, type: 'sine', dur: 1.1, vol: .028, wet: 1 }); tone({ f: PENTA[a + 2] * 2, type: 'sine', dur: 1.3, vol: .022, wet: 1, delay: .22 }); },
+    flyby()  {            // the firefly crossing the map: a breath of air with a trail of glints
+      noise({ dur: .7, vol: .09, type: 'bandpass', f: 700, f2: 2600, q: 1.2 });
+      for (let k = 0; k < 8; k++) tone({ f: PENTA[k] * 2, type: 'sine', dur: .2, vol: .035, wet: 1, delay: .08 + k * .085 });
+    },
+    unlock() {            // the next stop lighting up
+      [0, 2, 4, 7].forEach((n, k) => { tone({ f: PENTA[n], type: 'triangle', dur: .35, vol: .14, wet: .7, delay: k * .07 }); tone({ f: PENTA[n] * 2, type: 'sine', dur: .5, vol: .05, wet: 1, delay: k * .07 + .01 }); });
+      for (let k = 0; k < 9; k++) tone({ f: PENTA[Math.floor(Math.random() * PENTA.length)] * 4, type: 'sine', dur: .25, vol: .028, wet: 1, delay: .3 + k * .04 });
+    },
+    gate()   {            // the chapter gate opening
+      tone({ f: 130.8, f2: 261.6, type: 'sine', dur: 1.4, vol: .22, wet: .6 });
+      [0, 2, 4, 5, 7, 9].forEach((n, k) => { tone({ f: PENTA[n], type: 'triangle', dur: .6, vol: .13, wet: .8, delay: .12 + k * .09 }); tone({ f: PENTA[n] * 2, type: 'sine', dur: .8, vol: .05, wet: 1, delay: .13 + k * .09 }); });
+      for (let k = 0; k < 16; k++) tone({ f: PENTA[Math.floor(Math.random() * PENTA.length)] * 4, type: 'sine', dur: .3, vol: .028, wet: 1, delay: .7 + k * .05 });
+    },
     bomb()   {
       noise({ dur: .7, vol: .55, type: 'lowpass', f: 1400, f2: 80 });
       tone({ f: 140, f2: 35, type: 'sine', dur: .6, vol: .5 });
@@ -2047,38 +2074,44 @@ function renderMap(scroll, justSolved) {
   scene.innerHTML = html;
   scene.style.setProperty('--u', scene.clientWidth / 100 + 'px');
   scene.classList.toggle('intro', cel < 0 && !!scroll);
-  if (cel < 0 && scroll) setTimeout(() => { if (seq === mapSeq) scene.classList.remove('intro'); }, 1500);
+  if (cel < 0 && scroll) {
+    setTimeout(() => { if (seq === mapSeq) scene.classList.remove('intro'); }, 1500);
+    // each stop lands with its own note, climbing as they go up the path, and the gate answers with a glitter
+    for (let j = 0; j < Math.min(ch.levels.length, MAP_PADS.length); j++) setTimeout(() => { if (seq === mapSeq && !$('map').hidden) Sound.play('pop', j); }, 120 + j * 60);
+    setTimeout(() => { if (seq === mapSeq && !$('map').hidden) Sound.play('sparkle', 9); }, 120 + 11 * 60);
+  }
   for (const b of scene.querySelectorAll('.mpad')) b.onclick = () => {
     const i = +b.dataset.i;
     if (!unlocked(i)) { Sound.play('error'); Haptic.play('error'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); toast(T('קודם פותרים את השלב שלפניו')); return; }
-    Sound.play('whoosh'); mapBurst(MAP_PADS[+b.dataset.j][0], MAP_PADS[+b.dataset.j][1] - 2, 10);
+    Sound.play('whoosh'); Sound.play('sparkle', 6); mapBurst(MAP_PADS[+b.dataset.j][0], MAP_PADS[+b.dataset.j][1] - 2, 10);
     setTimeout(() => { if (seq === mapSeq && !$('map').hidden) openLevel(i); }, 260);
   };
   const gate = $('mapGate');
   gate.onclick = () => {
     if (!chapterDone(mapCh)) { Sound.play('error'); gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake'); toast(T('השער נפתח כשפותרים את כל שלבי הפרק')); return; }
     if (mapCh >= CHAPTERS.length - 1) { winFx('fireworks'); toast(T('סיימתם את כל הפרקים!')); return; }
-    Sound.play('whoosh'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 16); setTimeout(() => { if (seq === mapSeq) { mapCh++; renderMap(true); } }, 350);
+    Sound.play('flyby'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 16); setTimeout(() => { if (seq === mapSeq) { mapCh++; renderMap(true); } }, 350);
   };
-  $('mapCot').onclick = () => { Sound.play('tap'); openGarden(); };
+  $('mapCot').onclick = () => { Sound.play('sparkle', 5); openGarden(); };
   const centre = (el, smooth) => { if (el) el.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' }); };
   if (cel < 0) { if (scroll) requestAnimationFrame(() => centre(scene.querySelector('.mpad.s-cur') || gate)); return; }
   // ---- the little celebration after a level ----
   const pad = scene.querySelector(`.mpad[data-j="${cel}"]`), rec = recOf(base + cel), fly = $('mapFly'), next = scene.querySelector('.mpad.pre');
   const later = (ms, fn) => setTimeout(() => { if (seq === mapSeq && !$('map').hidden) fn(); }, ms);
   requestAnimationFrame(() => centre(pad));
-  [...pad.querySelectorAll('img.st')].slice(0, rec ? rec.stars : 0).forEach((st, k) => later(450 + k * 300, () => { st.classList.remove('off'); st.classList.add('pop'); Sound.play('place'); Haptic.play('star'); }));
+  [...pad.querySelectorAll('img.st')].slice(0, rec ? rec.stars : 0).forEach((st, k) => later(450 + k * 300, () => { st.classList.remove('off'); st.classList.add('pop'); Sound.play('star', 4 + k * 2); Sound.play('sparkle', 4); Haptic.play('star'); }));
   const t = 450 + (rec ? rec.stars : 0) * 300 + 250;
   later(t, () => {
     const to = next ? flyAt(+next.dataset.j) : [MAP_GATE[0] - 30, MAP_GATE[1] - 2, true];
     fly.classList.toggle('flip', !to[2]); fly.style.left = to[0] + '%'; fly.style.top = to[1] + '%';
-    Sound.play('whoosh'); centre(next || gate, true);
+    Sound.play('flyby'); centre(next || gate, true);
   });
   later(t + 950, () => {
-    if (next) { const j = +next.dataset.j; next.classList.remove('pre'); next.classList.add('reveal'); mapBurst(MAP_PADS[j][0], MAP_PADS[j][1] - 2, 14); Sound.play('achievement'); Haptic.play('win'); later(750, () => next.classList.remove('reveal')); }
-    else if (done) { gate.classList.remove('shut'); gate.classList.add('open'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 20); Sound.play('perfect'); Haptic.play('win'); winFx('stars'); toast(T('השער נפתח! הפרק הבא מחכה.')); }
+    if (next) { const j = +next.dataset.j; next.classList.remove('pre'); next.classList.add('reveal'); mapBurst(MAP_PADS[j][0], MAP_PADS[j][1] - 2, 14); Sound.play('unlock'); Haptic.play('win'); later(750, () => next.classList.remove('reveal')); }
+    else if (done) { gate.classList.remove('shut'); gate.classList.add('open'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 20); Sound.play('gate'); Haptic.play('win'); winFx('stars'); toast(T('השער נפתח! הפרק הבא מחכה.')); }
   });
 }
+setInterval(() => { if (!$('map').hidden && !document.hidden && $('overlay').hidden && Math.random() < .55) Sound.play('chime'); }, 4200);
 window.addEventListener('resize', () => { if (!$('map').hidden) $('mScene').style.setProperty('--u', $('mScene').clientWidth / 100 + 'px'); });
 
 /* ================= the firefly's garden =================
