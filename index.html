@@ -524,6 +524,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .musicstyle{display:flex; justify-content:space-between; align-items:center; padding:10px 0 2px; border-top:1px solid var(--rule); font-weight:600}
 .musicstyle.off{opacity:.45}
 .segm{display:inline-flex; background:var(--rule); border-radius:999px; padding:3px}
+#styleRow{flex-wrap:wrap; gap:8px} #styleRow .segm{display:grid; grid-template-columns:1fr 1fr; width:100%; border-radius:20px; gap:2px}
 .segm button{border:none; background:none; color:var(--ink); border-radius:999px; min-height:36px; padding:0 16px; font-weight:700; font-size:15px}
 .segm button[aria-pressed=true]{background:var(--purple); color:#fff; box-shadow:0 2px 0 var(--purple-d)}
 .powers.two{grid-template-columns:1fr 1fr}
@@ -1050,6 +1051,8 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
       <div class="segm" role="group" aria-label="סגנון מוזיקה">
         <button id="styleCalm" aria-pressed="true">רגועה</button>
         <button id="styleUp" aria-pressed="false">קצבית</button>
+        <button id="styleDream" aria-pressed="false">חלומית</button>
+        <button id="styleBox" aria-pressed="false">תיבת נגינה</button>
       </div>
     </div>
   </div>
@@ -1145,6 +1148,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'חלומית': 'Dreamy', 'תיבת נגינה': 'Music box',
   'נקודות': 'Points',
   'הבסיס': 'Basics', 'מכשולים': 'Obstacles',
   'אבקת קסם': 'Magic dust', 'שלג קריסטל': 'Crystal snow', 'שובל קשת': 'Rainbow trail', 'ברק': 'Lightning', 'שער האור': 'Gate of light',
@@ -1918,9 +1922,40 @@ const Sound = (() => {
     }
     calmStep++;
   }
+  /* ---- dreamy style: no beat at all, only slow warm chords that melt into each other and a far bell now and then ---- */
+  const DREAM_CHORDS = [[130.81, 196, 261.63, 329.63, 392], [110, 164.81, 220, 261.63, 329.63], [87.31, 130.81, 174.61, 220, 261.63], [98, 146.83, 196, 246.94, 293.66]];
+  const DREAM_BELLS = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
+  const DREAM_STEP = 1.5, DREAM_BAR = 8;         // one chord every twelve seconds
+  let dreamStep = 0;
+  function playDream(t) {
+    const chord = DREAM_CHORDS[Math.floor(dreamStep / DREAM_BAR) % 4], s = dreamStep % DREAM_BAR, d = Math.max(0, t - now());
+    if (s === 0) {
+      chord.forEach((f, i) => tone({ f, type: 'sine', dur: DREAM_STEP * DREAM_BAR + 4, vol: i ? .017 : .03, at: 3.5, delay: d + i * .25, bus: musicBus, wet: .9, lp: 900, detune: (Math.random() - .5) * 10 }));
+      tone({ f: chord[0] / 2, type: 'sine', dur: DREAM_STEP * DREAM_BAR, vol: .03, at: 2.5, delay: d, bus: musicBus, lp: 300 });
+    }
+    if (s % 2 === 1 && Math.random() < .45) {
+      const f = DREAM_BELLS[Math.floor(Math.random() * DREAM_BELLS.length)];
+      tone({ f, type: 'sine', dur: 3.2, vol: .014, at: .03, delay: d + Math.random() * .6, bus: musicBus, wet: 1, lp: 2600 });
+    }
+    dreamStep++;
+  }
+  /* ---- music-box style: a small lullaby waltz, high and soft, like a wind-up box on a shelf ---- */
+  const BOX_BASS = [130.81, 110, 87.31, 98, 130.81, 110, 87.31, 98];
+  const BOX_MID = [[196, 261.63], [164.81, 220], [174.61, 220], [196, 246.94], [196, 261.63], [164.81, 220], [174.61, 220], [196, 246.94]];
+  const BOX_TUNE = [[659.25, 783.99, 1046.5], [880, 0, 659.25], [698.46, 880, 1046.5], [1174.66, 987.77, 783.99], [1046.5, 0, 783.99], [880, 1046.5, 1318.5], [1174.66, 1046.5, 880], [783.99, 0, 0]];
+  const BOX_STEP = .58;
+  let boxStep = 0;
+  function playBox(t) {
+    const bar = Math.floor(boxStep / 3) % 8, s = boxStep % 3, d = Math.max(0, t - now());
+    if (s === 0) tone({ f: BOX_BASS[bar], type: 'sine', dur: BOX_STEP * 2.6, vol: .04, at: .02, delay: d, bus: musicBus, lp: 600 });
+    else tone({ f: BOX_MID[bar][s - 1] * 2, type: 'sine', dur: BOX_STEP * 1.2, vol: .012, at: .01, delay: d, bus: musicBus, wet: .5 });
+    const f = BOX_TUNE[bar][s];
+    if (f) { tone({ f, type: 'sine', dur: 1.5, vol: .03, at: .004, delay: d, bus: musicBus, wet: .7 }); tone({ f: f * 3, type: 'sine', dur: .25, vol: .004, at: .003, delay: d, bus: musicBus, wet: .5 }); }
+    boxStep++;
+  }
   let style = 'calm';
-  const stepLen = () => style === 'calm' ? CALM_STEP : STEP;
-  function tick(t) { if (style === 'calm') playCalm(t); else playStep(t); }
+  const stepLen = () => style === 'calm' ? CALM_STEP : style === 'dream' ? DREAM_STEP : style === 'box' ? BOX_STEP : STEP;
+  function tick(t) { if (style === 'calm') playCalm(t); else if (style === 'dream') playDream(t); else if (style === 'box') playBox(t); else playStep(t); }
 
   function startMusic() {
     musicWanted = true;
@@ -1948,7 +1983,7 @@ const Sound = (() => {
     setMusic(on) { const was = musicWanted; musicOn = on; if (!on) { stopMusic(); musicWanted = was; } else if (musicWanted && init()) startMusic(); },
     setStyle(st) {
       if (st === style) return;
-      style = st; step = 0; calmStep = 0;
+      style = st; step = 0; calmStep = 0; dreamStep = 0; boxStep = 0;
       if (ctx && sched) {
         // short fade so the switch is smooth
         musicBus.gain.cancelScheduledValues(now());
@@ -3823,13 +3858,13 @@ $('setRename').onclick = () => openProfile(openSettings);
 $('setReset').onclick = confirmReset;
 function applySoundPrefs() {
   const sfx = P.sfx !== false, mus = P.music !== false;
-  const style = P.musicStyle === 'upbeat' ? 'upbeat' : 'calm';
+  const style = ['upbeat', 'dream', 'box'].includes(P.musicStyle) ? P.musicStyle : 'calm';
   Sound.setStyle(style); Sound.setSfx(sfx); Sound.setMusic(mus);
   Haptic.set(P.haptic !== false);
   $('optHaptic').checked = Haptic.supported && P.haptic !== false; $('optHaptic').disabled = !Haptic.supported; $('hapticNote').hidden = Haptic.supported;
   $('optSfx').checked = sfx; $('optMusic').checked = mus;
   $('styleCalm').setAttribute('aria-pressed', style === 'calm');
-  $('styleUp').setAttribute('aria-pressed', style === 'upbeat');
+  $('styleUp').setAttribute('aria-pressed', style === 'upbeat'); $('styleDream').setAttribute('aria-pressed', style === 'dream'); $('styleBox').setAttribute('aria-pressed', style === 'box');
   $('styleRow').classList.toggle('off', !mus);
   const muted = !sfx && !mus;
   $('spkWaves').toggleAttribute('hidden', muted); $('spkX').toggleAttribute('hidden', !muted);
@@ -3852,7 +3887,7 @@ function previewMusic() {
 }
 function pickStyle(st) { P.musicStyle = st; applySoundPrefs(); save(false); previewMusic(); }
 $('styleCalm').onclick = () => pickStyle('calm');
-$('styleUp').onclick = () => pickStyle('upbeat');
+$('styleUp').onclick = () => pickStyle('upbeat'); $('styleDream').onclick = () => pickStyle('dream'); $('styleBox').onclick = () => pickStyle('box');
 $('muteBtn').onclick = () => {
   const muted = P.sfx === false && P.music === false;
   P.sfx = muted; P.music = muted; applySoundPrefs(); save(false);
