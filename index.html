@@ -344,7 +344,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .gscene .ghint{position:absolute; inset-inline:10%; top:44%; text-align:center; color:#fff; font-weight:700; font-size:18px; text-shadow:0 2px 8px #1a0550; z-index:600}
 .shopitem img.thumb{height:64px; width:100%; object-fit:contain}
 .shopitem small{color:var(--muted); font-weight:600; font-size:13px; margin-top:-4px}
-.daily.gardencard{background:linear-gradient(180deg,#B98BFF 0%,#8A55F0 50%,#6A3AD6 100%); box-shadow:0 6px 0 #4A239F, 0 12px 24px rgba(106,58,214,.3)}
+.daily.gardencard{margin-top:20px; background:linear-gradient(180deg,#B98BFF 0%,#8A55F0 50%,#6A3AD6 100%); box-shadow:0 6px 0 #4A239F, 0 12px 24px rgba(106,58,214,.3)}
 .daily.gardencard button{color:#4A239F}
 @media (prefers-reduced-motion: reduce){ .gscene .gbug{animation:none} }
 /* shop: looks only, never an advantage */
@@ -612,13 +612,13 @@ body.splashing{overflow:hidden}
     <div class="duelbtns"><button id="friendsBtn">חברים</button><button id="duelBtn">שחק</button></div>
   </div>
 
+  <button class="btn orange" id="playBtn">שחק</button>
+
   <div class="daily gardencard">
     <h2>הגן של הגחלילית</h2>
     <p id="gardenText">בנו לה בית וקשטו את הגן</p>
     <button id="gardenBtn">כניסה</button>
   </div>
-
-  <button class="btn orange" id="playBtn">שחק</button>
   <div class="minis four">
     <button id="lbBtn"><svg viewBox="0 0 1 1"><rect x=".1" y=".5" width=".24" height=".4" rx=".05" fill="var(--blue)"/><rect x=".38" y=".25" width=".24" height=".65" rx=".05" fill="var(--orange)"/><rect x=".66" y=".6" width=".24" height=".3" rx=".05" fill="var(--green)"/></svg>טבלת מובילים</button>
     <button id="achBtn"><svg viewBox="0 0 1 1"><circle cx=".5" cy=".42" r=".3" fill="var(--star)" stroke="var(--star-d)" stroke-width=".06"/><path d="M.34 .66L.28 .95L.5 .84L.72 .95L.66 .66" fill="var(--purple)"/></svg><span id="achLabel">הישגים</span></button>
