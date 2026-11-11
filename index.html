@@ -742,20 +742,24 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 @media (max-height:640px){ .hside{top:132px; gap:6px} .hic img{width:54px; height:54px} }
 @media (prefers-reduced-motion:reduce){ .hplay{animation:none} }
 /* all the chapters on one page */
-.chgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px}
-body.tabbed #allch .screen-title{margin-top:-40px; pointer-events:none} #allch .screen-sub{margin:0 0 4px}
-.chcard{position:relative; border:none; border-radius:22px; padding:10px 12px 12px; color:#fff; text-align:start; font:inherit; display:flex; flex-direction:column; gap:1px; overflow:hidden;
-  height:calc((100vh - 316px - env(safe-area-inset-bottom)) / 4); height:calc((100dvh - 316px - env(safe-area-inset-bottom)) / 4); min-height:104px; max-height:170px;
-  background:linear-gradient(180deg,#33206F,#231552); box-shadow:0 6px 0 #150a3a, inset 0 2px 0 rgba(255,255,255,.12)}
-.chcard .ico{position:absolute; top:8px; inset-inline-end:10px; font-size:38px; line-height:1; filter:drop-shadow(0 3px 2px rgba(0,0,0,.3))}
-.chcard .k{font-size:14px; font-weight:600; opacity:.75} .chcard b{font-size:22px; line-height:1.1}
-.chcard .here{align-self:flex-start; margin-top:auto; background:#fff; color:#5B21B6; font-weight:700; font-size:12.5px; border-radius:999px; padding:1px 9px; white-space:nowrap}
-.chcard .sc{margin-top:auto; display:flex; align-items:center; gap:5px; font-weight:700; font-size:16px} .chcard .here + .sc{margin-top:3px}
-.chcard .sc img{width:24px; height:24px}
-.chcard .pb{display:block; height:12px; border-radius:999px; background:rgba(10,0,40,.55); overflow:hidden; margin-top:4px} .chcard .pb i{display:block; height:100%; border-radius:999px; background:linear-gradient(180deg,#FFE27A,#FFB020)}
-.chcard.done,.chcard.open{background:linear-gradient(180deg,#FFC34D,#E8892A); color:#4A2600; box-shadow:0 6px 0 #9A4E0C, inset 0 3px 0 rgba(255,255,255,.5)} .chcard.done .pb i,.chcard.open .pb i{background:#fff}
-.chcard.now{background:linear-gradient(180deg,#B983FF,#7A36E0); box-shadow:0 0 0 3px #FFD23F, 0 6px 0 #4B1AA8, 0 0 22px rgba(255,210,63,.45), inset 0 3px 0 rgba(255,255,255,.4)}
-.chcard.locked{color:#B9ACDD} .chcard.locked .ico{filter:grayscale(1) opacity(.7)}
+#allch{position:fixed; inset:0; max-width:480px; margin:0 auto; background:linear-gradient(rgba(20,5,60,.72),rgba(20,5,60,.72)), #2A0F66 url(media/garden/bg.webp) center/cover no-repeat}
+#allch[hidden]{display:none}
+#allch #allchBack{position:absolute; top:82px; inset-inline-start:12px; z-index:6}
+#allch .screen-title{position:absolute; top:80px; left:0; right:0; margin:0; font-size:26px; line-height:1.2}
+#allch .screen-sub{position:absolute; top:116px; left:0; right:0; margin:0; font-size:14px; font-weight:600; color:#D9C9FF}
+.chgrid{position:absolute; top:150px; left:12px; right:12px; bottom:calc(98px + env(safe-area-inset-bottom)); display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(4,1fr); gap:10px}
+.chc{position:relative; border:none; font:inherit; text-align:start; border-radius:20px; padding:9px 12px 10px; color:#fff; background:linear-gradient(180deg,#6A4BE0,#42279F); box-shadow:0 5px 0 #24126b, inset 0 2px 0 rgba(255,255,255,.28); display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; min-height:0}
+.chc > span{display:block} .chc .n{display:block; font-size:12.5px; color:#D9C9FF; font-weight:600} .chc .h{display:block; font-size:20px; line-height:1.1}
+.chc .em{position:absolute; inset-inline-end:8px; top:8px; font-size:34px; line-height:1.1; filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.chc .st{display:flex; align-items:center; gap:5px; font-weight:700; font-size:14px} .chc .st img{width:20px; height:20px}
+.chc .pb{display:block; height:12px; border-radius:999px; background:rgba(15,5,50,.6); position:relative; overflow:hidden; margin-top:4px}
+.chc .pb i{position:absolute; inset-block:2px; inset-inline-start:2px; border-radius:999px; background:linear-gradient(180deg,#FFE27A,#FFB21F)}
+.chc.done{background:linear-gradient(180deg,#FFC94A,#F08A12); box-shadow:0 5px 0 #A84E00, inset 0 2px 0 rgba(255,255,255,.5)} .chc.done .n{color:#7a3c00} .chc.done .h,.chc.done .st{color:#5a2a00}
+.chc.done .pb i{background:linear-gradient(180deg,#fff,#FFF0B0)}
+.chc.cur{background:linear-gradient(180deg,#C77DFF,#8A3DF0); box-shadow:0 5px 0 #4B1AA8, 0 0 0 3px #FFD23F, 0 0 22px rgba(255,210,63,.7), inset 0 2px 0 rgba(255,255,255,.4)}
+.chc.lock{background:linear-gradient(180deg,#3A2C6E,#2A1E55); box-shadow:0 5px 0 #17103a; color:#9D8FCB} .chc.lock .n{color:#7F72AD} .chc.lock .em{filter:grayscale(1) brightness(.6)}
+.chc .tag{position:absolute; inset-inline-start:10px; bottom:50px; background:#fff; color:#7a2cc8; font-size:11.5px; font-weight:700; border-radius:999px; padding:1px 8px; white-space:nowrap}
+.chc:active{transform:translateY(3px)}
 /* duel tab */
 .rec{display:flex; gap:8px; margin:10px 0} .rec div{flex:1; background:rgba(20,5,60,.6); border-radius:14px; color:#fff; text-align:center; padding:6px 0; font-weight:700; font-size:20px; line-height:1.2} .rec small{display:block; font-size:12px; color:#C9B9F5; font-weight:600}
 .duo{display:flex; gap:10px; margin-bottom:14px; align-items:stretch} .duo .btn{font-size:17px; flex:1 1 0; width:auto; margin:0; min-height:56px}
@@ -2641,11 +2645,10 @@ function openChapters() {
   $('chGrid').innerHTML = CHAPTERS.map((ch, ci) => {
     const [a, b] = chapterRange(ci), max = (b - a) * 3; let got = 0, solved = 0; for (let i = a; i < b; i++) { got += recOf(i) ? recOf(i).stars : 0; if (isSolved(i)) solved++; }
     const open = unlocked(a), done = solved === b - a, now = ci === cur;
-    return `<button class="chcard ${!open ? 'locked' : now ? 'now' : done ? 'done' : 'open'}" data-ci="${ci}">
-      <span class="ico">${open ? CH_ICON[ci % CH_ICON.length] : '🔒'}</span><small class="k">${T`פרק ${ci + 1}`}</small><b>${esc(T(ch.name))}</b>
-      ${now ? `<span class="here">${T`ממשיכים כאן · שלב ${nextLv + 1}`}</span>` : ''}
-      <span class="sc"><img alt="" src="media/ui/star.webp">${got}/${max}${done ? ` · ${T('הושלם')} ✓` : ''}</span>
-      <span class="pb"><i style="width:${got / max * 100}%"></i></span></button>`;
+    return `<button class="chc ${!open ? 'lock' : now ? 'cur' : 'done'}" data-ci="${ci}"><span class="em">${open ? CH_ICON[ci % CH_ICON.length] : '🔒'}</span>
+      <span><span class="n">${T`פרק ${ci + 1}`}</span><b class="h">${esc(T(ch.name))}</b></span>
+      ${now ? `<span class="tag">${T`ממשיכים כאן · שלב ${nextLv + 1}`}</span>` : ''}
+      <span><span class="st"><img alt="" src="media/ui/star.webp">${got}/${max}${done ? ` · ${T('הושלם')} ✓` : ''}</span><span class="pb"><i style="width:calc(${got / max * 100}% - 4px)"></i></span></span></button>`;
   }).join('');
   for (const c of $('chGrid').children) c.onclick = () => {
     const ci = +c.dataset.ci;
