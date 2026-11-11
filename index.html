@@ -327,34 +327,63 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frlist button:disabled{opacity:.5}
 .frempty{text-align:center; color:#fff; opacity:.85; margin:8px 0 18px}
 @media (prefers-color-scheme: dark){ .frlist li{--ink:#F3EEFF; --muted:#B7A8DA; --rule:#3E3168} }
-/* the level map: one winding path per chapter */
-.mapnav{display:flex; align-items:center; justify-content:center; gap:10px; margin:2px 0 12px}
-.mapnav h2{color:#FFE9A8; font-size:24px; margin:0; text-shadow:0 0 14px rgba(255,200,90,.5); min-width:0; text-align:center; flex:1}
-.mapnav button{width:44px; height:44px; flex:none; border-radius:50%; border:none; font-size:26px; font-weight:700; color:#fff; background:linear-gradient(180deg,#B48CFF,#7C4DFF); box-shadow:0 4px 0 #4B25B8, inset 0 2px 0 rgba(255,255,255,.4); line-height:1}
-.mapnav button:disabled{opacity:.3}
-.mscene{position:relative; width:100%; aspect-ratio:899/1750; border-radius:26px; overflow:hidden; background:#2A0F66 center/cover no-repeat; box-shadow:0 8px 0 #2A0A6E, 0 0 30px rgba(170,90,255,.45), 0 0 0 2px rgba(255,214,90,.35); --u:4px}
-.mscene > img.mpath{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+/* the level map: one full-screen winding path per chapter, alive with small motion */
+#map:not([hidden]){display:flex; flex-direction:column}
+#map .mscene{margin-top:auto; flex:none}
+#map .maptop{width:100%; flex:none}
+#map{position:fixed; inset:0; z-index:6; overflow-y:auto; overflow-x:hidden; padding:0; background:#1B0A4A; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
+.maptop{position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:8px; max-width:560px; margin:0 auto -76px; height:76px; box-sizing:border-box;
+  padding:calc(10px + env(safe-area-inset-top)) 12px 12px; background:linear-gradient(180deg,rgba(22,6,66,.95) 30%,rgba(22,6,66,0)); pointer-events:none}
+.maptop > *{pointer-events:auto}
+.maptop h2{flex:1; min-width:0; margin:0; text-align:center; color:#FFE9A8; font-size:21px; text-shadow:0 0 14px rgba(255,200,90,.6), 0 2px 0 #2A0A6E; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.maptop .rnd{width:42px; height:42px; flex:none; border-radius:50%; border:none; font-size:24px; font-weight:700; color:#fff; background:linear-gradient(180deg,#B48CFF,#7C4DFF); box-shadow:0 4px 0 #4B25B8, inset 0 2px 0 rgba(255,255,255,.4); line-height:1; padding:0}
+.maptop .rnd:disabled{opacity:.28}
+.maptop .rnd:active:not(:disabled){transform:translateY(3px); box-shadow:0 1px 0 #4B25B8}
+.maptop .chip{margin:0}
+.mscene{position:relative; width:100%; max-width:560px; margin:0 auto; aspect-ratio:899/1750; overflow:hidden; background:#2A0F66 center/cover no-repeat; --u:4px}
+.mscene > img.mpath{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; animation:mPath 3.4s ease-in-out infinite}
+@keyframes mPath{50%{opacity:.72}}
+.mote{position:absolute; width:calc(var(--u) * 1.5); height:calc(var(--u) * 1.5); border-radius:50%; background:#FFE38A; box-shadow:0 0 calc(var(--u) * 2.5) calc(var(--u) * .8) rgba(255,214,90,.75); pointer-events:none; z-index:1; opacity:0; animation:mMote 7s ease-in-out infinite}
+@keyframes mMote{0%{opacity:0; transform:translate(0,0)} 20%{opacity:1} 50%{transform:translate(var(--mx),var(--my))} 80%{opacity:.9} 100%{opacity:0; transform:translate(calc(var(--mx) * 2),calc(var(--my) * 2))}}
 .mpad{position:absolute; transform:translate(-50%,-42%); border:none; background:none; padding:0; z-index:3; -webkit-tap-highlight-color:transparent; transition:scale .12s}
-.mpad:active:not(.s-locked){scale:.93}
+.mpad:active:not(.s-locked){scale:.9}
 .mpad > img.art{width:100%; display:block; pointer-events:none; filter:drop-shadow(0 calc(var(--u) * 1.6) calc(var(--u) * 1.4) rgba(20,0,60,.55))}
 .mpad .num{position:absolute; left:0; right:0; top:37%; transform:translateY(-50%); text-align:center; font-weight:700; font-size:calc(var(--u) * 7.2); line-height:1; pointer-events:none; color:#fff; text-shadow:0 calc(var(--u) * .5) 0 rgba(60,20,120,.7)}
 .mpad.s-done .num{color:#9A6200; text-shadow:0 1px 0 rgba(255,255,255,.6)}
 .mpad.s-cur .num{font-size:calc(var(--u) * 9)} .mpad.s-check .num{font-size:calc(var(--u) * 8.4)}
 .mpad img.st{position:absolute; transform:translate(-50%,-50%); pointer-events:none}
 .mpad img.st.off{filter:brightness(.28) saturate(.5)}
+.mpad img.st.pop{animation:mStar .55s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes mStar{0%{scale:0; rotate:-90deg} 60%{scale:1.9} 100%{scale:1; rotate:0deg}}
 .mpad img.lk{position:absolute; left:50%; top:40%; width:34%; transform:translate(-50%,-50%); pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
-.mpad.s-cur{z-index:5; animation:mPulse 1.6s ease-in-out infinite}
-@keyframes mPulse{50%{filter:brightness(1.18) drop-shadow(0 0 calc(var(--u) * 3) rgba(255,220,120,.9))}}
-.mscene .mfly{position:absolute; width:27%; transform:translate(-50%,-50%); z-index:6; pointer-events:none; filter:drop-shadow(0 0 12px rgba(255,214,90,.7)); animation:gBob 2.2s ease-in-out infinite}
+.mpad.s-locked img.lk{animation:mLock 4s ease-in-out infinite; animation-delay:calc(var(--j) * .37s)}
+@keyframes mLock{0%,88%,100%{rotate:0deg} 91%{rotate:-12deg} 94%{rotate:10deg} 97%{rotate:-6deg}}
+.mpad.s-cur{z-index:5; animation:mPulse 1.5s ease-in-out infinite}
+.mpad.s-cur::before{content:''; position:absolute; left:50%; top:40%; width:118%; aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; border:calc(var(--u) * .9) solid rgba(255,220,120,.9); animation:mRing 1.5s ease-out infinite; pointer-events:none}
+@keyframes mPulse{50%{scale:1.07; filter:brightness(1.16)}}
+@keyframes mRing{0%{scale:.55; opacity:.95} 100%{scale:1.25; opacity:0}}
+.mpad.s-done,.mpad.s-check{animation:mFloat 3.6s ease-in-out infinite; animation-delay:calc(var(--j) * -.45s)}
+@keyframes mFloat{50%{translate:0 calc(var(--u) * -.9)}}
+.mscene.intro .mpad,.mscene.intro .mportal,.mscene.intro .mcot{animation:mIn .55s cubic-bezier(.3,1.6,.55,1) both; animation-delay:calc(var(--j) * 60ms + 80ms)}
+@keyframes mIn{from{scale:0; opacity:0}}
+.mpad.pre{animation:none; filter:grayscale(.8) brightness(.6)} .mpad.pre::before{display:none}
+.mpad.reveal{animation:mReveal .7s cubic-bezier(.3,1.7,.5,1) both}
+@keyframes mReveal{0%{scale:.5; filter:brightness(2.4)} 60%{scale:1.25} 100%{scale:1; filter:none}}
+.mpad.shake,.mportal.shake{animation:mShake .4s ease}
+@keyframes mShake{20%{translate:-6px 0} 40%{translate:6px 0} 60%{translate:-4px 0} 80%{translate:4px 0}}
+.mscene .mfly{position:absolute; width:27%; transform:translate(-50%,-50%); z-index:6; pointer-events:none; filter:drop-shadow(0 0 12px rgba(255,214,90,.7)); animation:gBob 2.2s ease-in-out infinite; transition:left 1s cubic-bezier(.5,0,.3,1), top 1s cubic-bezier(.5,0,.3,1)}
 .mscene .mfly.flip{transform:translate(-50%,-50%) scaleX(-1)}
-.mscene .mportal{position:absolute; width:46%; transform:translate(-50%,-78%); border:none; background:none; padding:0; z-index:2}
+.mscene .mportal{position:absolute; width:46%; transform:translate(-50%,-78%); border:none; background:none; padding:0; z-index:2; --j:11}
 .mscene .mportal img{width:100%; display:block}
-.mscene .mportal.shut img{filter:grayscale(.75) brightness(.62)}
-.mscene .mportal.open{animation:mPulse 1.8s ease-in-out infinite}
-.mscene .mportal .lk{position:absolute; left:50%; top:52%; width:17%; transform:translate(-50%,-50%); filter:none !important}
-.mscene .mcot{position:absolute; width:25%; transform:translate(-50%,-100%); border:none; background:none; padding:0; z-index:2}
-.mscene .mcot img{width:100%; display:block; filter:drop-shadow(0 6px 8px rgba(20,0,60,.5))}
-@media (prefers-reduced-motion: reduce){ .mpad.s-cur,.mscene .mfly,.mscene .mportal.open{animation:none} }
+.mscene .mportal.shut img.pt{filter:grayscale(.75) brightness(.62)}
+.mscene .mportal.open{animation:mGate 2s ease-in-out infinite}
+@keyframes mGate{50%{scale:1.05; filter:brightness(1.2) drop-shadow(0 0 calc(var(--u) * 4) rgba(255,220,120,.9))}}
+.mscene .mportal .lk{position:absolute; left:50%; top:52%; width:17%; transform:translate(-50%,-50%)}
+.mscene .mcot{position:absolute; width:25%; transform:translate(-50%,-100%); transform-origin:50% 100%; border:none; background:none; padding:0; z-index:2; --j:12}
+.mscene .mcot img{width:100%; display:block; filter:drop-shadow(0 6px 8px rgba(20,0,60,.5)); animation:mSway 5s ease-in-out infinite; transform-origin:50% 100%}
+@keyframes mSway{0%,100%{rotate:-1.2deg} 50%{rotate:1.2deg}}
+.mscene .spark{position:absolute; width:calc(var(--u) * 1.8); height:calc(var(--u) * 1.8); border-radius:50%; background:#FFE38A; box-shadow:0 0 8px #FFD23F; z-index:7; pointer-events:none; animation:fxBurst .9s ease-out both}
+@media (prefers-reduced-motion: reduce){ .mscene *, .mscene > img.mpath{animation:none !important; transition:none !important} .mote{display:none} }
 /* the firefly's garden */
 .gscene{position:relative; width:100%; aspect-ratio:3/4; border-radius:24px; overflow:hidden; background:#2A0F66 center/cover no-repeat; box-shadow:0 8px 0 #2A0A6E, 0 0 30px rgba(170,90,255,.45), 0 0 0 2px rgba(255,214,90,.35)}
 .gscene img.gi{position:absolute; transform:translate(-50%,-100%); pointer-events:auto; user-select:none; -webkit-user-drag:none; filter:drop-shadow(0 6px 8px rgba(20,0,60,.45))}
@@ -741,8 +770,7 @@ body.splashing{overflow:hidden}
 </section>
 
 <section id="map" hidden>
-  <button class="chip" id="mapBack">› חזרה</button>
-  <div class="mapnav"><button id="mapPrev" aria-label="הפרק הקודם">›</button><h2 id="mapTitle"></h2><button id="mapNext" aria-label="הפרק הבא">‹</button></div>
+  <div class="maptop"><button class="chip" id="mapBack">› חזרה</button><h2 id="mapTitle"></h2><button class="rnd" id="mapPrev" aria-label="הפרק הקודם">›</button><button class="rnd" id="mapNext" aria-label="הפרק הבא">‹</button></div>
   <div class="mscene" id="mScene"></div>
 </section>
 
@@ -985,6 +1013,7 @@ const EN = {
   'עוד דקה · {} נקודות': 'One more minute · {0} points', 'קיבלתם עוד דקה. עזרה מגבילה את השלב לכוכב אחד.': 'You have one more minute. Help caps the level at one star.',
   'הפרק הקודם': 'Previous chapter', 'הפרק הבא': 'Next chapter', 'השער לפרק הבא': 'The gate to the next chapter', 'קודם פותרים את השלב שלפניו': 'Solve the level before it first',
   'השער נפתח כשפותרים את כל שלבי הפרק': 'The gate opens when every level in the chapter is solved', 'סיימתם את כל הפרקים!': 'You finished every chapter!',
+  'המשך': 'Continue', 'השער נפתח! הפרק הבא מחכה.': 'The gate is open! The next chapter awaits.',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -1979,42 +2008,76 @@ const MAP_PADS = [[38, 92.6], [66, 85.7], [30, 76.2], [62, 74.5], [30, 62.3], [6
 const MAP_STARS = {       // where the three rim stars sit on each button drawing: x%, y%, width%
   done: [[26, 80, 15], [49.5, 83, 19], [73, 80, 15]], cur: [[33.5, 76, 11], [49.5, 77.5, 14.5], [64.5, 76, 11]], check: [[34.5, 80, 10.5], [49.5, 82, 13.5], [64.5, 80, 10.5]] };
 const chBase = ci => CHAPTERS.slice(0, ci).reduce((n, c) => n + c.levels.length, 0);
-let mapCh = 0;
-function openMap(ch) {
+let mapCh = 0, mapSeq = 0;
+function openMap(ch, justSolved) {
   if (ch === undefined) { const n = ALL.findIndex((_, i) => !isSolved(i)); ch = n === -1 ? CHAPTERS.length - 1 : ALL[n].ch; }
-  mapCh = ch; show('map'); renderMap(true);
+  mapCh = ch; show('map'); renderMap(true, justSolved);
 }
-function renderMap(scroll) {
-  const scene = $('mScene'), ch = CHAPTERS[mapCh], base = chBase(mapCh), done = chapterDone(mapCh);
+const padSide = j => { const [x] = MAP_PADS[j], nx = (MAP_PADS[j + 1] || MAP_GATE)[0]; return nx > x; };      // the firefly waits on the side away from the next stop
+const flyAt = j => { const [x, y] = MAP_PADS[j], left = padSide(j), fx = left ? x - 27 : x + 27, tight = fx < 13 || fx > 87; return [Math.max(13, Math.min(87, fx)), y - (tight ? 11 : 4), left]; };      // near an edge she hovers above the stop instead of on it
+function mapBurst(x, y, n = 12) {
+  const scene = $('mScene'), w = scene.clientWidth;
+  for (let k = 0; k < n; k++) {
+    const a = k / n * Math.PI * 2, d = w * (.1 + Math.random() * .1), i = document.createElement('i');
+    i.className = 'spark'; i.style.cssText = `left:${x}%;top:${y}%;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px`;
+    scene.appendChild(i); setTimeout(() => i.remove(), 950);
+  }
+}
+/* justSolved: the level just finished. Its stars pop on one by one, then the firefly flies on and the next stop lights up. */
+function renderMap(scroll, justSolved) {
+  const scene = $('mScene'), ch = CHAPTERS[mapCh], base = chBase(mapCh), done = chapterDone(mapCh), seq = ++mapSeq;
+  const cel = justSolved !== undefined && justSolved >= base && justSolved < base + MAP_PADS.length ? justSolved - base : -1;
   $('mapTitle').textContent = T`פרק ${mapCh + 1}: ${ch.name}`;
   $('mapPrev').disabled = mapCh === 0; $('mapNext').disabled = mapCh >= CHAPTERS.length - 1 || !unlocked(chBase(mapCh + 1));
   scene.style.backgroundImage = `url(${M_DIR}bg.webp)`;
-  let html = `<img class="mpath" alt="" src="${M_DIR}path.webp">`, fly = '';
+  let html = `<img class="mpath" alt="" src="${M_DIR}path.webp">`, curJ = -1;
+  for (let k = 0; k < 18; k++) html += `<i class="mote" style="left:${5 + Math.random() * 90}%;top:${4 + Math.random() * 92}%;--mx:${(Math.random() * 30 - 15).toFixed(0)}px;--my:${(-10 - Math.random() * 30).toFixed(0)}px;animation-delay:${(-Math.random() * 7).toFixed(1)}s;animation-duration:${(5 + Math.random() * 5).toFixed(1)}s"></i>`;
   html += `<button class="mcot" id="mapCot" style="left:88%;top:41%" aria-label="${T('הגן של הגחלילית')}"><img alt="" src="${M_DIR}cottage.webp"></button>`;
-  html += `<button class="mportal ${done ? 'open' : 'shut'}" id="mapGate" style="left:${MAP_GATE[0]}%;top:${MAP_GATE[1]}%" aria-label="${T('השער לפרק הבא')}"><img alt="" src="${M_DIR}portal.webp">${done ? '' : `<img class="lk" alt="" src="${M_DIR}lock.webp">`}</button>`;
+  html += `<button class="mportal ${done && cel < 0 ? 'open' : 'shut'}" id="mapGate" style="left:${MAP_GATE[0]}%;top:${MAP_GATE[1]}%" aria-label="${T('השער לפרק הבא')}"><img class="pt" alt="" src="${M_DIR}portal.webp">${done ? '' : `<img class="lk" alt="" src="${M_DIR}lock.webp">`}</button>`;
   ch.levels.slice(0, MAP_PADS.length).forEach((lv, j) => {
     const i = base + j, [x, y] = MAP_PADS[j], rec = recOf(i), open = unlocked(i), big = j === 4 || j === ch.levels.length - 1;
     const art = !open ? 'locked' : !rec ? 'cur' : big ? 'check' : 'done', w = art === 'cur' ? 30 : art === 'check' ? 32 : big ? 26 : 21;
-    const stars = art === 'locked' ? '' : MAP_STARS[art].map(([sx, sy, sw], k) => `<img class="st${rec && rec.stars > k ? '' : ' off'}" alt="" src="${M_DIR}star.webp" style="left:${sx}%;top:${sy}%;width:${sw}%">`).join('');
-    html += `<button class="mpad s-${art}" data-i="${i}" style="left:${x}%;top:${y}%;width:${w}%" aria-label="${T`שלב ${i + 1}`}${rec ? T`, ${rec.stars} כוכבים` : ''}"><img class="art" alt="" src="${M_DIR}${art}.webp">` +
+    if (art === 'cur' && curJ < 0) curJ = j;
+    const stars = art === 'locked' ? '' : MAP_STARS[art].map(([sx, sy, sw], k) => `<img class="st${rec && rec.stars > k && j !== cel ? '' : ' off'}" alt="" src="${M_DIR}star.webp" style="left:${sx}%;top:${sy}%;width:${sw}%">`).join('');
+    html += `<button class="mpad s-${art}${cel >= 0 && art === 'cur' ? ' pre' : ''}" data-i="${i}" data-j="${j}" style="left:${x}%;top:${y}%;width:${w}%;--j:${j}" aria-label="${T`שלב ${i + 1}`}${rec ? T`, ${rec.stars} כוכבים` : ''}"><img class="art" alt="" src="${M_DIR}${art}.webp">` +
       (open ? `<b class="num">${i + 1}</b>${stars}` : `<img class="lk" alt="" src="${M_DIR}lock.webp">`) + '</button>';
-    if (art === 'cur' && !fly) { const nx = (MAP_PADS[j + 1] || MAP_GATE)[0], left = nx > x;      // she waits on the side away from the next stop
-      fly = `<img class="mfly${left ? '' : ' flip'}" alt="" src="${M_DIR}fly.webp" style="left:${left ? Math.max(13, x - 27) : Math.min(87, x + 27)}%;top:${y - 4}%">`; }
   });
-  scene.innerHTML = html + fly;
+  const at = cel >= 0 ? flyAt(cel) : curJ >= 0 ? flyAt(curJ) : [MAP_GATE[0] - 30, MAP_GATE[1] - 2, true];
+  html += `<img class="mfly${at[2] ? '' : ' flip'}" id="mapFly" alt="" src="${M_DIR}fly.webp" style="left:${at[0]}%;top:${at[1]}%">`;
+  scene.innerHTML = html;
   scene.style.setProperty('--u', scene.clientWidth / 100 + 'px');
+  scene.classList.toggle('intro', cel < 0 && !!scroll);
+  if (cel < 0 && scroll) setTimeout(() => { if (seq === mapSeq) scene.classList.remove('intro'); }, 1500);
   for (const b of scene.querySelectorAll('.mpad')) b.onclick = () => {
     const i = +b.dataset.i;
-    if (!unlocked(i)) { Sound.play('error'); toast(T('קודם פותרים את השלב שלפניו')); return; }
-    openLevel(i);
+    if (!unlocked(i)) { Sound.play('error'); Haptic.play('error'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); toast(T('קודם פותרים את השלב שלפניו')); return; }
+    Sound.play('whoosh'); mapBurst(MAP_PADS[+b.dataset.j][0], MAP_PADS[+b.dataset.j][1] - 2, 10);
+    setTimeout(() => { if (seq === mapSeq && !$('map').hidden) openLevel(i); }, 260);
   };
-  $('mapGate').onclick = () => {
-    if (!done) { Sound.play('error'); toast(T('השער נפתח כשפותרים את כל שלבי הפרק')); return; }
+  const gate = $('mapGate');
+  gate.onclick = () => {
+    if (!chapterDone(mapCh)) { Sound.play('error'); gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake'); toast(T('השער נפתח כשפותרים את כל שלבי הפרק')); return; }
     if (mapCh >= CHAPTERS.length - 1) { winFx('fireworks'); toast(T('סיימתם את כל הפרקים!')); return; }
-    Sound.play('whoosh'); mapCh++; renderMap(true);
+    Sound.play('whoosh'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 16); setTimeout(() => { if (seq === mapSeq) { mapCh++; renderMap(true); } }, 350);
   };
-  $('mapCot').onclick = openGarden;
-  if (scroll) requestAnimationFrame(() => { const t = scene.querySelector('.mpad.s-cur') || scene.querySelector('.mportal'); if (t) t.scrollIntoView({ block: 'center' }); });
+  $('mapCot').onclick = () => { Sound.play('tap'); openGarden(); };
+  const centre = (el, smooth) => { if (el) el.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'auto' }); };
+  if (cel < 0) { if (scroll) requestAnimationFrame(() => centre(scene.querySelector('.mpad.s-cur') || gate)); return; }
+  // ---- the little celebration after a level ----
+  const pad = scene.querySelector(`.mpad[data-j="${cel}"]`), rec = recOf(base + cel), fly = $('mapFly'), next = scene.querySelector('.mpad.pre');
+  const later = (ms, fn) => setTimeout(() => { if (seq === mapSeq && !$('map').hidden) fn(); }, ms);
+  requestAnimationFrame(() => centre(pad));
+  [...pad.querySelectorAll('img.st')].slice(0, rec ? rec.stars : 0).forEach((st, k) => later(450 + k * 300, () => { st.classList.remove('off'); st.classList.add('pop'); Sound.play('place'); Haptic.play('star'); }));
+  const t = 450 + (rec ? rec.stars : 0) * 300 + 250;
+  later(t, () => {
+    const to = next ? flyAt(+next.dataset.j) : [MAP_GATE[0] - 30, MAP_GATE[1] - 2, true];
+    fly.classList.toggle('flip', !to[2]); fly.style.left = to[0] + '%'; fly.style.top = to[1] + '%';
+    Sound.play('whoosh'); centre(next || gate, true);
+  });
+  later(t + 950, () => {
+    if (next) { const j = +next.dataset.j; next.classList.remove('pre'); next.classList.add('reveal'); mapBurst(MAP_PADS[j][0], MAP_PADS[j][1] - 2, 14); Sound.play('achievement'); Haptic.play('win'); later(750, () => next.classList.remove('reveal')); }
+    else if (done) { gate.classList.remove('shut'); gate.classList.add('open'); mapBurst(MAP_GATE[0], MAP_GATE[1] - 6, 20); Sound.play('perfect'); Haptic.play('win'); winFx('stars'); toast(T('השער נפתח! הפרק הבא מחכה.')); }
+  });
 }
 window.addEventListener('resize', () => { if (!$('map').hidden) $('mScene').style.setProperty('--u', $('mScene').clientWidth / 100 + 'px'); });
 
@@ -2670,8 +2733,9 @@ function finish() {
     $('winText').textContent = stars === 3 ? T`פתרתם ב${movesText(G.moves)}, בתוך היעד.` :
       stars === 2 ? T`${movesText(G.moves)}. פתרו ב-${par(lv)} מהלכים או פחות בשביל שלושה כוכבים.` :
       T('השתמשתם בעזרה. פתרו בלי עזרה בשביל עוד כוכבים.');
-    $('nextBtn').textContent = last ? T('חזרה לשלבים') : T('לשלב הבא');
-    $('nextBtn').onclick = () => last ? goHome() : maybeInterstitial(() => openLevel(i + 1));
+    const lesson = P.tut === 1 && i < 2;
+    $('nextBtn').textContent = lesson ? T('לשלב הבא') : T('המשך');
+    $('nextBtn').onclick = () => lesson ? openLevel(i + 1) : maybeInterstitial(() => { hideWin(); clearInterval(timerInt); G = null; openMap(lv.ch, i); });
     $('retryBtn').textContent = T('נסו שוב לשלושה כוכבים'); $('retryBtn').hidden = stars === 3;
     $('retryBtn').onclick = () => openLevel(i);
   }
