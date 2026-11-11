@@ -2696,9 +2696,9 @@ const WIN_BUG = {
    the two are joined on a canvas while it plays. A mood without a clip, a browser that cannot play it, or the
    page opened straight from disk (where the browser will not let a canvas read a video) shows the still. */
 const WIN_VIDEO = {
-  cheer: 'media/cheer.mp4',
+  cheer: 'media/cheer2.mp4',
 };
-const WIN_VIDEO_MS = { cheer: 2900 };   // how long she performs alone before the card pops up
+const WIN_VIDEO_MS = { cheer: 3300 };   // how long she performs alone before the card pops up
 const winVids = {}; let winPlay = 0;
 function stopWinVideo() { winPlay++; for (const m in winVids) { try { winVids[m].pause(); } catch (e) { /* not started */ } } }
 function winVideoEl(mood) {

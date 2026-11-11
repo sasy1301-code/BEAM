@@ -1,8 +1,8 @@
 /* BEAM service worker: the game keeps working with no connection.
    The page itself is fetched fresh whenever the network answers, so updates arrive on the next visit;
    everything else (clips, icons) is served from the cache first. Bump VERSION when those files change. */
-const VERSION = 'beam-v4';
-const SHELL = ['./', 'manifest.webmanifest', 'icon.webp', 'icons/icon-192.png', 'icons/icon-512.png', 'media/cheer.mp4'];
+const VERSION = 'beam-v5';
+const SHELL = ['./', 'manifest.webmanifest', 'icon.webp', 'icons/icon-192.png', 'icons/icon-512.png', 'media/cheer2.mp4'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
