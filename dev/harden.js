@@ -95,7 +95,7 @@ function pathCells(lv,sol){const m={};for(const [k,v] of sol)m[k]=v; const tr=E.
     for(let s=0;s<=n;s++){const x=Math.floor(x0+(x1-x0)*s/Math.max(n,1)),y=Math.floor(y0+(y1-y0)*s/Math.max(n,1)); set.add(x+','+y);}}
   return set;}
 const keyOf=sol=>sol.map(e=>e.join(':')).join('|');
-function harden(R,lv,k,budget,maxAdd){
+function harden(R,lv,k,budget,maxAdd,bombRate=0.75){
   const H=lv.rows.length,W=lv.rows[0].length; const grid=lv.rows.map(r=>r.split(''));
   const cur=()=>({rows:grid.map(r=>r.join('')),lasers:lv.lasers,max:k});
   const intended=lv.sol, ikey=keyOf(intended); const keep=pathCells(lv,intended); for(const [kk] of intended)keep.add(kk);
@@ -115,7 +115,7 @@ function harden(R,lv,k,budget,maxAdd){
       for(const c of pc){ if(keep.has(c))continue; const [x,y]=c.split(',').map(Number); if(x<0||y<0||x>=W||y>=H||grid[y][x]!=='.')continue; score.set(c,(score.get(c)||0)+1);} }
     if(!score.size)return null;
     const top=[...score].sort((a,b)=>b[1]-a[1]); const pick=top[Math.floor(R()*Math.min(3,top.length))][0]; const [px,py]=pick.split(',').map(Number);
-    grid[py][px]=R()<0.75?'X':'#'; added++;
+    grid[py][px]=R()<bombRate?'X':'#'; added++;
   }
   return null;
 }
@@ -129,7 +129,7 @@ while(Date.now()-t0<secs*1000){
   tries++;
   const cand=layoutLevel(R,spec);
   if(!cand)continue; solved++;
-  const lv=harden(R,cand,spec.k,spec.budget,spec.maxAdd||18); if(!lv)continue;
+  const lv=harden(R,cand,spec.k,spec.budget,spec.maxAdd||18,spec.bombRate===undefined?0.75:spec.bombRate); if(!lv)continue;
   // every fixed mirror and splitter must sit on the solved path, or it is only decoration
   { const pc=pathCells(lv,lv.sol); let ok=true; for(let y=0;y<lv.rows.length;y++)for(let x=0;x<lv.rows[0].length;x++)if('fgpq'.includes(lv.rows[y][x])&&!pc.has(x+','+y))ok=false; if(!ok)continue; }
   const sig=lv.rows.join('|'); if(seenRows.has(sig))continue; seenRows.add(sig);
