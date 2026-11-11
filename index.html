@@ -2298,7 +2298,8 @@ function renderGame(flash) {
   const step = G.coach && !G.done && !G.hammerMode ? coachStep() : null;
   if (step) {
     const [cx, cy] = step.k.split(',').map(Number), NS = 'http://www.w3.org/2000/svg';
-    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('class', 'coachring'); ring.setAttribute('cx', cx + .5); ring.setAttribute('cy', cy + .5); ring.setAttribute('r', .46);
+    const ring = document.createElementNS(NS, 'rect'); ring.setAttribute('class', 'coachring');          // an outline around the very cell to tap
+    for (const [n, v] of [['x', cx + .05], ['y', cy + .05], ['width', .9], ['height', .9], ['rx', .17]]) ring.setAttribute(n, v);
     const hand = document.createElementNS(NS, 'text'); hand.setAttribute('class', 'coachhand'); hand.setAttribute('x', cx + .5); hand.setAttribute('y', cy + 1.25); hand.textContent = '👆';
     $('board').appendChild(ring); $('board').appendChild(hand);
     status.className = 'status coach'; status.textContent = step.text;
