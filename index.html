@@ -448,6 +448,14 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 @keyframes coachRing{50%{stroke-width:.14; stroke-opacity:.55}}
 @keyframes coachHand{50%{transform:translateY(-.14px)}}
 .status.coach{color:#FFE9A8; font-weight:700; font-size:17px}
+.timebar{position:relative; height:26px; margin:2px auto 8px; max-width:340px; border-radius:999px; background:rgba(20,5,60,.55); box-shadow:inset 0 2px 4px rgba(0,0,0,.35); overflow:hidden}
+.timebar i{position:absolute; inset-block:3px; inset-inline-start:3px; border-radius:999px; background:linear-gradient(180deg,#8CF07A,#38C35B); transition:width .25s linear, background .3s}
+.timebar span{position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-weight:700; font-size:14px; font-variant-numeric:tabular-nums; text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.timebar.mid i{background:linear-gradient(180deg,#FFD86B,#FF9F1C)}
+.timebar.low i{background:linear-gradient(180deg,#FF7A7A,#E5304A)}
+.timebar.low{animation:tbPulse .6s ease-in-out infinite}
+@keyframes tbPulse{50%{transform:scale(1.03)}}
+@media (prefers-reduced-motion: reduce){ .timebar.low{animation:none} }
 /* on a bomb the beam keeps the player's colour and turns into a blinking broken line */
 .bad .beamline{stroke-dasharray:.2 .16; animation:badBlink .7s ease-in-out infinite}
 .bad .core{opacity:0}
@@ -655,6 +663,7 @@ body.splashing{overflow:hidden}
     <div class="pill" id="mirrorPill"></div>
     <div class="pill moves" id="movesPill"></div>
   </div>
+  <div class="timebar" id="timeBar" hidden><i></i><span></span></div>
   <p class="tip" id="tip"></p>
   <div class="boardwrap"><svg class="board" id="board"></svg></div>
   <div class="status" id="status" aria-live="polite"></div>
@@ -808,7 +817,7 @@ body.splashing{overflow:hidden}
   <div class="rule"><svg viewBox="0 0 1 1" id="icTwin"></svg>
     <div><h3>שתי גחליליות</h3><p>בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icCount"></svg>
-    <div><h3>שלושה כוכבים</h3><p>כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ואת מלוא הנקודות.</p></div></div>
+    <div><h3>שלושה כוכבים</h3><p>כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ואת מלוא הנקודות. לכל שלב יש זמן מוגבל, חצי דקה לכל מראה. כשהזמן נגמר מתחילים את השלב מחדש.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icShop"></svg>
     <div><h3>מה עושים עם הנקודות</h3><p>הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות. המחיר תלוי בשלב: רמז עולה 100 נקודות לכל מראה בשלב, ומראה נוספת או פטיש 75 לכל מראה. רמזים יכולים להציב עד חצי מהמראות בשלב. שלב שנפתר עם עזרה שווה רבע מהנקודות.</p></div></div>
   <div class="rule"><svg viewBox="0 0 1 1" id="icHammer"></svg>
@@ -874,7 +883,7 @@ const EN = {
   'מראות קבועות': 'Fixed mirrors', 'מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.': 'Dark mirrors with bolts. They are already installed and cannot be moved or turned.',
   'זכוכית מפצלת': 'Splitter glass', 'חלק מהאור ממשיך ישר וחלק מוחזר הצידה. מקרן אחת נוצרות שתיים, וכל אחת מהן יכולה להדליק כוכבים או לפגוע בפצצה.': 'Part of the light goes straight on and part is turned aside. One beam becomes two, and each can light stars or hit a bomb.',
   'שתי גחליליות': 'Two fireflies', 'בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.': 'Later levels have two beams. Every mirror affects both.',
-  'שלושה כוכבים': 'Three stars', 'כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ואת מלוא הנקודות.': 'Every tap is a move. Solve without help and within the move target for three stars and full points.',
+  'שלושה כוכבים': 'Three stars', 'כל הקשה היא מהלך. פתרו בלי עזרה ובתוך יעד המהלכים כדי לקבל שלושה כוכבים ואת מלוא הנקודות. לכל שלב יש זמן מוגבל, חצי דקה לכל מראה. כשהזמן נגמר מתחילים את השלב מחדש.': 'Every tap is a move. Solve without help and within the move target for three stars and full points. Every level has a time limit, half a minute per mirror. When time runs out the level starts again.',
   'מה עושים עם הנקודות': 'What points are for', 'הנקודות שצברתם קובעות את הדרגה והמקום בטבלה, ונשארות שם תמיד. במקביל יש לכם יתרה לקניות. המחיר תלוי בשלב: רמז עולה 100 נקודות לכל מראה בשלב, ומראה נוספת או פטיש 75 לכל מראה. רמזים יכולים להציב עד חצי מהמראות בשלב. שלב שנפתר עם עזרה שווה רבע מהנקודות.': 'The points you earn set your rank and leaderboard place, and never go down. Alongside them you have a balance to spend. Prices depend on the level: a hint costs 100 points per mirror in the level, an extra mirror or a hammer 75 per mirror. Hints can place up to half of a level\'s mirrors. A level solved with help is worth a quarter of the points.',
   'פטיש': 'Hammer', 'מופיע רק בשלבים שבהם שבירת חסימה באמת עוזרת, כלומר מאפשרת פתרון עם פחות מראות. לחצו על הפטיש, והחסימות ששווה לשבור יתחילו להבהב.': 'Appears only in levels where breaking a block really helps, meaning it allows a solution with fewer mirrors. Tap the hammer and the blocks worth breaking start to blink.',
   'שלב חדש בכל יום, זהה לכל השחקנים. הניקוד תלוי במהירות ובמספר המהלכים, ונכנס לטבלת המובילים.': 'A new level every day, the same for all players. Your score depends on speed and move count, and goes on the leaderboard.',
@@ -938,6 +947,8 @@ const EN = {
   'ברוכים הבאים ל-BEAM!': 'Welcome to BEAM!', 'הגחלילית צריכה עזרה להדליק את הכוכבים. בואו נלמד איך משחקים, זה לוקח חצי דקה.': 'The firefly needs help lighting the stars. Let\'s learn how to play. It takes half a minute.',
   'בואו נתחיל': 'Let\'s start', 'אני כבר יודע לשחק': 'I already know how to play', 'המראה הזו לא במקום. הקישו עליה עד שהיא נעלמת.': 'This mirror is in the wrong place. Tap it until it disappears.',
   'הקישו על המשבצת המסומנת כדי להציב מראה. המראה מפנה את הקרן.': 'Tap the marked cell to place a mirror. A mirror turns the beam.', 'יפה! עכשיו הקישו עליה שוב כדי לסובב אותה אל הכוכב.': 'Nice! Now tap it again to turn it toward the star.',
+  'נגמר הזמן!': 'Time is up!', 'לא נורא. מתחילים את השלב מחדש, או ממשיכים מאותה נקודה עם עוד דקה.': 'Never mind. Start the level again, or carry on from here with one more minute.',
+  'עוד דקה · {} נקודות': 'One more minute · {0} points', 'קיבלתם עוד דקה. עזרה מגבילה את השלב לכוכב אחד.': 'You have one more minute. Help caps the level at one star.',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -2195,6 +2206,55 @@ let G = null, timerInt = null, DAILY_CACHE = null;
 function session(mode, lv, extra) {
   return { mode, lv: { ...lv, rows: [...lv.rows] }, mirrors: {}, locked: new Set(), extra: 0, hammers: 0, hints: 0, hammerMode: false, helped: false, moves: 0, done: false, ...extra };
 }
+/* Every level is played against the clock, so a level always ends: solved, or out of time and started again.
+   The allowance grows with the level: half a minute per mirror, and never under a minute. The clock stops while a
+   window is open or the game is in the background, and the guided lesson has none. */
+const timeLimit = lv => Math.max(60, lv.max * 30) + (lv.rows.length >= 9 ? 30 : 0);
+const clockOn = () => !!G && G.mode === 'level' && !G.coach && !G.done;
+function clockStart() {
+  $('timeBar').hidden = !clockOn();
+  if (!clockOn()) return;
+  G.limit = timeLimit(G.lv); G.left = G.limit * 1000; G.tick = Date.now();
+  clearInterval(timerInt); timerInt = setInterval(clockTick, 250); clockDraw();
+}
+function clockTick() {
+  if (!clockOn() || $('game').hidden) return;
+  const now = Date.now(), dt = now - G.tick; G.tick = now;
+  if (document.hidden || !$('overlay').hidden || dt > 2000) return;         // paused: a window is open, or the phone was put down
+  const before = Math.ceil(G.left / 1000);
+  G.left -= dt;
+  const after = Math.ceil(G.left / 1000);
+  if (after !== before && after <= 10 && after > 0) Sound.play('tap');
+  if (G.left <= 0) { G.left = 0; clockDraw(); return timeOut(); }
+  clockDraw();
+}
+function clockDraw() {
+  const bar = $('timeBar'), s = Math.max(0, Math.ceil(G.left / 1000)), share = G.left / (G.limit * 1000);
+  bar.querySelector('i').style.width = `calc(${Math.max(0, Math.min(1, share)) * 100}% - 6px)`;
+  bar.querySelector('span').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  bar.className = 'timebar' + (s <= 10 ? ' low' : share <= .4 ? ' mid' : '');
+}
+function timeOut() {
+  const g = G, more = price('mirror');
+  G.done = true; Sound.play('error'); Haptic.play('win');
+  $('status').className = 'status bad'; $('status').textContent = T('נגמר הזמן!');
+  track('done', { p_stars: 0, p_moves: G.moves, p_time: G.limit, p_helped: !!G.helped });
+  modal(`<img class="bug" alt="" src="${WIN_BUG.shrug}">
+    <h3>${T('נגמר הזמן!')}</h3>
+    <p>${T('לא נורא. מתחילים את השלב מחדש, או ממשיכים מאותה נקודה עם עוד דקה.')}</p>
+    <button class="btn orange" id="toAgain">${T('נסו שוב')}</button>
+    <button class="btn blue" id="toMore" style="margin-top:12px"${P.balance < more ? ' disabled' : ''}>${T`עוד דקה · ${fmt(more)} נקודות`}</button>
+    <button class="btn ghosty" id="toHome" style="margin-top:12px">${T('חזרה לבית')}</button>`, m => {
+      m.querySelector('#toAgain').onclick = () => { closeModal(); openLevel(g.idx); };
+      m.querySelector('#toHome').onclick = () => { closeModal(); G = null; goHome(); };
+      m.querySelector('#toMore').onclick = () => {
+        if (P.balance < more) return;
+        closeModal(); P.balance -= more; save(false);
+        g.done = false; g.helped = true; g.left = 60000; g.limit = Math.max(g.limit, 60); g.tick = Date.now();     // bought time is help, like a bought mirror
+        Sound.play('purchase'); renderGame(T('קיבלתם עוד דקה. עזרה מגבילה את השלב לכוכב אחד.'));
+      };
+    }, true);
+}
 function bombOut() {
   Sound.play('bomb'); Haptic.play('win');
   if (G.mode === 'duel') {          // in a race the board is simply wiped, which costs time but not the round
@@ -2229,6 +2289,7 @@ function startGame() {
   if (G.mode === 'daily') timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
   G.t0 = Date.now(); track('start');
   renderGame(); show('game');
+  clockStart();
 }
 const elapsed = () => Math.floor((Date.now() - G.start) / 1000);
 const maxMirrors = () => G.lv.max + G.extra;
@@ -2715,7 +2776,7 @@ function duelRender() {
     if (!G || G.mode !== 'duel' || G.key !== key) {
       D.view = 'playing';
       G = session('duel', { ...D.lv, tip: '' }, { round: st.round, key });
-      G.t0 = Date.now(); track('start');
+      G.t0 = Date.now(); track('start'); $('timeBar').hidden = true;
       clearInterval(timerInt); timerInt = setInterval(() => { if (G && G.mode === 'duel' && !$('game').hidden) { renderPills(); } }, 500);
       Sound.play('whoosh'); renderGame(); show('game');
     } else { renderDuelBar(); if (G.done) $('status').textContent = T('פתרתם! בודקים מי היה ראשון…'); }
