@@ -291,7 +291,11 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 /* overlays */
 .overlay{position:fixed; inset:0; background:rgba(30,15,60,.5); display:grid; place-items:center; padding:20px; z-index:20}
 .overlay[hidden]{display:none}
-.modal{background:var(--surface); border-radius:26px; padding:20px; max-width:360px; width:100%; text-align:center; box-shadow:0 8px 0 var(--rule)}
+.modal{background:var(--surface); border-radius:26px; padding:20px; max-width:360px; width:100%; text-align:center; box-shadow:0 8px 0 var(--rule); position:relative}
+.modal .mclose{position:absolute; top:12px; inset-inline-end:12px; width:40px; height:40px; border-radius:50%; border:none; padding:0; display:grid; place-items:center; z-index:3;
+  background:linear-gradient(180deg,#B48CFF,#7C4DFF); box-shadow:0 4px 0 #4B25B8, 0 6px 12px rgba(60,20,150,.35), inset 0 2px 0 rgba(255,255,255,.45); transition:transform .08s}
+.modal .mclose:active{transform:translateY(3px); box-shadow:0 1px 0 #4B25B8, inset 0 2px 0 rgba(255,255,255,.45)}
+.modal .mclose svg{width:18px; height:18px}
 .modal h3{font-size:26px; margin-top:4px}
 .modal p{color:var(--muted); margin:6px 0 16px; font-weight:500}
 .modal svg.bug{width:90px; height:90px}
@@ -1859,6 +1863,12 @@ function toast(text, amount) {
 }
 function modal(html, onReady, locked) {
   $('modal').innerHTML = html; $('modal').dataset.locked = locked ? '1' : ''; $('overlay').hidden = false;
+  if (!locked) {            // every window that may simply be dismissed gets the same close button
+    const x = document.createElement('button'); x.className = 'mclose'; x.setAttribute('aria-label', T('סגירה'));
+    x.innerHTML = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg>';
+    x.onclick = () => { Sound.play('tap'); closeModal(); };
+    $('modal').appendChild(x);
+  }
   if (onReady) onReady($('modal'));
 }
 function closeModal() { $('overlay').hidden = true; }
