@@ -334,6 +334,9 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .gscene .gbug{position:absolute; width:17%; left:20%; top:22%; z-index:500; pointer-events:none; filter:drop-shadow(0 0 12px rgba(255,214,90,.8)); animation:gFly 22s ease-in-out infinite, gBob 2.4s ease-in-out infinite}
 @keyframes gFly{0%{left:14%; top:20%} 20%{left:60%; top:14%} 40%{left:74%; top:52%} 60%{left:34%; top:60%} 80%{left:8%; top:44%} 100%{left:14%; top:20%}}
 @keyframes gBob{50%{translate:0 -8px}}
+.gscene img.gi.door{cursor:pointer}
+.gscene .gdoor{position:absolute; left:42%; top:30%; width:19%; height:19%; z-index:2; background:none; border:none; border-radius:40% 40% 8px 8px; cursor:pointer}
+.gscene .ghint.low{top:auto; bottom:4%; font-size:15px; font-weight:600}
 .gscene .ghint{position:absolute; inset-inline:10%; top:44%; text-align:center; color:#fff; font-weight:700; font-size:18px; text-shadow:0 2px 8px #1a0550; z-index:600}
 .shopitem img.thumb{height:64px; width:100%; object-fit:contain}
 .shopitem small{color:var(--muted); font-weight:600; font-size:13px; margin-top:-4px}
@@ -691,8 +694,12 @@ body.splashing{overflow:hidden}
   <button class="chip" id="gardenBack">› חזרה</button>
   <h2 class="screen-title">הגן של הגחלילית</h2>
   <div class="shopwallet"><div class="coin" id="gardenPoints"></div></div>
+  <div class="tabs" role="tablist" style="margin-bottom:12px">
+    <button role="tab" id="gTabOut" aria-selected="true">הגן</button>
+    <button role="tab" id="gTabIn" aria-selected="false">בתוך הבית</button>
+  </div>
   <div class="gscene" id="gScene"></div>
-  <h3 class="shoph">מה מוסיפים לגן?</h3>
+  <h3 class="shoph" id="gShopTitle">מה מוסיפים לגן?</h3>
   <div class="shopgrid" id="gShop"></div>
 </section>
 
@@ -911,6 +918,9 @@ const EN = {
   'הגן עוד ריק. התחילו מבית לגחלילית!': 'The garden is empty. Start with a house for the firefly!', 'הושלם': 'Complete', 'שדרוג הבית': 'House upgrade', 'הבית הראשון': 'The first house', 'הבית הכי גדול': 'The biggest house',
   'בית קטן': 'Small house', 'בית משפחתי': 'Family house', 'ארמון': 'Palace', 'פרח': 'Flower', 'אבן': 'Stone', 'פטריה זוהרת': 'Glowing mushroom', 'פנס': 'Lamp', 'שיח פרחים': 'Flower bush', 'צמח אורות': 'Light plant',
   'משפחת פטריות': 'Mushroom family', 'אדנית פרחים': 'Flower box', 'הבית מוכן!': 'The house is ready!', 'נוסף לגן': 'Added to the garden', 'הגן מושלם!': 'The garden is complete!',
+  'הגן': 'Garden', 'בתוך הבית': 'Inside the house', 'מה מוסיפים לבית?': 'What goes in the house?', 'קודם בונים בית, ואז אפשר להיכנס': 'Build a house first, then you can go in', 'יציאה לגן': 'Out to the garden',
+  'הקישו על הבית כדי להיכנס': 'Tap the house to go inside', 'נוסף לבית': 'Added to the house', 'הגן והבית מושלמים!': 'The garden and the house are complete!',
+  'שטיח פרח': 'Flower rug', 'עציץ זוהר': 'Glowing plant', 'אדנית לחלון': 'Window box', 'מנורת קיר': 'Wall lamp', 'מדף שיקויים': 'Potion shelf', 'מנורת פרח': 'Flower lamp', 'כורסה': 'Armchair', 'טלסקופ': 'Telescope',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -1908,42 +1918,67 @@ const GARDEN = {
     { id: 'box', name: 'אדנית פרחים', price: 1000, slots: [[46, 67, 17]] },
   ],
 };
-const gState = () => (P.garden = P.garden || { house: 0, items: {} });
-const gCount = () => { const g = gState(); return g.house + Object.values(g.items).reduce((a, b) => a + b, 0); };
-const gTotal = GARDEN.house.levels.length + GARDEN.items.reduce((n, it) => n + it.slots.length, 0);
-function openGarden() { show('garden'); renderGarden(); }
+const ROOM = [
+  { id: 'rug', name: 'שטיח פרח', price: 1500, flat: 1, slots: [[50, 86, 64]] },
+  { id: 'plant', name: 'עציץ זוהר', price: 800, slots: [[90, 75, 19]] },
+  { id: 'wbox', name: 'אדנית לחלון', price: 600, slots: [[34, 43.5, 17], [69, 43.5, 17]] },
+  { id: 'walllamp', name: 'מנורת קיר', price: 700, slots: [[8, 30, 11], [92, 30, 11, 1]] },
+  { id: 'shelf', name: 'מדף שיקויים', price: 1000, slots: [[16, 41, 19]] },
+  { id: 'floorlamp', name: 'מנורת פרח', price: 1200, slots: [[8, 74, 19]] },
+  { id: 'chair', name: 'כורסה', price: 2500, slots: [[27, 77, 34]] },
+  { id: 'scope', name: 'טלסקופ', price: 4000, slots: [[73, 67, 21]] },
+];
+let gView = 'out';
+const gState = () => { const g = (P.garden = P.garden || { house: 0, items: {} }); g.room = g.room || {}; return g; };
+const gCount = () => { const g = gState(); return g.house + Object.values(g.items).reduce((a, b) => a + b, 0) + Object.values(g.room).reduce((a, b) => a + b, 0); };
+const gTotal = GARDEN.house.levels.length + GARDEN.items.concat(ROOM).reduce((n, it) => n + it.slots.length, 0);
+function openGarden() { gView = 'out'; show('garden'); renderGarden(); }
+function gGo(view) {
+  if (view === 'in' && !gState().house) { toast(T('קודם בונים בית, ואז אפשר להיכנס')); return; }
+  gView = view; Sound.play('whoosh'); renderGarden();
+}
 function renderGarden(fresh) {
-  const g = gState(), scene = $('gScene');
+  const g = gState(), scene = $('gScene'), inside = gView === 'in' && g.house > 0;
+  const dir = inside ? 'media/room/' : G_DIR, list = inside ? ROOM : GARDEN.items, have = inside ? g.room : g.items;
   $('gardenPoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
-  scene.style.backgroundImage = `url(${G_DIR}bg.webp)`;
-  const put = (img, x, y, w, flip, key) => `<img class="gi${flip ? ' flip' : ''}${fresh === key ? ' new' : ''}" alt="" src="${G_DIR}${img}.webp" style="left:${x}%;top:${y}%;width:${w}%;z-index:${Math.round(y)}">`;
+  $('gTabOut').setAttribute('aria-selected', !inside); $('gTabIn').setAttribute('aria-selected', inside);
+  $('gShopTitle').textContent = inside ? T('מה מוסיפים לבית?') : T('מה מוסיפים לגן?');
+  scene.style.backgroundImage = `url(${dir}bg.webp)`;
+  const put = (img, x, y, w, flip, key, z, cls = '') => `<img class="gi${flip ? ' flip' : ''}${fresh === key ? ' new' : ''}${cls}" alt="" src="${img}.webp" style="left:${x}%;top:${y}%;width:${w}%;z-index:${z || Math.round(y)}">`;
   let html = '';
-  if (g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 'house'); }
-  for (const it of GARDEN.items) for (let i = 0; i < (g.items[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(it.id, x, y, w, f, it.id + ':' + i); }
+  if (!inside && g.house) { const h = GARDEN.house.levels[g.house - 1]; html += put(G_DIR + h.img, GARDEN.house.at[0], GARDEN.house.at[1], h.w, 0, 'house', 0, ' door'); }
+  for (const it of list) for (let i = 0; i < (have[it.id] || 0) && i < it.slots.length; i++) { const [x, y, w, f] = it.slots[i]; html += put(dir + it.id, x, y, w, f, it.id + ':' + i, it.flat ? 1 : 0); }
+  if (inside) html += `<button class="gdoor" id="gDoor" aria-label="${T('יציאה לגן')}"></button>`;
   html += `<img class="gbug" alt="" src="${avatarSrc(P.avatar)}">`;
-  if (!gCount()) html += `<p class="ghint">${T('הגן עוד ריק. התחילו מבית לגחלילית!')}</p>`;
+  if (!inside && !gCount()) html += `<p class="ghint">${T('הגן עוד ריק. התחילו מבית לגחלילית!')}</p>`;
+  if (!inside && g.house && !Object.keys(g.room).length) html += `<p class="ghint low">${T('הקישו על הבית כדי להיכנס')}</p>`;
   scene.innerHTML = html;
-  for (const im of scene.querySelectorAll('img.gi')) im.onclick = () => { im.classList.remove('new', 'hop'); void im.offsetWidth; im.classList.add('hop'); Sound.play('tap'); };
+  for (const im of scene.querySelectorAll('img.gi')) im.onclick = () => {
+    if (im.classList.contains('door')) return gGo('in');
+    im.classList.remove('new', 'hop'); void im.offsetWidth; im.classList.add('hop'); Sound.play('tap');
+  };
+  if (inside) $('gDoor').onclick = () => gGo('out');
   // the list of things to add: the next step of the house first, then whatever still has a free spot
-  const card = (key, img, name, sub, price, done) => `<div class="shopitem"><img class="thumb" alt="" src="${G_DIR}${img}.webp"><b>${T(name)}</b><small>${sub}</small>` +
+  const card = (key, img, name, sub, price, done) => `<div class="shopitem"><img class="thumb" alt="" src="${img}.webp"><b>${T(name)}</b><small>${sub}</small>` +
     (done ? `<button class="act on" disabled>${T('הושלם')}</button>` : `<button class="act" data-g="${key}"${P.balance < price ? ' disabled' : ''}>${ICON_POINTS}${fmt(price)}</button>`) + '</div>';
   const next = GARDEN.house.levels[g.house], last = GARDEN.house.levels[GARDEN.house.levels.length - 1];
-  $('gShop').innerHTML = (next ? card('house', next.img, next.name, g.house ? T('שדרוג הבית') : T('הבית הראשון'), next.price) : card('house', last.img, last.name, T('הבית הכי גדול'), 0, true)) +
-    GARDEN.items.map(it => { const n = g.items[it.id] || 0; return card(it.id, it.id, it.name, `${n}/${it.slots.length}`, it.price, n >= it.slots.length); }).join('');
+  $('gShop').innerHTML = (inside ? '' : next ? card('house', G_DIR + next.img, next.name, g.house ? T('שדרוג הבית') : T('הבית הראשון'), next.price) : card('house', G_DIR + last.img, last.name, T('הבית הכי גדול'), 0, true)) +
+    list.map(it => { const n = have[it.id] || 0; return card((inside ? 'in:' : 'out:') + it.id, dir + it.id, it.name, `${n}/${it.slots.length}`, it.price, n >= it.slots.length); }).join('');
   for (const b of $('gShop').querySelectorAll('[data-g]')) b.onclick = () => buyGarden(b.dataset.g);
 }
 function buyGarden(key) {
-  const g = gState(), it = GARDEN.items.find(x => x.id === key);
+  const g = gState(), [where, id] = key.split(':'), inside = where === 'in';
+  const it = (inside ? ROOM : GARDEN.items).find(x => x.id === id), have = inside ? g.room : g.items;
   const price = key === 'house' ? GARDEN.house.levels[g.house].price : it.price;
   if (P.balance < price) return;
   let fresh;
-  if (key === 'house') { g.house++; fresh = 'house'; } else { fresh = key + ':' + (g.items[key] || 0); g.items[key] = (g.items[key] || 0) + 1; }
+  if (key === 'house') { g.house++; fresh = 'house'; } else { fresh = id + ':' + (have[id] || 0); have[id] = (have[id] || 0) + 1; }
   P.balance -= price; save(false);
   Sound.play('purchase'); Haptic.play('win');
   renderGarden(fresh); renderHome();
   $('gScene').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  toast(key === 'house' ? T('הבית מוכן!') : T('נוסף לגן'), `-${fmt(price)}`);
-  if (gCount() === gTotal) setTimeout(() => { winFx('fireworks'); toast(T('הגן מושלם!')); }, 900);
+  toast(key === 'house' ? T('הבית מוכן!') : inside ? T('נוסף לבית') : T('נוסף לגן'), `-${fmt(price)}`);
+  if (gCount() === gTotal) setTimeout(() => { winFx('fireworks'); toast(T('הגן והבית מושלמים!')); }, 900);
 }
 
 /* ================= shop =================
@@ -2841,7 +2876,7 @@ async function acceptFriendLink(fcode) {
   openFriends();
 }
 $('frBack').onclick = goHome;
-$('gardenBack').onclick = goHome; $('gardenBtn').onclick = openGarden;
+$('gardenBack').onclick = goHome; $('gTabOut').onclick = () => gGo('out'); $('gTabIn').onclick = () => gGo('in'); $('gardenBtn').onclick = openGarden;
 $('shopBack').onclick = goHome; $('shopBtn').onclick = openShop; $('homePoints').onclick = openShop;
 $('helpBug').src = POSE.point;
 $('friendsBtn').onclick = friendsEntry;
