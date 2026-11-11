@@ -3959,7 +3959,7 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   setProgress(92);
   // a new player comes in as a guest with no sign-in wall, and starts on the home screen like everyone else
   if (!P.auth) { P.auth = { provider: 'guest', since: Date.now() }; save(false); }
-  renderHome();
+  renderHome(); show('home');          // the bars belong to the screen, so it is shown properly and not just left visible
   const rest = 1900 - (Date.now() - t0);
   if (rest > 0) await wait(rest);
   setProgress(100, T('מוכן!'));
