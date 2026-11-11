@@ -1544,6 +1544,7 @@ const Sound = (() => {
     s.connect(fl); fl.connect(g); g.connect(bus);
     s.start(t); s.stop(t + dur + .05);
   }
+  let clipBus = null;
   const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5, 1568, 1760];
 
   const fx = {
@@ -1566,6 +1567,16 @@ const Sound = (() => {
       tone({ f: 95, f2: 24, type: 'triangle', dur: .9, vol: .45, delay: .02 });
       tone({ f: 60, f2: 30, type: 'sine', dur: 1.6, vol: .4, delay: .08, wet: .7 });
       for (let k = 0; k < 10; k++) noise({ dur: .05 + Math.random() * .06, vol: .1 + Math.random() * .12, type: 'bandpass', f: 500 + Math.random() * 2500, q: 2, delay: .25 + Math.random() * .9 });
+    },
+    spin()   {            // the firefly's victory whirl: three sweeps of air that grow, a rising trail of bells, and a bright landing
+      const bus = clipBus = ctx.createGain(); bus.connect(sfxBus);        // its own line, so leaving the win screen can cut it short
+      [[.25, .07, 500, 2200], [1.35, .1, 600, 2800], [2.5, .13, 700, 3400]].forEach(([d, v, a, b]) => noise({ dur: 1.05, vol: v, type: 'bandpass', f: a, f2: b, q: 1.4, delay: d, bus }));
+      for (let k = 0; k < 34; k++) {
+        const t = .3 + k * .115, n = Math.min(PENTA.length - 1, Math.floor(k / 3.5));
+        tone({ f: PENTA[n] * (k % 2 ? 4 : 2), type: 'sine', dur: .22, vol: .03 + k * .0007, wet: 1, delay: t + Math.random() * .04, bus });
+      }
+      [0, 2, 4, 7, 9].forEach((n, k) => { tone({ f: PENTA[n], type: 'triangle', dur: .7, vol: .12, wet: .8, delay: 4.25 + k * .06, bus }); tone({ f: PENTA[n] * 2, type: 'sine', dur: .9, vol: .05, wet: 1, delay: 4.26 + k * .06, bus }); });
+      for (let k = 0; k < 12; k++) tone({ f: PENTA[Math.floor(Math.random() * PENTA.length)] * 4, type: 'sine', dur: .3, vol: .028, wet: 1, delay: 4.5 + k * .05, bus });
     },
     // ---- the map: everything there glitters ----
     pop(n)   {            // a stop bouncing in: a round pluck that climbs the scale from stop to stop, with a glint on top
@@ -1717,6 +1728,7 @@ const Sound = (() => {
     init,
     play(name, ...a) { Haptic.play(name); if (!sfxOn || !init()) return; try { fx[name](...a); } catch (e) { console.error(e); } },
     music(on) { if (on) { musicWanted = true; if (init()) startMusic(); } else stopMusic(); },
+    hush() { if (ctx && clipBus) { try { clipBus.gain.setTargetAtTime(0, now(), .04); } catch (e) { /* already gone */ } } },
     setSfx(on) { sfxOn = on; if (ctx) sfxBus.gain.setTargetAtTime(on ? .9 : 0, now(), .02); },
     setMusic(on) { const was = musicWanted; musicOn = on; if (!on) { stopMusic(); musicWanted = was; } else if (musicWanted && init()) startMusic(); },
     setStyle(st) {
@@ -2755,7 +2767,7 @@ function playWinVideo(mood, canvas, onFail) {
 }
 let winTimers = [];
 function hideWin() {
-  winTimers.forEach(clearTimeout); winTimers = []; stopWinVideo();
+  winTimers.forEach(clearTimeout); winTimers = []; stopWinVideo(); Sound.hush();
   $('winLayer').hidden = true; $('winLayer').classList.remove('dim'); $('winbox').hidden = true;
 }
 /* first she jumps in over the board in the mood the result earned, then the card pops up under her */
@@ -2772,6 +2784,7 @@ function showWin(mood, delay, onCard) {
     if (clip) playWinVideo(mood, film, () => { film.hidden = true; bug.hidden = false; bug.className = film.className.replace(' anim', ''); });
     layer.hidden = false; void layer.offsetWidth; layer.classList.add('dim');
     Sound.play('whoosh');
+    if (clip && mood === 'cheer') Sound.play('spin');       // the whirl has its own soundtrack, starting with the very first frame
   }, delay));
   winTimers.push(setTimeout(() => {
     if (!still()) return;
