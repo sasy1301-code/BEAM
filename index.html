@@ -633,6 +633,41 @@ body.splashing{overflow:hidden}
 #spText{color:#FFE7A3; font-weight:600; font-size:17px; margin:18px 0 0; text-shadow:0 0 10px rgba(255,190,40,.6)}
 
 
+
+/* ---- the level screen: clock in the middle, tools docked at the bottom, nothing scrolls ---- */
+body.playing main{padding:10px 10px 0}
+#game:not([hidden]){display:flex; flex-direction:column; min-height:calc(100vh - 10px); min-height:calc(100dvh - 10px)}
+.gtop{display:flex; align-items:center; gap:8px}
+.rb{width:46px; height:46px; flex:none; border:none; border-radius:50%; background:linear-gradient(180deg,#B48CFF,#7C4DFF); box-shadow:0 4px 0 #4B25B8, inset 0 2px 0 rgba(255,255,255,.4); color:#fff; font-size:26px; font-weight:700; line-height:1; display:grid; place-items:center; padding:0}
+.rb:active{transform:translateY(3px)}
+html[dir=ltr] #backBtn{transform:scaleX(-1)}
+.gtop .lvtitle{flex:1; margin:0; min-width:0} .gtop .lvtitle h2{font-size:25px; line-height:1.05} .gtop .lvtitle small{font-size:13.5px; display:block; line-height:1.2}
+.gtop .coin{background:linear-gradient(180deg,#3A2290,#28166e); color:#fff; box-shadow:0 4px 0 #1a0c52; --ink:#fff}
+.gstats{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:8px 2px 0; min-height:52px}
+.gstats .pill{background:linear-gradient(180deg,#5B3BC4,#3E2499); color:#fff; border-radius:18px; padding:8px 14px; font-size:21px; min-width:92px; justify-content:center; box-shadow:0 4px 0 #24126b, inset 0 2px 0 rgba(255,255,255,.25); --ink:#fff}
+.gstats .pill svg{width:26px; height:26px} .gstats .pill[hidden]{display:none}
+.gclock{--p:1; --c:#2DBE60; width:96px; height:96px; flex:none; border-radius:50%; background:conic-gradient(var(--c) calc(var(--p) * 360deg), rgba(255,255,255,.14) 0); display:grid; place-items:center; box-shadow:0 5px 0 #24126b, 0 0 18px color-mix(in srgb, var(--c) 55%, transparent); margin:-2px 0 -6px; order:0}
+.gclock[hidden]{display:none}
+.gclock span{width:78px; height:78px; border-radius:50%; background:linear-gradient(180deg,#3A2290,#22104f); display:grid; place-items:center; color:#fff; font-weight:700; font-size:26px; font-variant-numeric:tabular-nums}
+.gclock.mid{--c:#FF9F1C} .gclock.low{--c:#E5304A; animation:tbPulse .6s ease-in-out infinite}
+.gstats #starPill{order:-1} .gstats #mirrorPill{order:2} .gstats #movesPill{order:1}
+#game .tip{min-height:0; margin:6px 0 8px; font-size:15px} #game .tip:empty{margin:10px 0 0}
+#game .boardwrap{padding:6px}
+.say{display:flex; align-items:center; gap:8px; margin:12px 4px 0; min-height:50px}
+.say img{width:50px; height:50px; object-fit:contain; flex:none; filter:drop-shadow(0 0 8px rgba(255,214,90,.8))}
+.say .status{flex:1; margin:0; min-height:0; text-align:start; background:#fff; color:#3a2290; font-weight:700; font-size:15.5px; line-height:1.3; border-radius:16px; padding:9px 12px; box-shadow:0 4px 0 #cbbdf2; position:relative}
+.say .status::before{content:""; position:absolute; inset-inline-start:-7px; top:50%; margin-top:-7px; border:7px solid transparent; border-inline-end-color:#fff; border-inline-start-width:0}
+.say .status.bad{color:#C2410C} .say .status.coach{color:#5B21B6; font-size:16px}
+.say:has(.status:empty){visibility:hidden}
+.gdock{margin:auto -10px 0; padding:12px 8px 4px; background:linear-gradient(180deg,#5B3BC4,#2F1A85); box-shadow:0 -4px 0 #7C5CFF, 0 -10px 24px rgba(0,0,0,.4); display:flex; gap:8px; align-items:stretch}
+.gdock #powerBox{flex:3} .gdock #powerBox[hidden]{display:none} .gdock .powers{margin:0; gap:8px; height:100%}
+.gdock #resetBtn{flex:1; max-width:25%}
+.gdock .power{min-height:78px; border-radius:20px; font-size:14px}
+.gdock .power.free{background:linear-gradient(180deg,#6FB5FF,#2F73E0); box-shadow:0 5px 0 #1c4aa0, 0 8px 16px rgba(47,115,224,.3)}
+.gdock .power .price{background:#1a0c52}
+#game .powernote{margin:0 -10px; padding:4px 8px calc(8px + env(safe-area-inset-bottom)); background:#2F1A85; font-size:12.5px; color:#C9B9F5}
+body.paused .boardwrap{filter:blur(16px)}
+@media (max-height:700px){ #game .boardwrap{width:100%; max-width:calc(100dvh - 318px); margin-inline:auto} #game .tip{font-size:13.5px; line-height:1.25} .gclock{width:76px; height:76px} .gclock span{width:62px; height:62px; font-size:21px} .say{margin-top:6px; min-height:42px} .gdock .power{min-height:66px} }
 /* ---- inner pages of the shell ---- */
 #hud .wallet{flex-direction:row-reverse}
 .tabs.four{grid-template-columns:repeat(4,1fr)} .tabs.four button{font-size:15px}
@@ -707,12 +742,20 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 @media (max-height:640px){ .hside{top:132px; gap:6px} .hic img{width:54px; height:54px} }
 @media (prefers-reduced-motion:reduce){ .hplay{animation:none} }
 /* all the chapters on one page */
-.chgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
-.chcard{position:relative; border:none; border-radius:22px; padding:12px 8px 10px; color:#fff; text-align:center; box-shadow:0 6px 0 rgba(20,0,70,.55), inset 0 3px 0 rgba(255,255,255,.35); min-height:calc((100vh - 190px) / 4 - 12px); max-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; overflow:hidden}
-.chcard .n{font-size:34px; font-weight:700; line-height:1; text-shadow:0 3px 0 rgba(0,0,0,.25)}
-.chcard b{font-size:17px; line-height:1.15} .chcard small{font-size:14px; font-weight:700; color:#FFE9A8}
-.chcard.now{box-shadow:0 0 0 4px #FFD23F, 0 6px 0 rgba(20,0,70,.55)}
-.chcard.locked{filter:grayscale(.7) brightness(.6)} .chcard.locked::after{content:"🔒"; position:absolute; top:8px; inset-inline-end:10px; font-size:20px}
+.chgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px}
+body.tabbed #allch .screen-title{margin-top:-40px; pointer-events:none} #allch .screen-sub{margin:0 0 4px}
+.chcard{position:relative; border:none; border-radius:22px; padding:10px 12px 12px; color:#fff; text-align:start; font:inherit; display:flex; flex-direction:column; gap:1px; overflow:hidden;
+  height:calc((100vh - 316px - env(safe-area-inset-bottom)) / 4); height:calc((100dvh - 316px - env(safe-area-inset-bottom)) / 4); min-height:104px; max-height:170px;
+  background:linear-gradient(180deg,#33206F,#231552); box-shadow:0 6px 0 #150a3a, inset 0 2px 0 rgba(255,255,255,.12)}
+.chcard .ico{position:absolute; top:8px; inset-inline-end:10px; font-size:38px; line-height:1; filter:drop-shadow(0 3px 2px rgba(0,0,0,.3))}
+.chcard .k{font-size:14px; font-weight:600; opacity:.75} .chcard b{font-size:22px; line-height:1.1}
+.chcard .here{align-self:flex-start; margin-top:auto; background:#fff; color:#5B21B6; font-weight:700; font-size:12.5px; border-radius:999px; padding:1px 9px; white-space:nowrap}
+.chcard .sc{margin-top:auto; display:flex; align-items:center; gap:5px; font-weight:700; font-size:16px} .chcard .here + .sc{margin-top:3px}
+.chcard .sc img{width:24px; height:24px}
+.chcard .pb{display:block; height:12px; border-radius:999px; background:rgba(10,0,40,.55); overflow:hidden; margin-top:4px} .chcard .pb i{display:block; height:100%; border-radius:999px; background:linear-gradient(180deg,#FFE27A,#FFB020)}
+.chcard.done,.chcard.open{background:linear-gradient(180deg,#FFC34D,#E8892A); color:#4A2600; box-shadow:0 6px 0 #9A4E0C, inset 0 3px 0 rgba(255,255,255,.5)} .chcard.done .pb i,.chcard.open .pb i{background:#fff}
+.chcard.now{background:linear-gradient(180deg,#B983FF,#7A36E0); box-shadow:0 0 0 3px #FFD23F, 0 6px 0 #4B1AA8, 0 0 22px rgba(255,210,63,.45), inset 0 3px 0 rgba(255,255,255,.4)}
+.chcard.locked{color:#B9ACDD} .chcard.locked .ico{filter:grayscale(1) opacity(.7)}
 /* duel tab */
 .rec{display:flex; gap:8px; margin:10px 0} .rec div{flex:1; background:rgba(20,5,60,.6); border-radius:14px; color:#fff; text-align:center; padding:6px 0; font-weight:700; font-size:20px; line-height:1.2} .rec small{display:block; font-size:12px; color:#C9B9F5; font-weight:600}
 .duo{display:flex; gap:10px; margin-bottom:14px} .duo .btn{font-size:17px}
@@ -822,35 +865,40 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 <section id="allch" hidden>
   <button class="chip" id="allchBack">› חזרה</button>
   <h2 class="screen-title">כל הפרקים</h2>
+  <p class="screen-sub" id="allchSub"></p>
   <div class="chgrid" id="chGrid"></div>
 </section>
 
 <!-- GAME -->
 <section id="game" hidden>
-  <div class="topbar">
-    <button class="chip" id="backBtn">› חזרה</button>
+  <div class="gtop">
+    <button class="rb" id="backBtn" aria-label="חזרה">›</button>
+    <div class="lvtitle"><h2 id="lvTitle"></h2><small id="lvChapter"></small></div>
     <div class="coin" id="gamePoints"></div>
-    <span style="display:flex;gap:8px"><button class="gear" id="muteBtn" aria-label="השתקה"><svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path d="M4 9h4l5-4v14l-5-4H4z" fill="var(--purple)"/><path id="spkWaves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="var(--purple)" stroke-width="2" fill="none" stroke-linecap="round"/><path id="spkX" d="M16 9l5 6M21 9l-5 6" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" hidden/></svg></button><button class="chip" id="resetBtn">איפוס</button></span>
+    <button class="rb" id="pauseBtn" aria-label="השהיה"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button>
   </div>
-  <div class="lvtitle"><h2 id="lvTitle"></h2><small id="lvChapter"></small></div>
   <div class="duelbar" id="duelBar" hidden></div>
-  <div class="pills">
+  <div class="gstats">
     <div class="pill" id="starPill"></div>
-    <div class="pill" id="mirrorPill"></div>
+    <div class="gclock" id="timeBar" hidden><span></span></div>
     <div class="pill moves" id="movesPill"></div>
+    <div class="pill" id="mirrorPill"></div>
   </div>
-  <div class="timebar" id="timeBar" hidden><i></i><span></span></div>
   <p class="tip" id="tip"></p>
   <div class="boardwrap"><svg class="board" id="board"></svg></div>
-  <div class="status" id="status" aria-live="polite"></div>
-  <div id="powerBox">
-    <div class="powers">
-      <button class="power" id="pwMirror" aria-label="קניית מראה נוספת"></button>
-      <button class="power" id="pwHammer" aria-label="פטיש לשבירת חסימה"></button>
-      <button class="power" id="pwHint" aria-label="רמז"></button>
+  <div class="say"><img alt="" id="sayBug"><div class="status" id="status" aria-live="polite"></div></div>
+  <div class="gdock">
+    <button class="power free" id="resetBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2.3-5.2" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M4 4v5h5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>איפוס</span><span class="price">חינם</span></button>
+    <div id="powerBox">
+      <div class="powers">
+        <button class="power" id="pwMirror" aria-label="קניית מראה נוספת"></button>
+        <button class="power" id="pwHammer" aria-label="פטיש לשבירת חסימה"></button>
+        <button class="power" id="pwHint" aria-label="רמז"></button>
+      </div>
     </div>
-    <p class="powernote">קונים בנקודות. שלב עם עזרה שווה כוכב אחד ורבע מהנקודות.</p>
   </div>
+  <p class="powernote" id="powerNote">שלב עם עזרה שווה כוכב אחד ורבע מהנקודות</p>
+  <span hidden><button class="gear" id="muteBtn" aria-label="השתקה"><svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path d="M4 9h4l5-4v14l-5-4H4z" fill="var(--purple)"/><path id="spkWaves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="var(--purple)" stroke-width="2" fill="none" stroke-linecap="round"/><path id="spkX" d="M16 9l5 6M21 9l-5 6" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" hidden/></svg></button></span>
   <div class="winlayer" id="winLayer" hidden>
   <img class="winbug" id="winBug" alt="" width="220" height="220">
   <canvas class="winbug anim" id="winFilm" width="480" height="480" aria-hidden="true" hidden></canvas>
@@ -1044,6 +1092,9 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'פרק {}': 'Chapter {0}', '{} מתוך {} כוכבים': '{0} of {1} stars',
+  'ממשיכים כאן · שלב {}': 'Continue here · level {0}', 'הושלם': 'Done',
+  'הפסקה': 'Paused', 'חזרה למפה': 'Back to the map', 'יציאה': 'Leave', 'חינם': 'Free', 'השהיה': 'Pause', 'שלב עם עזרה שווה כוכב אחד ורבע מהנקודות': 'A level with help is worth one star and a quarter of the points',
   'דמויות': 'Characters', 'גחלילית': 'Firefly', 'שועלה חוקרת': 'Fox explorer', 'ארנבת ממציאה': 'Bunny inventor', 'ינשוף קוסם': 'Owl wizard', 'חתול נינג\'ה': 'Ninja cat', 'קיפודה גננת': 'Hedgehog gardener', 'צפרדע אלכימאי': 'Frog alchemist',
   'דביבון מכונאי': 'Raccoon mechanic', 'איילה שומרת': 'Deer guardian', 'נסיכת העשים': 'Moth princess', 'דרקונצ\'יק': 'Baby dragon', 'חד-קרן': 'Unicorn', 'הדמות הזאת מחכה לכם בחנות': 'This character is waiting for you in the shop',
   'מראה אחת': '1 mirror',
@@ -2119,11 +2170,11 @@ const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
 const SCREENS = ['allch', 'home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'shop', 'garden', 'map'];
-const TAB_OF = { shop: 'shop', leader: 'leader', home: 'home', friends: 'duel', garden: 'garden' };       // the screens that carry the two bars
+const TAB_OF = { allch: 'home', shop: 'shop', leader: 'leader', home: 'home', friends: 'duel', garden: 'garden' };       // the screens that carry the two bars
 function show(id) {
   for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game');
   const tab = TAB_OF[id];
-  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab);
+  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game');
   for (const b of $('tabbar').children) b.classList.toggle('on', b.dataset.tab === tab);
   if (tab) hudSync();
 }
@@ -2151,7 +2202,7 @@ function modal(html, onReady, locked) {
   }
   if (onReady) onReady($('modal'));
 }
-function closeModal() { $('overlay').hidden = true; }
+function closeModal() { $('overlay').hidden = true; document.body.classList.remove('paused'); }
 function bugInto(svg) { firefly(svg, 0, 0, 0, 1, 1.7, null); }
 
 function askName(after) {
@@ -2575,11 +2626,18 @@ function homeScene() {
     im.classList.remove('hop'); void im.offsetWidth; im.classList.add('hop'); Sound.play('tap');
   };
 }
+const CH_ICON = ['💡', '💣', '🌀', '🌘', '📌', '🔀', '♊', '👑'];
 function openChapters() {
   const nextLv = ALL.findIndex((_, i) => !isSolved(i)), cur = nextLv === -1 ? -1 : ALL[nextLv].ch;
+  $('allchSub').textContent = T`${totalStars()} מתוך ${ALL.length * 3} כוכבים`;
   $('chGrid').innerHTML = CHAPTERS.map((ch, ci) => {
-    const [a, b] = chapterRange(ci); let got = 0; for (let i = a; i < b; i++) got += recOf(i) ? recOf(i).stars : 0;
-    return `<button class="chcard${unlocked(a) ? '' : ' locked'}${ci === cur ? ' now' : ''}" data-ci="${ci}" style="background:${CH_COLORS[ci % 4].solid}"><span class="n">${ci + 1}</span><b>${esc(T(ch.name))}</b><small>★ ${got}/${(b - a) * 3}</small></button>`;
+    const [a, b] = chapterRange(ci), max = (b - a) * 3; let got = 0, solved = 0; for (let i = a; i < b; i++) { got += recOf(i) ? recOf(i).stars : 0; if (isSolved(i)) solved++; }
+    const open = unlocked(a), done = solved === b - a, now = ci === cur;
+    return `<button class="chcard ${!open ? 'locked' : now ? 'now' : done ? 'done' : 'open'}" data-ci="${ci}">
+      <span class="ico">${open ? CH_ICON[ci % CH_ICON.length] : '🔒'}</span><small class="k">${T`פרק ${ci + 1}`}</small><b>${esc(T(ch.name))}</b>
+      ${now ? `<span class="here">${T`ממשיכים כאן · שלב ${nextLv + 1}`}</span>` : ''}
+      <span class="sc"><img alt="" src="media/ui/star.webp">${got}/${max}${done ? ` · ${T('הושלם')} ✓` : ''}</span>
+      <span class="pb"><i style="width:${got / max * 100}%"></i></span></button>`;
   }).join('');
   for (const c of $('chGrid').children) c.onclick = () => {
     const ci = +c.dataset.ci;
@@ -2625,9 +2683,9 @@ function clockTick() {
 }
 function clockDraw() {
   const bar = $('timeBar'), s = Math.max(0, Math.ceil(G.left / 1000)), share = G.left / (G.limit * 1000);
-  bar.querySelector('i').style.width = `calc(${Math.max(0, Math.min(1, share)) * 100}% - 6px)`;
+  bar.style.setProperty('--p', Math.max(0, Math.min(1, share)));
   bar.querySelector('span').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  bar.className = 'timebar' + (s <= 10 ? ' low' : share <= .4 ? ' mid' : '');
+  bar.className = 'gclock' + (s <= 30 ? ' low' : share <= .4 ? ' mid' : '');
 }
 function timeOut() {
   const g = G, more = price('mirror');
@@ -2765,6 +2823,7 @@ function renderGame(flash) {
   $('tip').textContent = lv.tip || '';
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   renderPills(st);
+  $('movesPill').hidden = G.mode === 'level'; $('sayBug').src = BUG_SRC; $('powerNote').hidden = $('resetBtn').hidden = G.done;
 
   const status = $('status'); status.className = 'status';
   if (flash) { status.className = 'status bad'; status.textContent = flash; }
@@ -3429,7 +3488,7 @@ $('chapBtn').onclick = () => { Sound.play('tap'); openChapters(); };
 $('allchBack').onclick = goHome;
 $('bonusBtn').onclick = () => { if (P.streak.last !== todayStr()) return dailyBonus(); Sound.play('tap'); toast(T('הבונוס של היום כבר נאסף. חזרו מחר!')); };
 for (const b of $('tabbar').children) b.onclick = () => {
-  if (b.classList.contains('on')) return;
+  if (b.classList.contains('on') && !(b.dataset.tab === 'home' && $('home').hidden)) return;
   Sound.play('tap');
   ({ shop: openShop, leader: () => openLeaderboard('all'), home: goHome, duel: openFriends, garden: openGarden })[b.dataset.tab]();
 };
@@ -3637,6 +3696,21 @@ $('resetBtn').onclick = () => {
   if (G.done) return;
   for (const k of Object.keys(G.mirrors)) if (!G.locked.has(k)) delete G.mirrors[k];
   G.moves = 0; G.hammerMode = false; Sound.play('reset'); renderGame();
+};
+$('pauseBtn').onclick = () => {
+  if (!G || G.done) return;
+  const muted = () => P.sfx === false && P.music === false;
+  if (clockOn()) document.body.classList.add('paused');                    // the board is covered, so a pause is a rest and not thinking time
+  modal(`<img class="bug" alt="" src="${POSE.sleep}"><h3>${T('הפסקה')}</h3>
+    <button class="btn green" id="paGo">${T('ממשיכים')}</button>
+    <button class="btn blue" id="paSnd" style="margin-top:12px"></button>
+    <button class="btn ghosty" id="paOut" style="margin-top:12px">${G.mode === 'level' && !G.coach ? T('חזרה למפה') : T('יציאה')}</button>`, m => {
+      const label = () => { m.querySelector('#paSnd').textContent = muted() ? T('הפעלת צלילים') : T('השתקה'); };
+      label();
+      m.querySelector('#paGo').onclick = closeModal;
+      m.querySelector('#paSnd').onclick = () => { $('muteBtn').onclick(); label(); };
+      m.querySelector('#paOut').onclick = () => { closeModal(); $('backBtn').onclick(); };
+    });
 };
 $('pwMirror').onclick = buyMirror;
 $('pwHammer').onclick = toggleHammer;
