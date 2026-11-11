@@ -366,9 +366,9 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .mpad{position:absolute; transform:translate(-50%,-42%); border:none; background:none; padding:0; z-index:3; -webkit-tap-highlight-color:transparent; transition:scale .12s}
 .mpad:active:not(.s-locked){scale:.9}
 .mpad > img.art{width:100%; display:block; pointer-events:none; filter:drop-shadow(0 calc(var(--u) * 1.6) calc(var(--u) * 1.4) rgba(20,0,60,.55))}
-.mpad .num{position:absolute; left:0; right:0; top:37%; transform:translateY(-50%); text-align:center; font-weight:700; font-size:calc(var(--u) * 7.2); line-height:1; pointer-events:none; color:#fff; text-shadow:0 calc(var(--u) * .5) 0 rgba(60,20,120,.7)}
+.mpad .num{position:absolute; left:0; right:0; top:37%; transform:translateY(-50%); text-align:center; font-weight:700; font-size:calc(var(--u) * 8.4 * var(--k,1)); line-height:1; pointer-events:none; color:#fff; text-shadow:0 calc(var(--u) * .5) 0 rgba(60,20,120,.7)}
 .mpad.s-done .num{color:#9A6200; text-shadow:0 1px 0 rgba(255,255,255,.6)}
-.mpad.s-cur .num{font-size:calc(var(--u) * 9)} .mpad.s-check .num{font-size:calc(var(--u) * 8.4)}
+.mpad.s-cur .num{font-size:calc(var(--u) * 10 * var(--k,1))} .mpad.s-check .num{font-size:calc(var(--u) * 9 * var(--k,1))}
 .mpad img.st{position:absolute; transform:translate(-50%,-50%); pointer-events:none}
 .mpad img.st.off{filter:brightness(.28) saturate(.5)}
 .mpad img.st.pop{animation:mStar .55s cubic-bezier(.3,1.7,.5,1) both}
@@ -2246,7 +2246,9 @@ function dailyBonus() {
    Each chapter is one picture with a glowing path. The ten stops sit on the path (x%, y% of the dish), the gate at the
    top leads to the next chapter, and the firefly waits beside the level to play next. */
 const M_DIR = 'media/map/';
-const MAP_PADS = [[38, 92.6], [66, 85.7], [30, 76.2], [62, 74.5], [30, 62.3], [66, 51.2], [26, 43.7], [60, 38.3], [30, 30.8], [64, 24.8]], MAP_GATE = [56, 12.5];
+const MAP_PADS = [[48, 94.3], [36, 83.6], [62, 74.8], [40, 62.6], [74, 55.4], [38, 50.6], [57, 44.3], [35, 38.3], [58, 32.2], [38, 26.2]], MAP_GATE = [56, 12.5];
+/* the path runs away from the viewer, so every stop is drawn smaller than the one before it */
+const padScale = j => .5 + .5 * (MAP_PADS[j][1] - 26) / 68;
 const MAP_STARS = {       // where the three rim stars sit on each button drawing: x%, y%, width%
   done: [[26, 80, 15], [49.5, 83, 19], [73, 80, 15]], cur: [[33.5, 76, 11], [49.5, 77.5, 14.5], [64.5, 76, 11]], check: [[34.5, 80, 10.5], [49.5, 82, 13.5], [64.5, 80, 10.5]] };
 const chBase = ci => CHAPTERS.slice(0, ci).reduce((n, c) => n + c.levels.length, 0);
@@ -2257,7 +2259,7 @@ function openMap(ch, justSolved) {
   mapCh = ch; show('map'); renderMap(true, justSolved);
 }
 const padSide = j => { const [x] = MAP_PADS[j], nx = (MAP_PADS[j + 1] || MAP_GATE)[0]; return nx > x; };      // the firefly waits on the side away from the next stop
-const flyAt = j => { const [x, y] = MAP_PADS[j], left = padSide(j), fx = left ? x - 27 : x + 27, tight = fx < 13 || fx > 87; return [Math.max(13, Math.min(87, fx)), y - (tight ? 11 : 4), left]; };      // near an edge she hovers above the stop instead of on it
+const flyAt = j => { const [x, y] = MAP_PADS[j], left = padSide(j), off = 9 + 20 * padScale(j), fx = left ? x - off : x + off, tight = fx < 13 || fx > 87; return [Math.max(13, Math.min(87, fx)), y - (tight ? 11 : 4), left]; };      // near an edge she hovers above the stop instead of on it
 function mapBurst(x, y, n = 12) {
   const scene = $('mScene'), w = scene.clientWidth;
   for (let k = 0; k < n; k++) {
@@ -2278,11 +2280,11 @@ function renderMap(scroll, justSolved) {
   html += `<button class="mcot" id="mapCot" style="left:88%;top:41%" aria-label="${T('הגן של הגחלילית')}"><img alt="" src="${M_DIR}cottage.webp"></button>`;
   html += `<button class="mportal ${done && cel < 0 ? 'open' : 'shut'}" id="mapGate" style="left:${MAP_GATE[0]}%;top:${MAP_GATE[1]}%" aria-label="${T('השער לפרק הבא')}"><img class="pt" alt="" src="${M_DIR}portal.webp">${done ? '' : `<img class="lk" alt="" src="${M_DIR}lock.webp">`}</button>`;
   ch.levels.slice(0, MAP_PADS.length).forEach((lv, j) => {
-    const i = base + j, [x, y] = MAP_PADS[j], rec = recOf(i), open = unlocked(i), big = j === 4 || j === ch.levels.length - 1;
-    const art = !open ? 'locked' : !rec ? 'cur' : big ? 'check' : 'done', w = art === 'cur' ? 30 : art === 'check' ? 32 : big ? 26 : 21;
+    const i = base + j, [x, y] = MAP_PADS[j], rec = recOf(i), open = unlocked(i), big = j === 4, k = padScale(j);
+    const art = !open ? 'locked' : !rec ? 'cur' : big ? 'check' : 'done', w = (art === 'cur' ? 33 : art === 'check' ? 34 : big ? 29 : 25) * k;
     if (art === 'cur' && curJ < 0) curJ = j;
     const stars = art === 'locked' ? '' : MAP_STARS[art].map(([sx, sy, sw], k) => `<img class="st${rec && rec.stars > k && j !== cel ? '' : ' off'}" alt="" src="${M_DIR}star.webp" style="left:${sx}%;top:${sy}%;width:${sw}%">`).join('');
-    html += `<button class="mpad s-${art}${cel >= 0 && art === 'cur' ? ' pre' : ''}" data-i="${i}" data-j="${j}" style="left:${x}%;top:${y}%;width:${w}%;--j:${j}" aria-label="${T`שלב ${i + 1}`}${rec ? T`, ${rec.stars} כוכבים` : ''}"><img class="art" alt="" src="${M_DIR}${art}.webp">` +
+    html += `<button class="mpad s-${art}${cel >= 0 && art === 'cur' ? ' pre' : ''}" data-i="${i}" data-j="${j}" style="left:${x}%;top:${y}%;width:${w.toFixed(1)}%;--j:${j};--k:${k.toFixed(2)};z-index:${3 + j % 1}" aria-label="${T`שלב ${i + 1}`}${rec ? T`, ${rec.stars} כוכבים` : ''}"><img class="art" alt="" src="${M_DIR}${art}.webp">` +
       (open ? `<b class="num">${i + 1}</b>${stars}` : `<img class="lk" alt="" src="${M_DIR}lock.webp">`) + '</button>';
   });
   const at = cel >= 0 ? flyAt(cel) : curJ >= 0 ? flyAt(curJ) : [MAP_GATE[0] - 30, MAP_GATE[1] - 2, true];
