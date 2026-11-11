@@ -443,6 +443,11 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .segm button[aria-pressed=true]{background:var(--purple); color:#fff; box-shadow:0 2px 0 var(--purple-d)}
 .powers.two{grid-template-columns:1fr 1fr}
 .beamline{fill:none; stroke:var(--beam); stroke-width:.16; stroke-linejoin:round; stroke-linecap:round; pointer-events:none}
+.coachring{fill:none; stroke:#FFD23F; stroke-width:.08; pointer-events:none; filter:drop-shadow(0 0 .08px #FFD23F); animation:coachRing 1s ease-in-out infinite}
+.coachhand{font-size:.62px; text-anchor:middle; pointer-events:none; animation:coachHand 1s ease-in-out infinite}
+@keyframes coachRing{50%{stroke-width:.14; stroke-opacity:.55}}
+@keyframes coachHand{50%{transform:translateY(-.14px)}}
+.status.coach{color:#FFE9A8; font-weight:700; font-size:17px}
 /* on a bomb the beam keeps the player's colour and turns into a blinking broken line */
 .bad .beamline{stroke-dasharray:.2 .16; animation:badBlink .7s ease-in-out infinite}
 .bad .core{opacity:0}
@@ -930,6 +935,9 @@ const EN = {
   'הקישו על הבית כדי להיכנס': 'Tap the house to go inside', 'נוסף לבית': 'Added to the house', 'הגן והבית מושלמים!': 'The garden and the house are complete!',
   'שטיח פרח': 'Flower rug', 'עציץ זוהר': 'Glowing plant', 'אדנית לחלון': 'Window box', 'מנורת קיר': 'Wall lamp', 'מדף שיקויים': 'Potion shelf', 'מנורת פרח': 'Flower lamp', 'כורסה': 'Armchair', 'טלסקופ': 'Telescope',
   'הקרן פוגעת בפצצה. הסיטו אותה עם מראה.': 'The beam is hitting a bomb. Turn it away with a mirror.',
+  'ברוכים הבאים ל-BEAM!': 'Welcome to BEAM!', 'הגחלילית צריכה עזרה להדליק את הכוכבים. בואו נלמד איך משחקים, זה לוקח חצי דקה.': 'The firefly needs help lighting the stars. Let\'s learn how to play. It takes half a minute.',
+  'בואו נתחיל': 'Let\'s start', 'אני כבר יודע לשחק': 'I already know how to play', 'המראה הזו לא במקום. הקישו עליה עד שהיא נעלמת.': 'This mirror is in the wrong place. Tap it until it disappears.',
+  'הקישו על המשבצת המסומנת כדי להציב מראה. המראה מפנה את הקרן.': 'Tap the marked cell to place a mirror. A mirror turns the beam.', 'יפה! עכשיו הקישו עליה שוב כדי לסובב אותה אל הכוכב.': 'Nice! Now tap it again to turn it toward the star.',
   // ---- shop ----
   'חנות': 'Shop', 'קונים בנקודות שבארנק. הדירוג בטבלה לא יורד.': 'Bought with the points in your wallet. Your leaderboard rank never drops.', 'צבע הקרן': 'Beam colour', 'בקרוב': 'Coming soon',
   'קלאסית': 'Classic', 'זהב': 'Gold', 'קרח': 'Ice', 'ליים': 'Lime', 'סגול לילה': 'Night violet', 'אש': 'Fire', 'קשת': 'Rainbow', 'אבק כוכבים': 'Stardust',
@@ -2208,7 +2216,7 @@ function bombOut() {
       }, true);
   }, 700);
 }
-function openLevel(i) { G = session('level', ALL[i], { idx: i }); startGame(); }
+function openLevel(i) { G = session('level', ALL[i], { idx: i, coach: P.tut === 1 && i < 3 && !P.levels[ALL[i].id] }); startGame(); }      // the lesson covers the first three levels
 function openDaily() {
   const t = todayStr();
   if (!DAILY_CACHE || DAILY_CACHE.date !== t) DAILY_CACHE = { date: t, lv: dailyLevel(t) };
@@ -2287,8 +2295,16 @@ function renderGame(flash) {
   else if (G.hammerMode) { status.className = 'status bad'; status.textContent = T('הקישו על חסימה מהבהבת כדי לשבור אותה'); }
   else if (st.bomb) { status.className = 'status bad'; status.textContent = !onBomb ? T('הקרן פוגעת בפצצה. הסיטו אותה עם מראה.') : G.bombHeld ? (G.bombs === 1 ? T('זהירות! עוד פגיעה בפצצה והיא מתפוצצת.') : T('בום! הקרן פגעה בפצצה.')) : T('הקרן על פצצה! הזיזו את המראה מהר.'); }
   else status.textContent = G.moves === 0 ? T('הקישו על משבצת כדי להציב מראה') : '';
+  const step = G.coach && !G.done && !G.hammerMode ? coachStep() : null;
+  if (step) {
+    const [cx, cy] = step.k.split(',').map(Number), NS = 'http://www.w3.org/2000/svg';
+    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('class', 'coachring'); ring.setAttribute('cx', cx + .5); ring.setAttribute('cy', cy + .5); ring.setAttribute('r', .46);
+    const hand = document.createElementNS(NS, 'text'); hand.setAttribute('class', 'coachhand'); hand.setAttribute('x', cx + .5); hand.setAttribute('y', cy + 1.25); hand.textContent = '👆';
+    $('board').appendChild(ring); $('board').appendChild(hand);
+    status.className = 'status coach'; status.textContent = step.text;
+  }
 
-  $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done;
+  $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done || !!G.coach;
   $('pwMirror').innerHTML = `${ICON_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(price('mirror'))}</span>`;
   $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(price('hammer'))}</span>`;
   const hintsLeft = Math.max(0, hintLimit(lv) - G.hints);
@@ -2520,8 +2536,31 @@ function finish() {
   save(); checkAchievements();
 }
 let bonusPending = false;   // a newcomer gets the daily bonus when they first reach the home screen, not on top of level one
+/* A first visit starts with a half-minute lesson: the first level, with the next cell to tap ringed and explained. */
+const isNewcomer = () => !P.tut && !Object.keys(P.levels).length;
+function offerTutorial() {
+  modal(`<img class="bug" alt="" src="${POSE.welcome}">
+    <h3>${T('ברוכים הבאים ל-BEAM!')}</h3>
+    <p>${T('הגחלילית צריכה עזרה להדליק את הכוכבים. בואו נלמד איך משחקים, זה לוקח חצי דקה.')}</p>
+    <button class="btn orange" id="tutGo">${T('בואו נתחיל')}</button>
+    <button class="linkbtn" id="tutSkip">${T('אני כבר יודע לשחק')}</button>`, m => {
+      m.querySelector('#tutGo').onclick = () => { closeModal(); P.tut = 1; save(false); bonusPending = true; openLevel(0); };
+      m.querySelector('#tutSkip').onclick = () => { closeModal(); P.tut = 2; save(false); dailyBonus(); checkAchievements(); };
+    }, true);
+}
+/* what the lesson asks for next: the first cell of the solution that is not right yet (or a stray mirror to take off) */
+function coachStep() {
+  const want = new Map(G.lv.sol), stray = Object.keys(G.mirrors).find(k => !want.has(k));
+  if (stray) return { k: stray, text: T('המראה הזו לא במקום. הקישו עליה עד שהיא נעלמת.') };
+  for (const [k, m] of want) {
+    if (!G.mirrors[k]) return { k, text: T('הקישו על המשבצת המסומנת כדי להציב מראה. המראה מפנה את הקרן.') };
+    if (G.mirrors[k] !== m) return { k, text: T('יפה! עכשיו הקישו עליה שוב כדי לסובב אותה אל הכוכב.') };
+  }
+  return null;
+}
 function goHome() {
   clearInterval(timerInt); renderHome(); show('home');
+  if (bonusPending && isNewcomer()) { bonusPending = false; setTimeout(offerTutorial, 450); return; }
   if (bonusPending) { bonusPending = false; setTimeout(() => { dailyBonus(); checkAchievements(); }, 450); }
 }
 
@@ -3039,7 +3078,7 @@ function confirmReset() {
     <button class="btn ghosty" id="resetNo" style="margin-top:12px">${T`ביטול`}</button>`, m => {
       m.querySelector('#resetNo').onclick = closeModal;
       m.querySelector('#resetYes').onclick = () => {
-        const keep = { byId: true, v2: true, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, garden: P.garden, beam: P.beam, board: P.board, fx: P.fx, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
+        const keep = { byId: true, v2: true, tut: 2, auth: P.auth, id: P.id, key: P.key, viaAccount: P.viaAccount, avatar: P.avatar, own: P.own, garden: P.garden, beam: P.beam, board: P.board, fx: P.fx, social: P.social, hidePresence: P.hidePresence, name: P.name, adFree: P.adFree, purchases: P.purchases, streak: P.streak, sfx: P.sfx, music: P.music, musicStyle: P.musicStyle, haptic: P.haptic };
         P = { ...newProfile(), ...keep };
         save(); closeModal(); goHome(); toast(T('ההתקדמות אופסה'));
       };
@@ -3354,6 +3393,7 @@ function setProgress(p, text) {
     return;
   }
   await wait(500);
+  if (isNewcomer()) { offerTutorial(); return; }
   dailyBonus();
   checkAchievements();
 })();
