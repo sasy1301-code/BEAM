@@ -2347,6 +2347,23 @@ function show(id) {
   if (tab) hudSync();
   flyShow(id === 'home' ? $('homeFly') : id === 'garden' ? GFLY : null);
 }
+/* the level's tip sits halfway between the clock and the top of the board picture (or the firefly, when she stands above it) */
+function placeTip() {
+  const tip = $('tip'); tip.style.transform = '';
+  if (!tip.textContent) return;
+  requestAnimationFrame(() => {
+    if ($('game').hidden) return;
+    tip.style.transform = '';
+    const clock = $('timeBar').hidden ? document.querySelector('.gstats') : $('timeBar');
+    let top = Infinity;
+    for (const im of $('board').querySelectorAll('image.frame, image:not([class])')) top = Math.min(top, im.getBoundingClientRect().top);
+    if (!isFinite(top)) top = $('board').getBoundingClientRect().top;
+    const from = clock.getBoundingClientRect().bottom, r = tip.getBoundingClientRect();
+    if (top - from < r.height) return;
+    tip.style.transform = `translateY(${Math.round((from + top) / 2 - (r.top + r.bottom) / 2)}px)`;
+  });
+}
+addEventListener('resize', () => { if (typeof G !== 'undefined' && G && !$('game').hidden) placeTip(); });
 function hudSync() {
   $('meName').textContent = P.name || T('שחקן חדש');
   $('meRank').textContent = rankOf(P.earned).name;
@@ -2996,6 +3013,7 @@ function renderGame(flash) {
   else if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
   else { $('lvTitle').textContent = T`שלב ${G.idx + 1}`; $('lvChapter').textContent = T`פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
   $('tip').textContent = lv.tip || '';
+  placeTip();
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   renderPills(st);
   $('movesPill').hidden = G.mode === 'level'; $('sayBug').src = BUG_SRC; $('powerNote').hidden = $('resetBtn').hidden = G.done;
