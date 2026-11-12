@@ -3195,6 +3195,8 @@ function showWin(mood, delay, onCard, coins = 0) {
   hideWin();
   const g = G, layer = $('winLayer'), bug = $('winBug'), film = $('winFilm');
   const still = () => G === g && G.done && !$('game').hidden;
+  // the coins come first, over the solved board; the firefly and then the card follow once they have landed in the counter
+  if (coins) { const at = delay; winTimers.push(setTimeout(() => { if (still()) coinBurst(coins); }, at)); delay += COIN_MS; }
   winTimers.push(setTimeout(() => {
     if (!still()) return;
     const clip = !!WIN_VIDEO[mood];
@@ -3209,24 +3211,19 @@ function showWin(mood, delay, onCard, coins = 0) {
   winTimers.push(setTimeout(() => {
     if (!still()) return;
     bug.className = 'winbug ' + mood + ' perch'; film.className = 'winbug ' + mood + ' perch anim';
-    const card = () => {
-      if (!still()) return;
-      $('winbox').hidden = false;
-      if (mood !== 'shrug') winFx(lookOf('fx'));
-      if (onCard) onCard();
-      $('nextBtn').focus({ preventScroll: true });
-    };
-    // the coins come first; the card with the stars opens once they have landed in the counter
-    const wait = coinBurst(coins);
-    if (wait) winTimers.push(setTimeout(card, wait)); else card();
+    $('winbox').hidden = false;
+    if (mood !== 'shrug') winFx(lookOf('fx'));
+    if (onCard) onCard();
+    $('nextBtn').focus({ preventScroll: true });
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
 /* Winning points arrive as coins: they burst out of the middle of the screen, hang for a moment, then fly up into the counter, which counts up as they land. */
+const COIN_MS = 180 + 330 + 300 + 44 * 14 + 520 - 150;   // from the burst until the last coins are landing
 function coinBurst(earned) {
   const chip = $('gamePoints'), g = G, from = g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
   const settle = () => { if (G === g) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); };
-  if (!earned || $('game').hidden) return settle(), 0;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle(), 0;
+  if (!earned || $('game').hidden) return settle();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle();
   const layer = document.createElement('div'); layer.className = 'coinfly'; document.body.appendChild(layer);
   document.body.classList.add('coining');
   const t = chip.getBoundingClientRect(), tx = t.left + t.width / 2, ty = t.top + t.height / 2;
@@ -3254,7 +3251,6 @@ function coinBurst(earned) {
     };
   }
   setTimeout(() => { layer.remove(); document.body.classList.remove('coining'); settle(); }, 4000);   // whatever happens to the animations, the sum ends up right
-  return 180 + 330 + 300 + N * 14 + 520 - 150;   // how long until the last coins are landing
 }
 function finish() {
   if (G.mode === 'duel') return duelSolved();
