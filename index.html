@@ -1598,7 +1598,7 @@ function starPath(cx, cy, R, r) {
 function star(g, cx, cy, on, fid) {
   if (painted()) {
     if (on) el('circle', { cx, cy, r: .42, fill: '#FFD23F', opacity: .8, class: 'starglow', filter: fid ? `url(#${fid})` : '' }, g);
-    return pic(g, on ? 'star' : 'star-off', cx - .41, cy - .4, .82, .8, on ? 'st on' : 'st');
+    return on ? pic(g, 'star', cx - .52, cy - .52, 1.04, 1.04, 'st on') : pic(g, 'star-off', cx - .38, cy - .38, .76, .76, 'st');
   }
   if (on) el('circle', { cx, cy, r: .36, fill: 'var(--star)', opacity: .7, class: 'starglow', filter: fid ? `url(#${fid})` : '' }, g);
   el('path', { d: starPath(cx, cy + .02, .3, .13), fill: on ? 'var(--star-d)' : 'rgba(45,27,78,.25)', 'stroke-linejoin': 'round' }, g);
