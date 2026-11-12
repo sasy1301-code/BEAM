@@ -656,6 +656,8 @@ html[dir=ltr] #backBtn{transform:scaleX(-1)}
 .gstats .pill svg{width:26px; height:26px} .gstats .pill[hidden]{display:none}
 .gclock{--p:1; --c:#2DBE60; width:96px; height:96px; flex:none; border-radius:50%; background:conic-gradient(var(--c) calc(var(--p) * 360deg), rgba(255,255,255,.14) 0); display:grid; place-items:center; box-shadow:0 5px 0 #24126b, 0 0 18px color-mix(in srgb, var(--c) 55%, transparent); margin:-2px 0 -6px; order:0}
 .gclock[hidden]{display:none}
+.coinfly{position:fixed; inset:0; z-index:60; pointer-events:none; overflow:hidden} .coinfly img{position:absolute; left:0; top:0; width:34px; height:34px; will-change:transform; filter:drop-shadow(0 2px 3px rgba(60,20,0,.45))}
+body.coining #gamePoints{position:relative; z-index:61}   /* the counter shows through the dimmed win screen while coins land in it */
 [dir=ltr] .rb .bk{transform:scaleX(-1)}   /* back points towards where you came from: right in Hebrew, left in English */
 .gclock{position:relative; top:20px} .gstats{margin-bottom:20px}   /* the clock hangs 20px below the two pills */
 .gclock span{width:78px; height:78px; border-radius:50%; background:linear-gradient(180deg,#3A2290,#22104f); display:grid; place-items:center; color:#fff; font-weight:700; font-size:26px; font-variant-numeric:tabular-nums}
@@ -1880,6 +1882,7 @@ const Sound = (() => {
       noise({ dur: .35, vol: .45, type: 'bandpass', f: 1800, f2: 400, q: .8 });
       for (let i = 0; i < 6; i++) noise({ dur: .05, vol: .12, type: 'highpass', f: 2500 + Math.random() * 3000, delay: .08 + i * .05 + Math.random() * .03 });
     },
+    coins(n = 10) { for (let i = 0; i < n; i++) tone({ f: [1319, 1568, 1760, 2093][i % 4], type: 'triangle', dur: .09, vol: .06, wet: .3, delay: i * .07 }); },   // a purse emptying into the counter
     coin()   { tone({ f: 988, type: 'square', dur: .08, vol: .07 }); tone({ f: 1319, type: 'square', dur: .25, vol: .07, delay: .08 }); },
     hint()   {
       tone({ f: 500, f2: 1600, type: 'sine', dur: .45, vol: .12, wet: .8 });
@@ -3212,6 +3215,40 @@ function showWin(mood, delay, onCard) {
     $('nextBtn').focus({ preventScroll: true });
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
+/* Winning points arrive as coins: they burst out of the middle of the screen, hang for a moment, then fly up into the counter, which counts up as they land. */
+function coinBurst(earned) {
+  const chip = $('gamePoints'), g = G, from = g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
+  const settle = () => { if (G === g) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); };
+  if (!earned || $('game').hidden) return settle();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle();
+  const layer = document.createElement('div'); layer.className = 'coinfly'; document.body.appendChild(layer);
+  document.body.classList.add('coining');
+  const t = chip.getBoundingClientRect(), tx = t.left + t.width / 2, ty = t.top + t.height / 2;
+  const ox = innerWidth / 2, oy = innerHeight * .46, N = 44, size = 34;
+  let landed = 0;
+  const show = n => { const sp = chip.querySelector('span'); if (sp) sp.textContent = fmt(n); };
+  setTimeout(() => Sound.play('coins', 14), 380);
+  for (let i = 0; i < N; i++) {
+    const im = document.createElement('img'); im.src = `media/ui/coin${1 + i % 3}.webp`; im.alt = '';
+    const a = Math.random() * Math.PI * 2, r = 50 + Math.random() * Math.min(innerWidth * .42, 170);
+    const mx = ox + Math.cos(a) * r, my = oy + Math.sin(a) * r * .8 - 30, sc = .7 + Math.random() * .6, spin = (Math.random() - .5) * 540;
+    const wait = Math.random() * 180, hang = 420 + i * 22, fly = 520;
+    const at = (x, y, k, rot) => `translate(${x - size / 2}px, ${y - size / 2}px) scale(${k}) rotate(${rot}deg)`;
+    layer.appendChild(im);
+    const total = 330 + hang + fly;
+    im.animate([
+      { transform: at(ox, oy, .2, 0), opacity: 0, offset: 0 },
+      { transform: at(mx, my, sc * 1.15, spin * .5), opacity: 1, offset: 330 / total, easing: 'ease-in-out' },
+      { transform: at(mx, my + 14, sc, spin * .6), opacity: 1, offset: (330 + hang) / total, easing: 'cubic-bezier(.5,-.2,.7,.4)' },
+      { transform: at(tx, ty, .45, spin), opacity: 1, offset: 1 },
+    ], { duration: total, delay: wait, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'both' }).onfinish = () => {
+      im.remove(); landed++;
+      if (G === g) { show(Math.round(from + (P.balance - from) * landed / N)); chip.animate([{ transform: 'scale(1.16)' }, { transform: 'scale(1)' }], { duration: 160 }); }
+      if (landed === N) { layer.remove(); document.body.classList.remove('coining'); settle(); }
+    };
+  }
+  setTimeout(() => { layer.remove(); document.body.classList.remove('coining'); settle(); }, 4000);   // whatever happens to the animations, the sum ends up right
+}
 function finish() {
   if (G.mode === 'duel') return duelSolved();
   G.done = true; G.hammerMode = false; clearInterval(timerInt);
@@ -3265,8 +3302,9 @@ function finish() {
     $('retryBtn').onclick = () => openLevel(i);
   }
   $('gains').innerHTML = earned ? `<div class="coin">${ICON_POINTS}<span>+${fmt(earned)}</span></div>` : `<span style="color:var(--muted)">${T`כבר השגתם את התוצאה הזו`}</span>`;
-  $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
-  showWin(mood, winDelay, winSound);
+  // the counter keeps the old sum until the coins fly into it
+  G.coinFrom = P.balance - earned; $('gamePoints').innerHTML = coinHTML(ICON_POINTS, G.coinFrom);
+  showWin(mood, winDelay, () => { if (winSound) winSound(); coinBurst(earned); });
   save(); checkAchievements();
 }
 let bonusPending = false;   // a newcomer gets the daily bonus when they first reach the home screen, not on top of level one
