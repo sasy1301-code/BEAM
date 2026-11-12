@@ -658,7 +658,6 @@ html[dir=ltr] #backBtn{transform:scaleX(-1)}
 .gclock[hidden]{display:none}
 .coinfly{position:fixed; inset:0; z-index:60; pointer-events:none; overflow:hidden} .coinfly img{position:absolute; left:0; top:0; width:36px; height:36px; will-change:transform; filter:drop-shadow(0 3px 4px rgba(60,20,0,.5))}
 .cf-flash{position:absolute; inset:0; background:radial-gradient(circle at 50% 45%, #fff 0%, #FFE680 25%, rgba(255,190,40,.6) 55%, rgba(255,170,0,0) 80%)}
-.cf-rays{position:absolute; width:190vmax; height:190vmax; border-radius:50%; background:repeating-conic-gradient(rgba(255,226,120,.42) 0 7deg, rgba(255,226,120,0) 7deg 20deg); -webkit-mask:radial-gradient(circle, #000 0%, rgba(0,0,0,.7) 22%, transparent 55%); mask:radial-gradient(circle, #000 0%, rgba(0,0,0,.7) 22%, transparent 55%)}
 .cf-ring{position:absolute; width:150vmin; height:150vmin; border-radius:50%; border:10px solid #FFE680; box-shadow:0 0 30px #FFC530, inset 0 0 30px #FFC530}
 .cf-sum{position:absolute; left:0; top:0; z-index:3; font-weight:900; font-size:min(21vw,92px); line-height:1; color:#FFE14A; white-space:nowrap; direction:ltr; -webkit-text-stroke:3px #8A3D00; paint-order:stroke fill; text-shadow:0 5px 0 #8A3D00, 0 0 26px rgba(255,220,90,.95), 0 0 60px rgba(255,160,0,.8)}
 .cf-glint{position:absolute; color:#FFF6C2; text-shadow:0 0 10px #FFD23F, 0 0 20px #FF9F1C; line-height:1}
@@ -3248,9 +3247,8 @@ function coinBurst(earned) {
   const br = $('board').getBoundingClientRect(), ox = br.left + br.width / 2, oy = br.top + br.height / 2, N = COIN_N, size = 36;
   const add = (cls, css) => { const d = document.createElement('div'); d.className = cls; if (css) d.style.cssText = css; layer.appendChild(d); return d; };
 
-  // the stage: a golden flash, turning rays, two shock rings and a board that jumps
+  // the stage: a golden flash, two shock rings and a board that jumps
   add('cf-flash').animate([{ opacity: 0 }, { opacity: .95, offset: .12 }, { opacity: 0 }], { duration: 650, fill: 'both' });
-  add('cf-rays', `left:${ox}px; top:${oy}px`).animate([{ transform: 'translate(-50%,-50%) scale(.2) rotate(0deg)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1) rotate(40deg)', opacity: .9, offset: .15 }, { transform: 'translate(-50%,-50%) scale(1.1) rotate(150deg)', opacity: .75, offset: .75 }, { transform: 'translate(-50%,-50%) scale(1.25) rotate(190deg)', opacity: 0 }], { duration: COIN_MS, fill: 'both' });
   for (const d of [0, 220]) add('cf-ring', `left:${ox}px; top:${oy}px`).animate([{ transform: 'translate(-50%,-50%) scale(.1)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }], { duration: 750, delay: d, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'both' });
   const wrap = document.querySelector('#game .boardwrap');
   wrap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07) rotate(-1.2deg)', offset: .18 }, { transform: 'scale(.97) rotate(.8deg)', offset: .4 }, { transform: 'scale(1.03)', offset: .62 }, { transform: 'scale(1)' }], { duration: 700, easing: 'ease-out' });
