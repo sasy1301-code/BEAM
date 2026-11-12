@@ -656,6 +656,7 @@ html[dir=ltr] #backBtn{transform:scaleX(-1)}
 .gstats .pill svg{width:26px; height:26px} .gstats .pill[hidden]{display:none}
 .gclock{--p:1; --c:#2DBE60; width:96px; height:96px; flex:none; border-radius:50%; background:conic-gradient(var(--c) calc(var(--p) * 360deg), rgba(255,255,255,.14) 0); display:grid; place-items:center; box-shadow:0 5px 0 #24126b, 0 0 18px color-mix(in srgb, var(--c) 55%, transparent); margin:-2px 0 -6px; order:0}
 .gclock[hidden]{display:none}
+[dir=ltr] .rb .bk{transform:scaleX(-1)}   /* back points towards where you came from: right in Hebrew, left in English */
 .gclock{position:relative; top:20px} .gstats{margin-bottom:20px}   /* the clock hangs 20px below the two pills */
 .gclock span{width:78px; height:78px; border-radius:50%; background:linear-gradient(180deg,#3A2290,#22104f); display:grid; place-items:center; color:#fff; font-weight:700; font-size:26px; font-variant-numeric:tabular-nums}
 .gclock.mid{--c:#FF9F1C} .gclock.low{--c:#E5304A; animation:tbPulse .6s ease-in-out infinite}
@@ -926,7 +927,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 <!-- GAME -->
 <section id="game" hidden>
   <div class="gtop">
-    <button class="rb" id="backBtn" aria-label="חזרה">›</button>
+    <button class="rb" id="backBtn" aria-label="חזרה"><svg class="bk" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="lvtitle"><h2 id="lvTitle"></h2><small id="lvChapter"></small></div>
     <div class="coin" id="gamePoints"></div>
     <button class="rb" id="pauseBtn" aria-label="השהיה"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button>
@@ -1086,7 +1087,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 
 <!-- HELP -->
 <section id="help" class="help" hidden>
-  <div class="gtop"><button class="rb" id="helpBack" aria-label="חזרה">›</button><div class="lvtitle"><h2>איך משחקים</h2></div><img class="helpbug" id="helpBug" alt=""></div>
+  <div class="gtop"><button class="rb" id="helpBack" aria-label="חזרה"><svg class="bk" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lvtitle"><h2>איך משחקים</h2></div><img class="helpbug" id="helpBug" alt=""></div>
   <div class="tabs four" role="tablist" id="helpTabs"><button role="tab" data-p="a" aria-selected="true">הבסיס</button><button role="tab" data-p="b" aria-selected="false">מכשולים</button><button role="tab" data-p="c" aria-selected="false">נקודות</button><button role="tab" data-p="d" aria-selected="false">טיפים</button></div>
   <div class="hpane" data-p="a">
   <p class="lead">הגחלילית יורה קרן אור. הציבו מראות כך שהקרן תעבור דרך כל הכוכבים.</p>
