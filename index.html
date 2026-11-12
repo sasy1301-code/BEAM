@@ -3191,7 +3191,7 @@ function hideWin() {
   $('winLayer').hidden = true; $('winLayer').classList.remove('dim'); $('winbox').hidden = true;
 }
 /* first she jumps in over the board in the mood the result earned, then the card pops up under her */
-function showWin(mood, delay, onCard) {
+function showWin(mood, delay, onCard, coins = 0) {
   hideWin();
   const g = G, layer = $('winLayer'), bug = $('winBug'), film = $('winFilm');
   const still = () => G === g && G.done && !$('game').hidden;
@@ -3209,18 +3209,24 @@ function showWin(mood, delay, onCard) {
   winTimers.push(setTimeout(() => {
     if (!still()) return;
     bug.className = 'winbug ' + mood + ' perch'; film.className = 'winbug ' + mood + ' perch anim';
-    $('winbox').hidden = false;
-    if (mood !== 'shrug') winFx(lookOf('fx'));
-    if (onCard) onCard();
-    $('nextBtn').focus({ preventScroll: true });
+    const card = () => {
+      if (!still()) return;
+      $('winbox').hidden = false;
+      if (mood !== 'shrug') winFx(lookOf('fx'));
+      if (onCard) onCard();
+      $('nextBtn').focus({ preventScroll: true });
+    };
+    // the coins come first; the card with the stars opens once they have landed in the counter
+    const wait = coinBurst(coins);
+    if (wait) winTimers.push(setTimeout(card, wait)); else card();
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
 /* Winning points arrive as coins: they burst out of the middle of the screen, hang for a moment, then fly up into the counter, which counts up as they land. */
 function coinBurst(earned) {
   const chip = $('gamePoints'), g = G, from = g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
   const settle = () => { if (G === g) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); };
-  if (!earned || $('game').hidden) return settle();
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle();
+  if (!earned || $('game').hidden) return settle(), 0;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle(), 0;
   const layer = document.createElement('div'); layer.className = 'coinfly'; document.body.appendChild(layer);
   document.body.classList.add('coining');
   const t = chip.getBoundingClientRect(), tx = t.left + t.width / 2, ty = t.top + t.height / 2;
@@ -3232,7 +3238,7 @@ function coinBurst(earned) {
     const im = document.createElement('img'); im.src = `media/ui/coin${1 + i % 3}.webp`; im.alt = '';
     const a = Math.random() * Math.PI * 2, r = 50 + Math.random() * Math.min(innerWidth * .42, 170);
     const mx = ox + Math.cos(a) * r, my = oy + Math.sin(a) * r * .8 - 30, sc = .7 + Math.random() * .6, spin = (Math.random() - .5) * 540;
-    const wait = Math.random() * 180, hang = 420 + i * 22, fly = 520;
+    const wait = Math.random() * 180, hang = 300 + i * 14, fly = 520;
     const at = (x, y, k, rot) => `translate(${x - size / 2}px, ${y - size / 2}px) scale(${k}) rotate(${rot}deg)`;
     layer.appendChild(im);
     const total = 330 + hang + fly;
@@ -3248,6 +3254,7 @@ function coinBurst(earned) {
     };
   }
   setTimeout(() => { layer.remove(); document.body.classList.remove('coining'); settle(); }, 4000);   // whatever happens to the animations, the sum ends up right
+  return 180 + 330 + 300 + N * 14 + 520 - 150;   // how long until the last coins are landing
 }
 function finish() {
   if (G.mode === 'duel') return duelSolved();
@@ -3304,7 +3311,7 @@ function finish() {
   $('gains').innerHTML = earned ? `<div class="coin">${ICON_POINTS}<span>+${fmt(earned)}</span></div>` : `<span style="color:var(--muted)">${T`כבר השגתם את התוצאה הזו`}</span>`;
   // the counter keeps the old sum until the coins fly into it
   G.coinFrom = P.balance - earned; $('gamePoints').innerHTML = coinHTML(ICON_POINTS, G.coinFrom);
-  showWin(mood, winDelay, () => { if (winSound) winSound(); coinBurst(earned); });
+  showWin(mood, winDelay, winSound, earned);
   save(); checkAchievements();
 }
 let bonusPending = false;   // a newcomer gets the daily bonus when they first reach the home screen, not on top of level one
