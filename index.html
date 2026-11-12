@@ -2321,7 +2321,7 @@ const ICON_POINTS = `<svg viewBox="0 0 1 1"><circle cx=".5" cy=".5" r=".42" fill
 const ICON_STAR = `<svg viewBox="0 0 1 1"><path d="${starPath(.5, .52, .45, .2)}" fill="var(--star)" stroke="var(--star-d)" stroke-width=".06" stroke-linejoin="round"/></svg>`;
 const ICON_STAR_OFF = `<svg viewBox="0 0 1 1"><path d="${starPath(.5, .52, .45, .2)}" fill="var(--rule)" stroke="var(--rule)" stroke-width=".06" stroke-linejoin="round"/></svg>`;
 const ICON_MIRROR = `<svg viewBox="0 0 1 1"><line x1=".2" y1=".8" x2=".8" y2=".2" stroke="var(--blue-d)" stroke-width=".26" stroke-linecap="round"/><line x1=".2" y1=".8" x2=".8" y2=".2" stroke="#fff" stroke-width=".13" stroke-linecap="round"/></svg>`;
-const PIC_MIRROR = '<img class="pwi" src="media/ui/t-mirror.webp" alt="">', PIC_HINT = '<img class="pwi" src="media/ui/t-hint.webp" alt="">';   // painted tool icons for the level screen
+const PIC_MIRROR = '<img class="pwi" src="media/ui/t-mirror.webp" alt="">', PIC_HINT = '<img class="pwi" src="media/ui/t-hint.webp" alt="">', PIC_HAMMER = '<img class="pwi" src="media/ui/t-hammer.webp" alt="">';   // painted tool icons for the level screen
 const ICON_HAMMER = `<svg viewBox="0 0 1 1"><rect x=".44" y=".38" width=".12" height=".55" rx=".05" fill="#C98A4B" transform="rotate(35 .5 .5)"/><rect x=".18" y=".1" width=".5" height=".26" rx=".07" fill="#E9ECF8" stroke="#5A4D86" stroke-width=".05" transform="rotate(35 .5 .5)"/></svg>`;
 const ICON_HINT = `<svg viewBox="0 0 1 1"><path d="M.5 .1A.28 .28 0 0 1 .66 .62V.72H.34V.62A.28 .28 0 0 1 .5 .1Z" fill="#FFE45C" stroke="#E5A800" stroke-width=".04"/><rect x=".36" y=".76" width=".28" height=".1" rx=".04" fill="#A99BD6"/></svg>`;
 const ICON_MOVES = `<svg viewBox="0 0 1 1"><circle cx=".5" cy=".5" r=".36" fill="none" stroke="var(--purple)" stroke-width=".12"/><circle cx=".5" cy=".5" r=".1" fill="var(--purple)"/></svg>`;
@@ -3055,7 +3055,7 @@ function renderGame(flash) {
 
   $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done || !!G.coach;
   $('pwMirror').innerHTML = `${PIC_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(price('mirror'))}</span>`;
-  $('pwHammer').innerHTML = `${ICON_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(price('hammer'))}</span>`;
+  $('pwHammer').innerHTML = `${PIC_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(price('hammer'))}</span>`;
   const hintsLeft = Math.max(0, hintLimit(lv) - G.hints);
   $('pwHint').innerHTML = `${PIC_HINT}<span>${T`רמז`} ×${hintsLeft}</span><span class="price">${fmt(price('hint'))}</span>`;
   $('pwMirror').disabled = P.balance < price('mirror') || G.extra >= LIMIT.mirror;
@@ -3960,7 +3960,7 @@ function renderIcons() {
   one('icTwin', g => { tile(g, 0, 0, 'var(--t-green)'); firefly(g, .28, .55, 1, 0, .48, null); firefly(g, .72, .45, -1, 0, .48, null); });
   one('icCount', g => { tile(g, 0, 0, 'var(--t-purple)'); for (const [cx, s] of [[.22, .1], [.5, .14], [.78, .1]]) el('path', { d: starPath(cx, .47, s, s * .45), fill: 'var(--star)', stroke: 'var(--star-d)', 'stroke-width': .02 }, g); });
   $('icShop').innerHTML = ICON_POINTS.replace(/<\/?svg[^>]*>/g, '');
-  $('icHammer').innerHTML = ICON_HAMMER.replace(/<\/?svg[^>]*>/g, '');
+  $('icHammer').innerHTML = '<image href="media/ui/t-hammer.webp" x=".04" y=".04" width=".92" height=".92"/>';
   $('icDaily').innerHTML = `<rect x=".08" y=".14" width=".84" height=".76" rx=".14" fill="var(--green)"/><rect x=".08" y=".14" width=".84" height=".2" rx=".1" fill="var(--green-d)"/><text x=".5" y=".78" text-anchor="middle" font-size=".38" font-weight="700" fill="#fff" font-family="Fredoka">${new Date().getDate()}</text>`;
 }
 
