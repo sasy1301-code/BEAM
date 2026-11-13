@@ -517,6 +517,7 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .fxtry img[src*="classic"]{height:72px; margin-top:11px} .fxtry img{height:94px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
 .fxbox img.fxd{position:absolute; left:0; top:0; height:auto; opacity:0; pointer-events:none; will-change:transform,opacity; filter:drop-shadow(0 0 6px rgba(255,214,120,.8))}
 .fxbox i.fxdot{position:absolute; left:0; top:0; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle,#FFFBE6 0%,#FFD95A 40%,rgba(255,170,40,0) 72%); will-change:transform,opacity}
+.fxbox i.fxflash{position:absolute; inset:0; opacity:0; pointer-events:none}
 .fxbox i.fxdglow{position:absolute; left:0; top:0; width:150px; height:150px; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle, rgba(255,240,190,.95) 0%, rgba(255,200,90,.55) 22%, rgba(190,120,255,.3) 48%, rgba(190,120,255,0) 70%); mix-blend-mode:screen}
 .cheerbox{position:fixed; inset:0; z-index:30; pointer-events:none; overflow:hidden}
 .cheerbox img{position:absolute; opacity:0; will-change:transform,opacity}
@@ -2954,78 +2955,155 @@ function buyLook(cat, it) {
 /* the win effect: a short shower of the painted pieces (media/fx/p) over the screen; plain images, so it costs nothing when idle */
 const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
 const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=1`;
-function fxPreload(kind) { if (FX_N[kind]) for (let i = 0; i < FX_N[kind]; i++) new Image().src = fxSrc(kind, i); }
-/* magic dust: two glowing wand-sparks write looping trails across the screen, shedding twinkling dust that drifts down, then burst */
-function magicDust(box) {
-  const W = innerWidth, H = innerHeight, rnd = (a, b) => a + Math.random() * (b - a);
-  const img = (i, size) => { const im = document.createElement('img'); im.alt = ''; im.src = fxSrc('dust', i); im.className = 'fxd'; im.style.width = size + 'px'; box.appendChild(im); return im; };
-  const speck = (x, y, big) => {                       // one grain of dust: pops, twinkles, drifts down and fades
-    const r = Math.random(), sz = big ? rnd(26, 44) : rnd(8, 20);
-    let im;
-    if (r < .45 && !big) { im = document.createElement('i'); im.className = 'fxdot'; im.style.width = im.style.height = sz * .6 + 'px'; box.appendChild(im); }   // a plain golden grain
-    else im = img(r < .75 ? (Math.random() < .5 ? 1 : 3) : r < .88 ? 5 : (Math.random() < .5 ? 2 : 4), sz);
-    const dx = rnd(-26, 26), dy = rnd(30, 120), sp = rnd(-120, 120), t = rnd(900, 1700);
-    im.animate([
-      { transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(0) rotate(0)`, opacity: 0 },
-      { transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(1.3) rotate(${sp * .2}deg)`, opacity: 1, offset: .12 },
-      { transform: `translate(${x + dx * .5}px,${y + dy * .4}px) translate(-50%,-50%) scale(.7) rotate(${sp * .6}deg)`, opacity: .9, offset: .45 },
-      { transform: `translate(${x + dx * .7}px,${y + dy * .65}px) translate(-50%,-50%) scale(1.05) rotate(${sp * .8}deg)`, opacity: 1, offset: .6 },
-      { transform: `translate(${x + dx}px,${y + dy}px) translate(-50%,-50%) scale(.2) rotate(${sp}deg)`, opacity: 0 }], { duration: t, easing: 'ease-out', fill: 'both' });
+function fxPreload(kind) { if (!FX_N[kind]) return; for (const k of [kind, 'dust']) for (let i = 0; i < FX_N[k]; i++) new Image().src = fxSrc(k, i); }
+/* ---- the win effects: each one is a small scene made of the painted pieces, moved by the Web Animations API ---- */
+function fxKit(box, kind) {
+  const W = innerWidth, H = innerHeight, rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+  const tf = (x, y, s = 1, r = 0) => `translate(${x}px,${y}px) translate(-50%,-50%) rotate(${r}deg) scale(${s})`;
+  const sprite = (i, size, k = kind) => { const im = document.createElement('img'); im.alt = ''; im.src = fxSrc(k, i); im.className = 'fxd'; im.style.width = size + 'px'; box.appendChild(im); return im; };
+  const dot = (size, color) => { const d = document.createElement('i'); d.className = 'fxdot'; d.style.width = d.style.height = size + 'px'; if (color) d.style.background = `radial-gradient(circle,#fff 0%,${color} 45%,transparent 72%)`; box.appendChild(d); return d; };
+  // sample a path t -> [x, y, scale, rotate, opacity] into keyframes
+  const path = (el, fn, dur, delay = 0, n = 26, easing = 'linear') => {
+    const k = []; for (let i = 0; i <= n; i++) { const [x, y, s, r, o] = fn(i / n); k.push({ transform: tf(x, y, s, r), opacity: o }); }
+    return el.animate(k, { duration: dur, delay, easing, fill: 'both' });
   };
-  // each wand flies a lazy figure across the screen; the two cross each other
-  const paths = [
-    t => [W * (-.1 + 1.2 * t), H * (.62 - .3 * t) + Math.sin(t * Math.PI * 3) * H * .1],
-    t => [W * (1.1 - 1.2 * t), H * (.2 + .32 * t) + Math.sin(t * Math.PI * 2.4 + 1) * H * .09]];
-  paths.forEach((path, n) => {
-    const head = img(1, 76), glow = document.createElement('i'); glow.className = 'fxdglow'; box.appendChild(glow);
-    const t0 = performance.now() + n * 380, dur = 1700; let last = 0;
+  const fade = t => t < .08 ? t / .08 : t > .85 ? (1 - t) / .15 : 1;
+  // one grain of glitter: pops, twinkles, drifts down and fades
+  const speck = (x, y, big, color) => {
+    const r = Math.random(), sz = big ? rnd(24, 40) : rnd(8, 20);
+    const el = r < .5 && !big ? dot(sz * .6, color) : sprite(r < .8 ? pick([1, 3]) : 5, sz, 'dust');
+    const dx = rnd(-26, 26), dy = rnd(30, 110), sp = rnd(-120, 120);
+    el.animate([{ transform: tf(x, y, 0), opacity: 0 }, { transform: tf(x, y, 1.3, sp * .2), opacity: 1, offset: .12 },
+      { transform: tf(x + dx * .5, y + dy * .4, .7, sp * .6), opacity: .9, offset: .45 }, { transform: tf(x + dx * .7, y + dy * .65, 1.05, sp * .8), opacity: 1, offset: .6 },
+      { transform: tf(x + dx, y + dy, .2, sp), opacity: 0 }], { duration: rnd(900, 1600), easing: 'ease-out', fill: 'both' });
+  };
+  // something that flies along fn(t) -> [x, y] for dur ms, shedding glitter as it goes
+  const comet = (el, fn, dur, delay, every = 22, spin = 0, onEnd, color) => {
+    const t0 = performance.now() + delay; let last = 0;
     const step = now => {
-      const t = Math.min(1, Math.max(0, (now - t0) / dur));
-      if (now >= t0) {
-        const [x, y] = path(t);
-        head.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%) rotate(${t * 540}deg) scale(${.9 + Math.sin(now / 60) * .15})`; head.style.opacity = 1;
-        glow.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`; glow.style.opacity = 1;
-        if (now - last > 16) { last = now; for (let k = 0; k < 3; k++) speck(x + rnd(-10, 10), y + rnd(-10, 10), Math.random() < .12); }
+      const t = Math.min(1, (now - t0) / dur);
+      if (t >= 0) {
+        const [x, y, s = 1] = fn(t); el.style.opacity = 1; el.style.transform = tf(x, y, s, spin * t);
+        if (now - last > every) { last = now; speck(x + rnd(-8, 8), y + rnd(-8, 8), Math.random() < .1, color); }
       }
       if (t < 1) return requestAnimationFrame(step);
-      const [x, y] = path(1);                            // the wand vanishes in a little burst of dust
-      head.animate([{ opacity: 1 }, { opacity: 0, transform: head.style.transform + ' scale(2.4)' }], { duration: 380, fill: 'forwards' });
-      glow.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, fill: 'forwards' });
-      for (let k = 0; k < 22; k++) { const a = Math.random() * Math.PI * 2, d = rnd(30, 110); speck(Math.min(W - 20, Math.max(20, x + Math.cos(a) * d)), Math.min(H - 20, Math.max(20, y + Math.sin(a) * d)), Math.random() < .3); }
+      el.style.opacity = 0; if (onEnd) onEnd(...fn(1));
     };
     requestAnimationFrame(step);
-  });
-  // a soft glitter that keeps falling for a moment after the wands have passed
-  for (let k = 0; k < 26; k++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4), false), 600 + k * 60);
-}
-function winFx(kind) {
-  if (!FX_N[kind] || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-  const box = document.createElement('div'); box.className = 'fxbox fx-' + kind;
-  const rnd = (a, b) => a + Math.random() * (b - a), pick = arr => arr[Math.floor(Math.random() * arr.length)];
-  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
-  const add = (i, o) => {
-    const im = document.createElement('img'); im.alt = ''; im.className = 'fxp'; im.src = fxSrc(kind, i);
-    im.style.cssText = `--x:${o.x}%;--y:${o.y}%;--w:${o.w}px;--r:${o.r || 0}deg;--r0:${o.r0 || 0}deg;--sway:${o.sway || 0}px;--dx:${o.dx || 0}px;--dy:${o.dy || 0}px;animation-name:${o.a};animation-duration:${o.d}s;animation-delay:${o.dl || 0}s`;
-    box.appendChild(im);
   };
-  const shower = (ids, n, a, w, extra = {}) => { for (let k = 0; k < n; k++) add(pick(ids), { x: rnd(-5, 95), y: a === 'pRise' ? rnd(100, 112) : rnd(-22, -8), w: rnd(...w), r: rnd(-200, 200), r0: rnd(-40, 40), sway: rnd(-60, 60), a, d: rnd(2.2, 3.4), dl: rnd(0, 1), ...extra }); };
-  const pops = (ids, n, w, a, gap, d) => { for (let k = 0; k < n; k++) add(pick(ids), { x: rnd(12, 88), y: rnd(10, 70), w: rnd(...w), r0: rnd(-25, 25), a, d, dl: k * gap + rnd(0, .15) }); };
-  if (kind === 'confetti') shower(range(0, 9), 34, 'pFall', [34, 58]);
-  else if (kind === 'snow') shower(range(0, 7), 26, 'pFall', [28, 56], { d: rnd(3, 3.6) });
-  else if (kind === 'bubbles') shower(range(0, 9), 22, 'pRise', [26, 70]);
-  else if (kind === 'hearts') shower(range(0, 5), 24, 'pRise', [30, 60], { r: 0 });
-  else if (kind === 'stars') for (let k = 0; k < 14; k++) add(pick(range(0, 8)), { x: rnd(-40, 30), y: rnd(55, 125), w: rnd(56, 104), a: 'pShoot', d: rnd(1.3, 2), dl: rnd(0, 1.6) });
-  else if (kind === 'rainbow') {
-    pops([0, 1, 2], 3, [150, 210], 'pPop', .45, 2.4);
-    shower([3, 4], 8, 'pFall', [50, 80], { r: 0 }); shower([5, 6], 14, 'pFall', [22, 40]);
-  } else if (kind === 'lightning') { pops(range(0, 3), 9, [60, 110], 'pFlick', .2, 1.2); pops(range(4, 6), 10, [24, 40], 'pPop', .15, 1); }
-  else if (kind === 'fireworks') { pops(range(0, 4), 7, [110, 190], 'pBoom', .32, 1.5); pops([5, 6], 12, [22, 36], 'pPop', .18, 1.1); }
-  else if (kind === 'dust') { document.body.appendChild(box); magicDust(box); setTimeout(() => box.remove(), 4800); return; } else if (kind === 'portal') {
-    add(0, { x: 50, y: 42, w: Math.min(innerWidth * .62, 280), a: 'pSwirl', d: 2.8 });
-    for (let k = 0; k < 18; k++) { const an = rnd(0, Math.PI * 2), dist = rnd(140, 260); add(pick(range(1, 9)), { x: 50, y: 42, w: rnd(30, 58), dx: Math.cos(an) * dist, dy: Math.sin(an) * dist, r: rnd(-180, 180), a: 'pBurst', d: rnd(1.4, 2), dl: .5 + rnd(0, 1.2) }); }
-  }
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), 4800);
+  const burst = (x, y, n, dist, opts = {}) => {     // pieces thrown out from a point, then pulled down a little
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2 + rnd(-.2, .2), d = rnd(dist * .5, dist), el = opts.make ? opts.make(k) : dot(rnd(6, 12), opts.color && pick(opts.color));
+      const g = opts.gravity ?? 60, sp = rnd(-200, 200);
+      path(el, t => [x + Math.cos(a) * d * (1 - (1 - t) ** 2), y + Math.sin(a) * d * (1 - (1 - t) ** 2) + g * t * t, 1 - t * .5, sp * t, t < .7 ? 1 : (1 - t) / .3], rnd(800, 1300), opts.delay || 0, 16);
+    }
+  };
+  const flash = (color = '#FFF6D6', peak = .55, delay = 0) => { const f = document.createElement('i'); f.className = 'fxflash'; f.style.background = color; box.appendChild(f); f.animate([{ opacity: 0 }, { opacity: peak, offset: .1 }, { opacity: 0 }], { duration: 420, delay, fill: 'both' }); };
+  return { W, H, rnd, pick, tf, sprite, dot, path, fade, speck, comet, burst, flash };
+}
+const FX_SCENES = {
+  dust(k) {          // two wand-sparks write looping trails across the screen
+    const { W, H, rnd, sprite, comet, speck } = k;
+    const paths = [t => [W * (-.1 + 1.2 * t), H * (.62 - .3 * t) + Math.sin(t * Math.PI * 3) * H * .1],
+                   t => [W * (1.1 - 1.2 * t), H * (.2 + .32 * t) + Math.sin(t * Math.PI * 2.4 + 1) * H * .09]];
+    paths.forEach((p, n) => comet(sprite(1, 76), p, 1700, n * 380, 16, 540, (x, y) => { for (let j = 0; j < 22; j++) { const a = Math.random() * 6.3, d = rnd(30, 110); speck(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.random() < .3); } }));
+    for (let j = 0; j < 26; j++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4)), 600 + j * 60);
+  },
+  confetti(k) {      // two cannons in the bottom corners blast ribbons up; they flutter down
+    const { W, H, rnd, sprite, path, fade, flash } = k;
+    [0, 1].forEach(side => {
+      for (let j = 0; j < 26; j++) {
+        const x0 = side ? W + 10 : -10, y0 = H * .9, vx = (side ? -1 : 1) * rnd(W * .25, W * .95), vy = rnd(H * .45, H * .8), sw = rnd(15, 40), ph = rnd(0, 6), r0 = rnd(0, 360), spin = rnd(-900, 900);
+        path(sprite(j % 10, rnd(30, 56)), t => [x0 + vx * (1 - (1 - t) ** 2.4) + Math.sin(t * 9 + ph) * sw * t, y0 - vy * Math.sin(Math.min(1, t * 1.6) * Math.PI / 2) + H * .55 * Math.max(0, t - .45) ** 1.6, 1, r0 + spin * t, fade(t)],
+          rnd(2600, 3300), side * 140 + rnd(0, 260), 30, 'linear');
+      }
+    });
+  },
+  bubbles(k) {       // bubbles wobble up from the bottom and pop into sparkles
+    const { W, H, rnd, sprite, path, burst } = k;
+    for (let j = 0; j < 22; j++) {
+      const x0 = rnd(20, W - 20), top = rnd(H * .12, H * .6), sw = rnd(14, 34), ph = rnd(0, 6), size = rnd(28, 84), dur = rnd(1800, 2800), dl = rnd(0, 1200);
+      path(sprite(j % 10, size), t => [x0 + Math.sin(t * 7 + ph) * sw, H + 60 - (H + 60 - top) * (1 - (1 - t) ** 1.6), t > .93 ? 1 + (t - .93) * 8 : 1 + Math.sin(t * 22) * .04, 0, t < .06 ? t / .06 : t > .93 ? 1 - (t - .93) / .07 : 1], dur, dl, 30);
+      setTimeout(() => burst(x0 + Math.sin(7 + ph) * sw, top, 7, size * .9, { gravity: 30, make: () => sprite(3, rnd(10, 18), 'dust') }), dl + dur * .93);
+    }
+  },
+  stars(k) {         // shooting stars streak across the sky, leaving gold trails
+    const { W, H, rnd, sprite, comet } = k;
+    for (let j = 0; j < 9; j++) {
+      const x0 = rnd(-W * .5, W * .3), y0 = rnd(H * .45, H * 1.05), len = rnd(1, 1.4);
+      comet(sprite(j % 9, rnd(70, 120)), t => [x0 + W * len * t, y0 - H * .7 * len * t + Math.sin(t * 3) * 20], rnd(900, 1300), j * 260 + rnd(0, 120), 26, 0);
+    }
+  },
+  hearts(k) {        // a big heart beats twice and bursts; a fountain of hearts floats up
+    const { W, H, rnd, sprite, path, burst } = k;
+    const cx = W / 2, cy = H * .42, big = sprite(1, Math.min(W * .45, 190));
+    path(big, t => [cx, cy, t < .1 ? t * 10 : 1 + .22 * Math.abs(Math.sin(t * Math.PI * 4)) * (t < .55 ? 1 : 0) + (t > .6 ? (t - .6) * 3 : 0), 0, t > .6 ? Math.max(0, 1 - (t - .6) * 4) : 1], 1500, 0, 30);
+    setTimeout(() => burst(cx, cy, 16, 170, { gravity: -60, make: j => sprite(j % 6, rnd(26, 46)) }), 900);
+    for (let j = 0; j < 22; j++) {
+      const x0 = cx + rnd(-W * .4, W * .4), sw = rnd(20, 45), ph = rnd(0, 6), size = rnd(26, 52);
+      path(sprite(j % 6, size), t => [x0 + Math.sin(t * 6 + ph) * sw, H + 40 - (H + 80) * t, 1 + Math.sin(t * 30) * .08, Math.sin(t * 6 + ph) * 14, t < .08 ? t / .08 : t > .8 ? (1 - t) / .2 : 1], rnd(2400, 3200), 900 + rnd(0, 1200), 30);
+    }
+  },
+  rainbow(k) {       // a rainbow sweeps in, clouds puff at its feet, stars and small rainbows rain from it
+    const { W, H, rnd, sprite, path, fade } = k;
+    const cx = W / 2, cy = H * .36, rb = sprite(0, Math.min(W * .78, 300));
+    path(rb, t => [cx - (1 - Math.min(1, t * 5)) * 80, cy + (1 - Math.min(1, t * 5)) * 40, Math.min(1, t * 5) * (1 + Math.sin(t * 8) * .03), -20 * (1 - Math.min(1, t * 5)), t > .8 ? (1 - t) / .2 : Math.min(1, t * 6)], 3200, 0, 30);
+    [[-1, 3], [1, 4]].forEach(([s, i], n) => path(sprite(i, rnd(90, 120)), t => [cx + s * W * .3, cy + 70, t < .12 ? t / .12 * 1.15 : 1 + Math.sin(t * 12) * .04, 0, t > .8 ? (1 - t) / .2 : 1], 3000, 300 + n * 120, 30));
+    for (let j = 0; j < 22; j++) {
+      const a = rnd(-Math.PI * .9, -Math.PI * .1), x0 = cx + Math.cos(a) * W * .3, y0 = cy + Math.sin(a) * 60, vx = rnd(-W * .4, W * .4), vy = rnd(80, 200), r = rnd(-300, 300);
+      path(sprite(j % 5 === 0 ? [1, 2][j % 2] : [5, 6][j % 2], j % 5 === 0 ? rnd(60, 80) : rnd(22, 40)), t => [x0 + vx * t, y0 - vy * t + H * .9 * t * t, 1, r * t, fade(t)], rnd(1800, 2400), 500 + rnd(0, 1300), 24);
+    }
+  },
+  snow(k) {          // crystal flakes drift down in a gust of wind, twinkling as they turn
+    const { W, H, rnd, sprite, path, speck } = k;
+    for (let j = 0; j < 30; j++) {
+      const x0 = rnd(-W * .2, W), sw = rnd(20, 50), ph = rnd(0, 6), r0 = rnd(0, 360), spin = rnd(-160, 160), size = rnd(24, 60);
+      path(sprite(j % 8, size), t => {
+        const gust = Math.max(0, Math.min(1, (t - .25) * 2.5));
+        return [x0 + Math.sin(t * 5 + ph) * sw + gust * W * .25, -60 + (H + 120) * t, 1 + .15 * Math.max(0, Math.sin(t * 25 + ph)) ** 8, r0 + spin * t, t < .06 ? t / .06 : t > .9 ? (1 - t) / .1 : 1];
+      }, rnd(3000, 4000), rnd(0, 900), 36);
+    }
+    for (let j = 0; j < 18; j++) setTimeout(() => speck(rnd(10, W - 10), rnd(20, H * .8), false, '#BFE8FF'), 300 + j * 140);
+  },
+  lightning(k) {     // three strikes: the screen flashes, a bolt slams down, sparks spray from where it lands
+    const { W, H, rnd, sprite, path, burst, flash } = k;
+    [0, 520, 1050, 1500].forEach((t0, n) => {
+      const x = rnd(W * .2, W * .8), y = rnd(H * .25, H * .55), size = rnd(110, 170);
+      flash('#FFF6D6', .35, t0);
+      path(sprite(n % 4, size), t => [x, y, t < .1 ? .6 + t * 5 : 1, rnd(-10, 10) * 0, t < .06 ? 1 : t < .12 ? .25 : t < .18 ? 1 : t > .75 ? (1 - t) / .25 : 1], 900, t0, 20);
+      setTimeout(() => burst(x, y + size * .4, 14, 120, { gravity: 140, color: ['#FFE23F', '#FFF6B0', '#7FE7FF'] }), t0 + 60);
+      setTimeout(() => burst(x, y, 6, 90, { gravity: 40, make: () => sprite(4 + (n % 3), rnd(24, 40)) }), t0 + 40);
+      setTimeout(() => { const m = document.querySelector('main'); if (m && m.animate) m.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(-6px,3px)' }, { transform: 'translate(5px,-3px)' }, { transform: 'translate(-3px,2px)' }, { transform: 'translate(0,0)' }], { duration: 260 }); }, t0);
+    });
+  },
+  fireworks(k) {     // rockets climb with a spark trail and explode into painted bursts
+    const { W, H, rnd, sprite, path, dot, comet, burst } = k;
+    for (let j = 0; j < 7; j++) {
+      const x = rnd(W * .15, W * .85), top = rnd(H * .14, H * .45), t0 = j * 330 + rnd(0, 100);
+      comet(dot(12, '#FFD95A'), t => [x + Math.sin(t * 3) * 8, H + 20 - (H + 20 - top) * (1 - (1 - t) ** 2)], 650, t0, 20, 0, (bx, by) => {
+        path(sprite(j % 5, rnd(140, 210)), t => [bx, by + t * 30, t < .25 ? t * 4 : 1 + (t - .25) * .3, rnd(0, 360) * 0 + t * 40, t < .1 ? 1 : t > .6 ? (1 - t) / .4 : 1], 1400, 0, 24);
+        burst(bx, by, 18, 130, { gravity: 120, color: ['#FFD23F', '#FF6FE0', '#B36BFF', '#7FE7FF'] });
+        burst(bx, by, 5, 90, { gravity: 60, make: () => sprite(5 + (j % 2), rnd(22, 34)) });
+      }, '#FFC83A');
+    }
+  },
+  portal(k) {        // a swirl opens, stars spiral into it, then it flares and flings them out
+    const { W, H, rnd, sprite, path, flash, burst } = k;
+    const cx = W / 2, cy = H * .42, size = Math.min(W * .62, 280);
+    path(sprite(0, size), t => [cx, cy, t < .2 ? t * 5 : t < .6 ? 1 + (t - .2) * .3 : t < .7 ? 1.12 - (t - .6) * 3 : .82 + (t - .7) * 2.6, -720 * t, t > .82 ? (1 - t) / .18 : Math.min(1, t * 8)], 3000, 0, 40);
+    for (let j = 0; j < 18; j++) {
+      const a0 = rnd(0, Math.PI * 2), r0 = rnd(W * .45, W * .7), turn = rnd(2.5, 4);
+      path(sprite(1 + (j % 9), rnd(28, 52)), t => [cx + Math.cos(a0 + turn * t) * r0 * (1 - t), cy + Math.sin(a0 + turn * t) * r0 * (1 - t) * .8, 1 - t * .7, t * 360, t < .1 ? t * 10 : 1], rnd(1100, 1500), rnd(0, 700), 30, 'ease-in');
+    }
+    flash('#E9D2FF', .6, 1750);
+    setTimeout(() => burst(cx, cy, 22, Math.max(W, H) * .55, { gravity: 0, make: j => sprite(1 + (j % 9), rnd(30, 56)) }), 1800);
+  },
+};
+function winFx(kind) {
+  if (!FX_SCENES[kind] || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  const box = document.createElement('div'); box.className = 'fxbox fx-' + kind; document.body.appendChild(box);
+  FX_SCENES[kind](fxKit(box, kind));
+  setTimeout(() => box.remove(), 5200);
 }
 
 /* ================= WhatsApp stickers: the firefly faces as 512px files to save or share ================= */
