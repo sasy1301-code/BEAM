@@ -680,7 +680,7 @@ main{position:relative; z-index:1}
   transition:opacity .6s ease, visibility .6s}
 #splash.gone{opacity:0; visibility:hidden}
 body.splashing{overflow:hidden}
-.sp-loader{width:min(66vw,280px); text-align:center}
+
 .sp-track{position:relative; height:14px; border-radius:999px; background:rgba(255,255,255,.12);
   box-shadow:inset 0 2px 4px rgba(0,0,0,.4), 0 0 0 1px rgba(255,214,90,.3)}
 .sp-track i{position:absolute; top:0; bottom:0; right:0; width:0; border-radius:999px;
@@ -874,23 +874,23 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 .frhead{color:var(--page-head); font-size:18px; margin:0 4px 8px} .frhead small{font-weight:500; font-size:14px; color:var(--muted); margin-inline-start:6px}
 #splash::before{content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 25%, rgba(40,10,110,0), rgba(10,2,40,.72) 80%)}
 #splash > *{position:relative}
-#spLogo{width:min(84vw,340px); height:auto; filter:drop-shadow(0 10px 18px rgba(0,0,0,.5)); animation:spIn .7s cubic-bezier(.2,1.5,.4,1) both}
-@keyframes spIn{from{opacity:0; transform:translateY(-40px) scale(.6)}}
-/* loader: the beam bounces between mirrors and lights a star at every stop */
-.sp-loader{width:min(84vw,330px)}
-.sp-beam{position:relative; direction:ltr}
-.sp-beam svg{display:block; width:100%; overflow:visible}
-.sp-beam path{fill:none; stroke-linecap:round; stroke-linejoin:round}
-.sp-tr{stroke:rgba(255,255,255,.14); stroke-width:7}
-.sp-gl{stroke:#FF4D8B; stroke-width:7; filter:drop-shadow(0 0 6px #FF4D8B) drop-shadow(0 0 12px #FF4D8B)}
-.sp-co{stroke:#fff; stroke-width:2.2}
-.sp-mi{stroke:#BFEFFF; stroke-width:6; filter:drop-shadow(0 0 5px #7fdcff)}
-.sp-st{position:absolute; width:13%; transform:translate(-50%,-50%); filter:grayscale(1) brightness(.45)}
-.sp-st.on{animation:spLit .5s cubic-bezier(.2,1.8,.4,1) forwards}
-@keyframes spLit{50%{transform:translate(-50%,-50%) scale(1.7)} to{filter:drop-shadow(0 0 10px #FFD23F); transform:translate(-50%,-50%)}}
-#spBug{position:absolute; width:17%; left:0; top:75%; transform:translate(-50%,-55%); filter:drop-shadow(0 0 8px rgba(255,200,60,.9))}
-#spPct{display:block; margin-top:14px; color:#FFE9A8; font-size:26px; text-shadow:0 2px 0 #2A0A6E}
-#spText{margin:2px 0 0}
+/* the loading screen: the painted forest, the logo with the firefly on it, and a glowing bar that lights three stars */
+#splash{background:#1E025D url(media/splash/bg.webp) center / cover no-repeat; display:block; padding:0}
+#splash::before{display:none}
+.sp-stage{position:absolute; left:50%; top:50%; width:min(100vw, 100dvh * 851 / 1847); aspect-ratio:851 / 1847; transform:translate(-50%,-50%); direction:ltr}
+.sp-stage > *{position:absolute}
+.sp-logo{left:4.5%; width:91%; top:34.6%; filter:drop-shadow(0 10px 18px rgba(20,0,60,.55)); animation:spLogo .9s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes spLogo{from{opacity:0; transform:translateY(-30px) scale(.7)}}
+.sp-fly{left:33%; width:45%; top:22.6%; filter:drop-shadow(0 0 18px rgba(255,200,60,.55)); animation:spFlyIn .9s .35s cubic-bezier(.3,1.4,.5,1) both, spBob 2.6s 1.3s ease-in-out infinite}
+@keyframes spFlyIn{from{opacity:0; transform:translate(60%,-60%) rotate(25deg) scale(.5)}} @keyframes spBob{50%{transform:translateY(-6%) rotate(-3deg)}}
+#spPct{left:0; right:0; top:65.2%; text-align:center; font-size:min(10.5vw, 4.7dvh); color:#FFE29A; text-shadow:0 3px 0 #3A0E86, 0 0 18px rgba(255,200,80,.45); line-height:1}
+.sp-bar{left:8.5%; width:83%; top:70.4%; height:3.25%; border-radius:999px; border:max(2px,.45vw) solid #9A4BEF; background:linear-gradient(#1B0559,#2C0B7C); box-shadow:inset 0 2px 6px rgba(0,0,0,.5), 0 0 14px rgba(150,70,255,.45); box-sizing:border-box}
+#spFill{position:absolute; left:3%; top:31%; height:38%; width:0; max-width:94%; border-radius:999px; background:linear-gradient(#FFD35E,#FFB21A 55%,#F28A00); box-shadow:0 0 10px #FFB21A, 0 0 22px rgba(255,170,30,.6)}
+.sp-orb{position:absolute; right:0; top:50%; width:min(8vw,3.6dvh); aspect-ratio:1; border-radius:50%; transform:translate(50%,-50%); background:radial-gradient(circle at 50% 50%, #FFFDE8 0 18%, #FFE04A 42%, #FFB000 70%, #E07800 100%); box-shadow:0 0 12px #FFD23F, 0 0 26px rgba(255,190,40,.8)}
+.sp-star{position:absolute; top:50%; width:min(9vw,4dvh); aspect-ratio:1; transform:translate(-50%,-50%)} .sp-star svg{width:100%; height:100%; display:block}
+.sp-star path{fill:#5B3A9A; stroke:#3A1E78; stroke-width:1.5} .sp-star.on path{fill:#FFD84A; stroke:#E8820A; filter:drop-shadow(0 0 4px #FFC530)} .sp-star.on{animation:spLit .5s cubic-bezier(.2,1.8,.4,1)}
+@keyframes spLit{50%{transform:translate(-50%,-50%) scale(1.6)}}
+#spText{left:0; right:0; top:75.3%; margin:0; text-align:center; font-size:min(6vw, 2.7dvh); font-weight:700; color:#FFE29A; text-shadow:0 2px 0 #3A0E86; direction:rtl}
 
 
 /* ---- sign-in screen ---- */
@@ -915,21 +915,12 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 </head>
 <body class="splashing">
 <div id="splash" role="status" aria-live="polite">
-  <img id="spLogo" alt="Beam">
-  <div class="sp-loader">
-    <div class="sp-beam">
-      <svg viewBox="0 0 330 120" aria-hidden="true">
-        <path class="sp-tr" d="M0 90H82V30H165V90H248V30H330"/>
-        <path class="sp-gl" id="spGlow" d="M0 90H82V30H165V90H248V30H330"/>
-        <path class="sp-co" id="spCore" d="M0 90H82V30H165V90H248V30H330"/>
-        <path class="sp-mi" d="M70 102L94 78M70 18L94 42M153 42L177 18M153 78L177 102M236 102L260 78M236 18L260 42"/>
-      </svg>
-      <img class="sp-st" alt="" src="media/ui/star.webp" style="left:12.4%;top:75%"><img class="sp-st" alt="" src="media/ui/star.webp" style="left:37.4%;top:25%">
-      <img class="sp-st" alt="" src="media/ui/star.webp" style="left:62.6%;top:75%"><img class="sp-st" alt="" src="media/ui/star.webp" style="left:87.6%;top:25%">
-      <img id="spBug" alt="">
-    </div>
+  <div class="sp-stage">
+    <img class="sp-fly" alt="" src="media/splash/fly.webp">
+    <img class="sp-logo" alt="Beam" src="media/splash/logo.webp">
     <b id="spPct">0%</b>
-    <p id="spText">טוען את האור…</p>
+    <div class="sp-bar"><i id="spFill"><span class="sp-orb"></span></i><span class="sp-star" style="left:21%"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 1C21.5 13 27 18.5 39 20C27 21.5 21.5 27 20 39C18.5 27 13 21.5 1 20C13 18.5 18.5 13 20 1Z"/></svg></span><span class="sp-star" style="left:45%"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 1C21.5 13 27 18.5 39 20C27 21.5 21.5 27 20 39C18.5 27 13 21.5 1 20C13 18.5 18.5 13 20 1Z"/></svg></span><span class="sp-star" style="left:69%"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 1C21.5 13 27 18.5 39 20C27 21.5 21.5 27 20 39C18.5 27 13 21.5 1 20C13 18.5 18.5 13 20 1Z"/></svg></span></div>
+    <p id="spText">טוענים את האור…</p>
   </div>
 </div>
 <main>
@@ -961,7 +952,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
   </div>
 </section>
 
-<script>document.getElementById('spLogo').src = document.getElementById('loginLogo').src;</script>
+
 <!-- HOME: the firefly's garden fills the screen; everything else floats over it -->
 <section id="home">
   <div class="gscene hscene" id="hScene"></div>
@@ -1274,7 +1265,7 @@ const EN = {
   'מתחילים': 'Let\'s start', 'ממשיכים': 'Continue', 'סיימתם הכול!': 'All done!', 'שלב {}': 'Level {0}', '{} מראות': '{0} mirrors', 'יש לי קוד': 'I have a code',
   'ניצחונות': 'Wins', 'הפסדים': 'Losses', 'תיקו': 'Draws', 'הבונוס של היום כבר נאסף. חזרו מחר!': 'Today\'s bonus is already collected. Come back tomorrow!',
   // ---- static page text ----
-  'טוען את האור…': 'Lighting up…', 'עזרו לגחלילית להדליק את כל הכוכבים': 'Help the firefly light every star',
+  'טוענים את האור…': 'Lighting up…', 'עזרו לגחלילית להדליק את כל הכוכבים': 'Help the firefly light every star',
   'המשך עם Google': 'Continue with Google', 'המשך עם Facebook': 'Continue with Facebook', 'או': 'or', 'כניסה כאורח': 'Play as a guest',
   'גם כאורח ההתקדמות נשמרת ומגובה. אפשר לחבר חשבון בכל רגע מההגדרות.': 'Guest progress is saved and backed up too. You can connect an account any time in Settings.',
   'פרופיל ושם': 'Profile and name', 'הגדרות': 'Settings', 'נקודות לקניות': 'Points to spend', 'אתגר יומי': 'Daily challenge', 'שחק': 'Play',
@@ -1441,7 +1432,7 @@ const EN = {
   'המשך': 'Continue', 'התחברתם עם {}': 'Signed in with {0}', 'חשבון': 'Account',
   'אתם משחקים כאורח. ההתקדמות נשמרת רק במכשיר הזה. חברו חשבון כדי לשמור אותה ולהמשיך ממכשיר אחר.': 'You are playing as a guest. Progress stays on this device. Connect an account to keep it and continue on another device.',
   'חיבור עם Google': 'Connect Google', 'חיבור עם Facebook': 'Connect Facebook', 'מחוברים עם {}.': 'Connected with {0}.', 'התנתקות': 'Sign out', 'החשבון חובר עם {}': 'Account connected with {0}',
-  'מכין את השלבים…': 'Preparing the levels…', 'מדליק את הכוכבים…': 'Lighting the stars…', 'מוכן!': 'Ready!',
+  'מכינים את השלבים…': 'Preparing the levels…', 'מדליקים את הכוכבים…': 'Lighting the stars…', 'מוכן!': 'Ready!',
 };
 function T(s, ...v) {
   if (typeof s === 'string') return LANG === 'en' && EN[s] !== undefined ? EN[s] : s;
@@ -4663,18 +4654,14 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 let spGoal = 0, spNow = 0;
 function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = text; }
 (function spDraw() {
-  const glow = $('spGlow'); if (!glow) return;                       // the splash has been taken away
-  const L = glow.getTotalLength();
+  const fill = $('spFill'); if (!fill) return;                       // the splash has been taken away
   spNow += Math.max(.25, (spGoal - spNow) * .07); if (spNow > spGoal) spNow = spGoal;
-  const x = spNow / 100, pt = glow.getPointAtLength(L * x), bug = $('spBug');
-  glow.style.strokeDasharray = $('spCore').style.strokeDasharray = L; glow.style.strokeDashoffset = $('spCore').style.strokeDashoffset = L * (1 - x);
-  bug.style.left = pt.x / 3.3 + '%'; bug.style.top = pt.y / 1.2 + '%';
-  document.querySelectorAll('.sp-st').forEach((st, i) => { if (x >= [.08, .37, .63, .9][i]) st.classList.add('on'); });
+  fill.style.width = (spNow * .94) + '%';
+  document.querySelectorAll('.sp-star').forEach((st, i) => { if (spNow >= [22.5, 48, 73.5][i]) st.classList.add('on'); });
   $('spPct').textContent = Math.round(spNow) + '%';
   requestAnimationFrame(spDraw);
 })();
 (async () => {
-  $('spBug').src = BUG_SRC;
   const t0 = Date.now();
   await wait(50); setProgress(12);
   try { await Promise.race([document.fonts.ready, wait(1500)]); } catch (e) { /* fonts are optional */ }
@@ -4682,10 +4669,10 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   await loadProfile();
   applyLook();
   applySoundPrefs();
-  setProgress(55, T('מכין את השלבים…'));
+  setProgress(55, T('מכינים את השלבים…'));
   await wait(80);
   await Promise.all([...document.images].map(i => i.decode ? i.decode().catch(() => {}) : null));
-  setProgress(72, T('מדליק את הכוכבים…'));
+  setProgress(72, T('מדליקים את הכוכבים…'));
   await wait(80);
   setProgress(92);
   // a new player comes in as a guest with no sign-in wall, and starts on the home screen like everyone else
