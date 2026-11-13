@@ -518,6 +518,10 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .fxbox img.fxd{position:absolute; left:0; top:0; height:auto; opacity:0; pointer-events:none; will-change:transform,opacity; filter:drop-shadow(0 0 6px rgba(255,214,120,.8))}
 .fxbox i.fxdot{position:absolute; left:0; top:0; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle,#FFFBE6 0%,#FFD95A 40%,rgba(255,170,40,0) 72%); will-change:transform,opacity}
 .fxbox i.fxdglow{position:absolute; left:0; top:0; width:150px; height:150px; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle, rgba(255,240,190,.95) 0%, rgba(255,200,90,.55) 22%, rgba(190,120,255,.3) 48%, rgba(190,120,255,0) 70%); mix-blend-mode:screen}
+.cheerbox{position:fixed; inset:0; z-index:30; pointer-events:none; overflow:hidden}
+.cheerbox img{position:absolute; opacity:0; will-change:transform,opacity}
+.cheerbox img.cheerw{height:auto; filter:drop-shadow(0 8px 14px rgba(40,0,90,.55)) drop-shadow(0 0 18px rgba(255,210,90,.5))}
+.cheerbox img.cheersp{left:0; top:0; height:auto; filter:drop-shadow(0 0 6px rgba(255,214,120,.8))}
 .fxbox img.fxp{position:absolute; left:var(--x); top:var(--y); width:var(--w); height:auto; opacity:0; animation-fill-mode:both; animation-timing-function:linear; will-change:transform,opacity; filter:drop-shadow(0 4px 8px rgba(30,0,60,.35))}
 @keyframes pFall{0%{opacity:0; transform:translate(0,0) rotate(var(--r0))} 8%{opacity:1} 88%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),125vh) rotate(var(--r))}}
 @keyframes pRise{0%{opacity:0; transform:translate(0,0) rotate(var(--r0)) scale(.8)} 10%{opacity:1} 85%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),-125vh) rotate(var(--r)) scale(1.05)}}
@@ -3309,7 +3313,7 @@ function startGame() {
   if (G.mode === 'daily') timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
   G.t0 = Date.now(); track('start');
   renderGame(); show('game');
-  clockStart();
+  clockStart(); cheerPreload();
 }
 const elapsed = () => Math.floor((Date.now() - G.start) / 1000);
 const maxMirrors = () => G.lv.max + G.extra;
@@ -3337,6 +3341,37 @@ function renderPills(st) {
   }
 }
 
+/* cheering: a painted phrase pops over the board when a move lights a new star (the last star belongs to the win screen) */
+const CHEERS = { meula: 3.13, yafe: 1.59, kavod: 1.68, mushlam: 3.27, gaon: 2.11, mutzlach: 1.6, od: 2.2 };   // width / height of each picture
+let cheerLast = '', cheerAt = 0;
+function cheer(st, gained) {
+  if (Date.now() - cheerAt < 900 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  let pool = st.total - st.lit === 1 ? ['od'] : gained > 1 ? ['gaon', 'mutzlach', 'mushlam'] : st.lit === 1 ? ['meula', 'yafe', 'kavod', 'mutzlach'] : ['kavod', 'gaon', 'mushlam', 'meula', 'yafe', 'mutzlach'];
+  if (pool.length > 1) pool = pool.filter(k => k !== cheerLast);
+  const k = pool[Math.floor(Math.random() * pool.length)]; cheerLast = k; cheerAt = Date.now();
+  const r = $('board').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const w = Math.min(r.width * .8, 230 * Math.sqrt(CHEERS[k] / 2.11));
+  const box = document.createElement('div'); box.className = 'cheerbox'; document.body.appendChild(box);
+  const im = document.createElement('img'); im.alt = ''; im.src = `media/cheer/${k}.webp`; im.className = 'cheerw'; im.style.width = w + 'px'; im.style.left = cx + 'px'; im.style.top = cy + 'px'; box.appendChild(im);
+  im.animate([
+    { transform: 'translate(-50%,-50%) scale(0) rotate(-12deg)', opacity: 0 },
+    { transform: 'translate(-50%,-50%) scale(1.25) rotate(4deg)', opacity: 1, offset: .14 },
+    { transform: 'translate(-50%,-50%) scale(.94) rotate(-2deg)', opacity: 1, offset: .24 },
+    { transform: 'translate(-50%,-50%) scale(1.04) rotate(0)', opacity: 1, offset: .32 },
+    { transform: 'translate(-50%,-50%) scale(1) rotate(0)', opacity: 1, offset: .72 },
+    { transform: 'translate(-50%,-90%) scale(1.08)', opacity: 0 }], { duration: 1700, delay: 120, fill: 'both' });
+  for (let n = 0; n < 20; n++) {
+    const sp = document.createElement('img'); sp.alt = ''; sp.src = fxSrc('dust', [1, 3, 5][n % 3]); sp.className = 'cheersp'; sp.style.width = 10 + Math.random() * 22 + 'px'; box.appendChild(sp);
+    const a = Math.random() * Math.PI * 2, d = w * .45 + Math.random() * 80;
+    sp.animate([{ transform: `translate(${cx}px,${cy}px) translate(-50%,-50%) scale(0)`, opacity: 1 },
+      { transform: `translate(${cx + Math.cos(a) * d}px,${cy + Math.sin(a) * d * .6}px) translate(-50%,-50%) scale(1.2) rotate(180deg)`, opacity: 1, offset: .6 },
+      { transform: `translate(${cx + Math.cos(a) * d * 1.1}px,${cy + Math.sin(a) * d * .6 + 40}px) translate(-50%,-50%) scale(0) rotate(260deg)`, opacity: 0 }], { duration: 1100, delay: 190, fill: 'both', easing: 'ease-out' });
+  }
+  setTimeout(() => Sound.play('sparkle', 3), 160);
+  setTimeout(() => box.remove(), 2100);
+}
+function cheerPreload() { for (const k in CHEERS) new Image().src = `media/cheer/${k}.webp`; for (const i of [1, 3, 5]) new Image().src = fxSrc('dust', i); }
+
 const BOMB_HITS = 3;   // how many times the beam may rest on a bomb in one level before it blows up
 function renderGame(flash) {
   const lv = G.lv;
@@ -3345,7 +3380,7 @@ function renderGame(flash) {
   if (G.prevSt) {
     if (st.bomb && !G.prevSt.bomb) Sound.play('bomb');
     else if (!st.bomb && G.prevSt.bomb) Sound.play('defuse');
-    if (st.lit > G.prevSt.lit) for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90);
+    if (st.lit > G.prevSt.lit) { for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90); if (st.lit < st.total) cheer(st, st.lit - G.prevSt.lit); }
     else if (st.lit < G.prevSt.lit && !st.bomb) Sound.play('unlit');
   }
   /* A bomb forgives two touches per level; the third blows up and the level starts over. A touch only counts when the
