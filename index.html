@@ -1835,6 +1835,7 @@ const Sound = (() => {
   }
   const now = () => ctx.currentTime;
 
+  let tapStep = 0;
   function tone({ f = 440, f2 = null, type = 'sine', dur = .15, vol = .25, at = .005, delay = 0, bus = sfxBus, wet = 0, detune = 0, lp = 0 }) {
     const t = now() + delay;
     const o = ctx.createOscillator(), g = ctx.createGain();
@@ -1862,7 +1863,14 @@ const Sound = (() => {
   const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5, 1568, 1760];
 
   const fx = {
-    tap()    { tone({ f: 340, f2: 620, type: 'sine', dur: .07, vol: .12 }); },
+    /* a button press: a small bubble pop with a glass ring on top. The ring walks a five-note scale, so pressing around the menus sounds like a tune and never the same click twice. */
+    tap() {
+      const scale = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093], f = scale[tapStep = (tapStep + 1 + Math.floor(Math.random() * 2)) % scale.length];
+      tone({ f: 420, f2: 900, type: 'sine', dur: .055, vol: .13, at: .003 });                    // the pop
+      tone({ f, type: 'sine', dur: .22, vol: .075, at: .004, wet: .5, delay: .012 });             // the ring
+      tone({ f: f * 2.01, type: 'triangle', dur: .09, vol: .025, delay: .012 });                  // a glint above it
+      noise({ dur: .018, vol: .035, type: 'highpass', f: 5200 });                                  // the touch itself
+    },
     place()  { tone({ f: 880, f2: 1320, type: 'triangle', dur: .09, vol: .18 }); noise({ dur: .03, vol: .08, type: 'highpass', f: 4000 }); },
     rotate() { tone({ f: 1320, f2: 990, type: 'triangle', dur: .08, vol: .15 }); noise({ dur: .03, vol: .06, type: 'highpass', f: 5000 }); },
     remove() { tone({ f: 600, f2: 260, type: 'sine', dur: .12, vol: .15 }); },
