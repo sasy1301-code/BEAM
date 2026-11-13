@@ -1179,6 +1179,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'קיבלתם מתנה!': 'You got a gift!',
   'אין לכם מספיק נקודות': 'You do not have enough points', 'הדו-קרב על {} נקודות ויש לכם {}. חסרות {}.': 'The duel is for {0} points and you have {1}. You are {2} short.', '{} מזמין לדו-קרב': '{0} invites you to a duel',
   'חברים': 'Friends', 'חברים מחוברים': 'Friends online', '+ הוספת חבר': '+ Add a friend', 'בקשות חברות': 'Friend requests', 'אף חבר לא מחובר כרגע. אפשר להזמין בקישור.': 'No friend is online right now. You can invite with a link.', 'עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.': 'No friends here yet. Add friends from the Friends button on the home screen.',
   'זהירות! עוד שתי פגיעות בפצצה והיא מתפוצצת.': 'Careful! Two more hits and the bomb blows up.',
@@ -3739,6 +3740,21 @@ async function pulse() {
   Social.data = r; socialRender();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) pulse(); });
+/* points the game's owner sent this player wait on the server; collect them whenever the game is opened or brought back to the front */
+let giftBusy = false;
+async function claimGifts() {
+  if (giftBusy || !P || !P.id || isNewcomer()) return;
+  giftBusy = true;
+  let n = 0;
+  try { n = +(await rpc('beam_gifts_claim', { p_id: P.id, p_secret: playerKey() })) || 0; } catch (e) { /* next time */ }
+  giftBusy = false;
+  if (n <= 0) return;
+  gain(n, false); save(false); cloudSoon(); renderHome(); hudSync();
+  if (!$('shop').hidden) renderShop();
+  Sound.play('purchase'); Haptic.play('win'); toast(T('קיבלתם מתנה!'), `+${fmt(n)}`);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) claimGifts(); });
+setInterval(() => { if (!document.hidden) claimGifts(); }, 5 * 60 * 1000);
 function socialRender() {
   const d = Social.data, online = d.friends.filter(f => f.online).length, asks = d.friends.filter(f => f.rel === 'in').length;
   if (asks || online) $('duelText').textContent = asks ? T('יש לכם בקשת חברות חדשה') : online === 1 ? T('חבר אחד מחובר עכשיו') : T`${online} חברים מחוברים עכשיו`;
@@ -4416,6 +4432,7 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   if (isNewcomer()) { bonusPending = true; show('login'); return; }       // first visit: the way in, then the lesson
   dailyBonus();
   checkAchievements();
+  setTimeout(claimGifts, 2500);
 })();
 
 </script>
