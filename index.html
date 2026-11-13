@@ -169,6 +169,10 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbtns{grid-row:1 / span 2; grid-column:2; display:flex; gap:8px; position:relative; z-index:1}
 .daily.duelcard h2,.daily.duelcard p{text-shadow:0 2px 0 rgba(0,30,90,.25)}
 .duelbox{text-align:center; padding:22px 18px}
+/* the game is played upright: a phone turned on its side gets a curtain asking to turn it back (a web page cannot stop the turn itself) */
+#turn{display:none; position:fixed; inset:0; z-index:9999; background:#24086A; color:#fff; place-items:center; text-align:center}
+#turn b{display:block; font-size:22px; margin-top:12px} #turn svg{animation:turnIt 2s ease-in-out infinite} @keyframes turnIt{0%,20%{rotate:90deg} 60%,100%{rotate:0deg}}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){ #turn{display:grid} body{overflow:hidden} }
 #watch{min-height:100dvh; padding:calc(12px + env(safe-area-inset-top)) 12px 24px; background:#2A0C7A url(media/board/bg.webp) center / cover no-repeat fixed}
 #watch .boardwrap{background:none; box-shadow:none; padding:0; margin-top:18px} #watch .lvtitle h2{font-size:22px} #watch .lvtitle p{margin:0; color:#D9C9FF; font-size:14px}
 .wlive{background:#FF3B4E; color:#fff; font-weight:800; font-size:12px; letter-spacing:1px; padding:4px 10px; border-radius:999px; animation:wLive 1.4s ease-in-out infinite} @keyframes wLive{50%{opacity:.45}}
@@ -1200,6 +1204,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 </section>
 
 </main>
+<div id="turn" aria-hidden="true"><div><svg viewBox="0 0 64 64" width="84" height="84"><rect x="20" y="6" width="24" height="44" rx="5" fill="none" stroke="#FFE48A" stroke-width="4"/><circle cx="32" cy="43" r="2.5" fill="#FFE48A"/><path d="M8 40a26 26 0 0 0 14 18M22 58l-7-1M22 58l-1-7" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg><b>סובבו את הטלפון לאורך</b></div></div>
 <nav id="tabbar" hidden><button data-tab="shop"><img alt="" src="media/ui/shop.webp"><span>חנות</span></button><button data-tab="leader"><img alt="" src="media/ui/trophy.webp"><span>מובילים</span></button><button data-tab="home"><img alt="" src="media/ui/home.webp"><span>בית</span></button><button data-tab="duel"><img alt="" src="media/ui/duel.webp"><span>דו-קרב</span><u id="duelDot" hidden></u></button><button data-tab="garden"><img alt="" src="media/ui/decor.webp"><span>קישוט</span></button></nav>
 
 
@@ -1218,6 +1223,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'סובבו את הטלפון לאורך': 'Turn your phone upright',
   'מתחברים…': 'Connecting…', 'אי אפשר לצפות ביריב באמצע דו-קרב': 'You cannot watch your opponent during a duel', '{} לא משחק כרגע': '{0} is not playing right now', 'דו-קרב · סיבוב {}': 'Duel · round {0}', '{} פתר את הלוח!': '{0} solved the board!', 'מהלכים: {}': 'Moves: {0}', 'צפייה במשחק': 'Watch the game',
   'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
   'פרק {} מתוך {}': 'Chapter {0} of {1}', 'פרס הפרק!': 'Chapter prize!', 'הפרק הושלם · לפרק הבא': 'Chapter complete · on to the next', 'הפרק הושלם': 'Chapter complete', 'פרס הפרק · עוד שלב אחד': 'Chapter prize · 1 level to go', 'פרס הפרק · עוד {} שלבים': 'Chapter prize · {0} levels to go', 'לפרק הבא': 'Next chapter',
@@ -4403,6 +4409,9 @@ $('muteBtn').onclick = () => {
 };
 // unlock audio on the first touch, and give every plain button a soft click
 document.addEventListener('pointerdown', () => Sound.init(), { once: true });
+/* where the browser allows it (an installed app, full screen), hold the screen upright; elsewhere the curtain above takes over */
+const holdUpright = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) { /* not supported */ } };
+holdUpright(); document.addEventListener('pointerdown', holdUpright, { once: true });
 document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (b && !b.disabled && !b.closest('.powers') && b.id !== 'muteBtn') Sound.play('tap');
