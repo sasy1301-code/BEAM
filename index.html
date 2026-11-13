@@ -323,6 +323,9 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frfind .btn{width:auto; flex:none; padding:0 18px; min-height:48px; margin:0} .frnote{color:#E9DEFF; text-align:center; margin:0 0 12px; font-size:15px} #pals #frAdd{margin-bottom:0}
 .frrow{display:flex; align-items:center; justify-content:space-between; gap:8px} .frmore{border:none; border-radius:999px; background:#FF9F1C; color:#fff; font:inherit; font-weight:800; font-size:14px; padding:7px 14px; box-shadow:0 3px 0 #C46A00; flex:none}
 .frlist li{display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7}
+.frlist button.gift{background:#FFE7C2; padding:4px 8px; display:grid; place-items:center} .frlist button.gift img{width:28px; height:28px; display:block}
+.giftsizes{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 16px} .giftsizes button{border:2px solid #DCCFF7; background:#fff; color:#2D1B4E; border-radius:14px; font:inherit; font-weight:800; font-size:17px; min-height:50px}
+.giftsizes button.on{background:#7B4DFF; border-color:#7B4DFF; color:#fff} .giftsizes button:disabled{opacity:.35}
 .frlist .dot{width:12px; height:12px; border-radius:50%; background:#B9AFCF; flex:none}
 .frlist .dot.on{background:#2DBE60; box-shadow:0 0 0 4px rgba(45,190,96,.2)}
 .frlist .who{flex:1; min-width:0; display:flex; flex-direction:column; font-weight:700}
@@ -1179,6 +1182,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'שליחת מתנה': 'Send a gift', 'מתנה ל-{}': 'A gift for {0}', 'הנקודות יורדות מהארנק שלכם. יש לכם {}.': 'The points come out of your wallet. You have {0}.', 'שליחה': 'Send', 'המתנה נשלחה ל-{}': 'Gift sent to {0}', 'הגעתם למכסת המתנות להיום. נסו שוב מחר.': 'You have reached today\'s gift limit. Try again tomorrow.', 'אפשר לשלוח מתנות רק לחברים': 'Gifts can only be sent to friends', 'מתנה מ-{}!': 'A gift from {0}!',
   'קיבלתם מתנה!': 'You got a gift!',
   'אין לכם מספיק נקודות': 'You do not have enough points', 'הדו-קרב על {} נקודות ויש לכם {}. חסרות {}.': 'The duel is for {0} points and you have {1}. You are {2} short.', '{} מזמין לדו-קרב': '{0} invites you to a duel',
   'חברים': 'Friends', 'חברים מחוברים': 'Friends online', '+ הוספת חבר': '+ Add a friend', 'בקשות חברות': 'Friend requests', 'אף חבר לא מחובר כרגע. אפשר להזמין בקישור.': 'No friend is online right now. You can invite with a link.', 'עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.': 'No friends here yet. Add friends from the Friends button on the home screen.',
@@ -3746,12 +3750,13 @@ async function claimGifts() {
   if (giftBusy || !P || !P.id || isNewcomer()) return;
   giftBusy = true;
   let n = 0;
-  try { n = +(await rpc('beam_gifts_claim', { p_id: P.id, p_secret: playerKey() })) || 0; } catch (e) { /* next time */ }
+  let who = [];
+  try { const r = await rpc('beam_gifts_take', { p_id: P.id, p_secret: playerKey() }); n = +(r && r.sum) || 0; who = (r && r.from) || []; } catch (e) { /* next time */ }
   giftBusy = false;
   if (n <= 0) return;
   gain(n, false); save(false); cloudSoon(); renderHome(); hudSync();
   if (!$('shop').hidden) renderShop();
-  Sound.play('purchase'); Haptic.play('win'); toast(T('קיבלתם מתנה!'), `+${fmt(n)}`);
+  Sound.play('purchase'); Haptic.play('win'); toast(who.length ? T`מתנה מ-${who.slice(0, 2).join(', ')}!` : T('קיבלתם מתנה!'), `+${fmt(n)}`);
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) claimGifts(); });
 setInterval(() => { if (!document.hidden) claimGifts(); }, 5 * 60 * 1000);
@@ -3852,22 +3857,47 @@ function renderFriends() {
   const sig = JSON.stringify(d.friends);
   if (list.dataset.sig === sig) return;
   list.dataset.sig = sig;
-  const row = f => {
+  const row = (f, gift) => {
     const i = d.friends.indexOf(f);
     const sub = f.rel === 'in' ? T('בקשת חברות') : f.rel === 'out' ? T('ממתין לאישור') : !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
     const act = f.rel === 'in' ? `<button class="go" data-a="yes" data-i="${i}">${T('אישור')}</button><button data-a="no" data-i="${i}">${T('דחייה')}</button>`
-      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button><button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
+      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button>${gift ? `<button class="gift" data-a="gift" data-i="${i}" aria-label="${T('שליחת מתנה')}"><img alt="" src="media/ui/gift.webp"></button>` : ''}<button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
       : `<button class="x" data-a="remove" data-i="${i}" aria-label="${T('ביטול הבקשה')}">✕</button>`;
     return `<li><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
   };
-  asksBox.hidden = !asks.length; $('frAsks').innerHTML = asks.map(row).join('');
-  list.innerHTML = ok.length ? ok.map(row).join('') : `<p class="frempty"><img alt="" src="${POSE.sleep}">${T('עוד אין לכם חברים כאן. שלחו קישור לחבר, או חפשו שחקן לפי שם.')}</p>`;
-  duel.innerHTML = ok.length ? [...on, ...ok.filter(f => !f.online)].map(row).join('') : `<p class="frnote">${T('עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.')}</p>`;   // the duel tab only lists friends, online ones first; adding lives on the friends screen
+  asksBox.hidden = !asks.length; $('frAsks').innerHTML = asks.map(f => row(f)).join('');
+  list.innerHTML = ok.length ? ok.map(f => row(f, true)).join('') : `<p class="frempty"><img alt="" src="${POSE.sleep}">${T('עוד אין לכם חברים כאן. שלחו קישור לחבר, או חפשו שחקן לפי שם.')}</p>`;
+  duel.innerHTML = ok.length ? [...on, ...ok.filter(f => !f.online)].map(f => row(f)).join('') : `<p class="frnote">${T('עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.')}</p>`;   // the duel tab only lists friends, online ones first; adding lives on the friends screen
   for (const b of document.querySelectorAll('#frList button, #frAsks button, #duelList button')) b.onclick = () => friendAction(b.dataset.a, d.friends[+b.dataset.i]);
+}
+/* points from one friend to another: taken from the sender's wallet, and waiting on the server until the friend's game collects them */
+const GIFT_SIZES = [100, 250, 500, 1000];
+function giftFriend(f) {
+  let pick = GIFT_SIZES.find(n => n <= P.balance) ? Math.max(...GIFT_SIZES.filter(n => n <= P.balance && n <= 250)) : 0;
+  if (!isFinite(pick) || pick < 0) pick = GIFT_SIZES[0];
+  modal(`<img class="bug" alt="" src="media/ui/gift.webp" style="width:110px;height:110px">
+    <h3>${T`מתנה ל-${esc(f.name)}`}</h3>
+    <p>${T`הנקודות יורדות מהארנק שלכם. יש לכם ${fmt(P.balance)}.`}</p>
+    <div class="giftsizes">${GIFT_SIZES.map(n => `<button data-n="${n}"${n > P.balance ? ' disabled' : ''}${n === pick ? ' class="on"' : ''}>${fmt(n)}</button>`).join('')}</div>
+    <button class="btn green" id="giftGo"${pick > P.balance || !pick ? ' disabled' : ''}>${T('שליחה')}</button>
+    <button class="btn ghosty" id="giftNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+      for (const b of m.querySelectorAll('.giftsizes button')) b.onclick = () => { pick = +b.dataset.n; for (const x of m.querySelectorAll('.giftsizes button')) x.classList.toggle('on', x === b); m.querySelector('#giftGo').disabled = false; Sound.play('tap'); };
+      m.querySelector('#giftNo').onclick = closeModal;
+      m.querySelector('#giftGo').onclick = async () => {
+        if (!pick || pick > P.balance) return;
+        m.querySelector('#giftGo').disabled = true;
+        let res = null;
+        try { res = await rpc('beam_gift_send', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_friend: f.id, p_amount: pick }); } catch (e) { /* told below */ }
+        closeModal();
+        if (res === 'ok') { P.balance -= pick; save(false); cloudSoon(); renderHome(); hudSync(); Sound.play('purchase'); Haptic.play('win'); toast(T`המתנה נשלחה ל-${f.name}`, `-${fmt(pick)}`); }
+        else toast(res === 'limit' ? T('הגעתם למכסת המתנות להיום. נסו שוב מחר.') : res === 'nofriend' ? T('אפשר לשלוח מתנות רק לחברים') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+      };
+    });
 }
 async function friendAction(a, f) {
   const base = { p_id: P.id, p_secret: playerKey() };
   if (a === 'invite') return chooseStake(stake => inviteFriend(f, stake));
+  if (a === 'gift') return giftFriend(f);
   if (a === 'remove') {
     modal(`<h3>${T`להסיר את ${esc(f.name)} מהחברים?`}</h3>
       <button class="btn danger" id="rmGo">${T('הסרה')}</button>
