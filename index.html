@@ -2916,7 +2916,7 @@ function renderShop() {
   for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
 }
 function buyLook(cat, it) {
-  modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<img alt="" src="media/fx/${it.id}.webp?v=2" style="height:110px">` : sampleOf(cat, it)}</div>
+  modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<img alt="" src="media/fx/${it.id}.webp?v=2" style="height:150px;width:150px;max-width:100%;object-fit:contain;display:block;margin:0 auto">` : sampleOf(cat, it)}</div>
     <h3>${T(it.name)}</h3>
     <p>${T`המחיר: ${fmt(it.price)} נקודות. יישארו לכם ${fmt(P.balance - it.price)}.`}</p>
     <button class="btn orange" id="buyGo">${T('קנייה')}</button>
