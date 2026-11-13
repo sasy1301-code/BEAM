@@ -2082,7 +2082,7 @@ const LIMIT = { mirror: 2, hammer: 3 };
 /* hints can place at most half of a level's mirrors (at least one), so no level can be bought outright */
 const hintLimit = lv => Math.max(1, Math.floor(lv.max / 2));
 const START_POINTS = 500;
-const REMOVE_ADS = { id: 'remove_ads', price: '14.90 ₪', bonus: 2000 };
+const REMOVE_ADS = { id: 'remove_ads', price: '14.90 ₪', bonus: 5000 };
 const AD_EVERY = 3;
 const RANKS = [
   { at: 0, name: T('ניצוץ') }, { at: 2000, name: T('גחלילית') }, { at: 6000, name: T('פנס') }, { at: 12000, name: T('מגדלור') },
@@ -3253,22 +3253,27 @@ function showWin(mood, delay, onCard, coins = 0) {
 }
 /* Winning points arrive as coins: they burst out of the middle of the screen, hang for a moment, then fly up into the counter, which counts up as they land. */
 const COIN_N = 96, COIN_MS = 2550;   // how many coins, and how long from the first burst until the last ones are landing
-function coinBurst(earned) {
-  const chip = $('gamePoints'), g = G, from = g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
-  const settle = () => { if (G === g) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); };
-  if (!earned || $('game').hidden) return settle();
+/* o.chip: another counter to fill (the duel's prize), which then counts from 0 up to the prize with a plus sign */
+function coinBurst(earned, o = {}) {
+  const own = !o.chip, chip = o.chip || $('gamePoints'), g = G;
+  const from = !own ? 0 : g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
+  const goal = () => own ? P.balance : earned, text = n => (own ? '' : '+') + fmt(n);
+  const alive = () => own ? G === g : chip.isConnected;
+  const show = n => { const sp = chip.querySelector('span'); if (sp) { sp.textContent = text(n); if (!own) sp.dir = 'ltr'; } };
+  const settle = () => { if (!alive()) return; if (own) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); else show(earned); };
+  if (!earned || (own && $('game').hidden)) return settle();
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle();
   const layer = document.createElement('div'); layer.className = 'coinfly'; document.body.appendChild(layer);
   document.body.classList.add('coining');
   const done = () => { layer.remove(); document.body.classList.remove('coining'); settle(); };
   const W = innerWidth, H = innerHeight, t = chip.getBoundingClientRect(), tx = t.left + t.width / 2, ty = t.top + t.height / 2;
-  const br = $('board').getBoundingClientRect(), ox = br.left + br.width / 2, oy = br.top + br.height / 2, N = COIN_N, size = 36;
+  const br = own ? $('board').getBoundingClientRect() : { left: 0, top: H * .12, width: W, height: H * .6 }, ox = br.left + br.width / 2, oy = br.top + br.height / 2, N = COIN_N, size = 36;
   const add = (cls, css) => { const d = document.createElement('div'); d.className = cls; if (css) d.style.cssText = css; layer.appendChild(d); return d; };
 
   // the stage: a golden flash, two shock rings and a board that jumps
   add('cf-flash').animate([{ opacity: 0 }, { opacity: .95, offset: .12 }, { opacity: 0 }], { duration: 650, fill: 'both' });
   for (const d of [0, 220]) add('cf-ring', `left:${ox}px; top:${oy}px`).animate([{ transform: 'translate(-50%,-50%) scale(.1)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }], { duration: 750, delay: d, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'both' });
-  const wrap = document.querySelector('#game .boardwrap');
+  const wrap = own ? document.querySelector('#game .boardwrap') : chip.closest('.modal, .duelbox, section') || chip;
   wrap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07) rotate(-1.2deg)', offset: .18 }, { transform: 'scale(.97) rotate(.8deg)', offset: .4 }, { transform: 'scale(1.03)', offset: .62 }, { transform: 'scale(1)' }], { duration: 700, easing: 'ease-out' });
 
   // the prize itself, big, in the middle; it shrinks into the counter with the last coins
@@ -3289,8 +3294,7 @@ function coinBurst(earned) {
     s.animate([{ transform: 'scale(0) rotate(0deg)', opacity: 0 }, { transform: 'scale(1.2) rotate(90deg)', opacity: 1, offset: .4 }, { transform: 'scale(0) rotate(180deg)', opacity: 0 }], { duration: 500 + Math.random() * 500, delay: Math.random() * 1700, fill: 'both' });
   }
 
-  let landed = 0;
-  const show = n => { const sp = chip.querySelector('span'); if (sp) sp.textContent = fmt(n); };
+  let landed = 0; if (!own) show(0);
   const at = (x, y, k, rot) => `translate(${x - size / 2}px, ${y - size / 2}px) scale(${k}) rotate(${rot}deg)`;
   for (let i = 0; i < N; i++) {
     const im = document.createElement('img'); im.src = `media/ui/coin${1 + i % 3}.webp`; im.alt = '';
@@ -3311,8 +3315,8 @@ function coinBurst(earned) {
       { transform: at(tx, ty, .42, spin), opacity: 1, offset: 1 },
     ], { duration: total, delay: wait, fill: 'both' }).onfinish = () => {
       im.remove(); landed++;
-      if (G === g) {
-        show(Math.round(from + (P.balance - from) * landed / N));
+      if (alive()) {
+        show(Math.round(from + (goal() - from) * landed / N));
         if (landed % 3 === 0) chip.animate([{ transform: 'scale(1.3)', filter: 'brightness(1.8)' }, { transform: 'scale(1)', filter: 'brightness(1)' }], { duration: 170 });
         if (landed % 6 === 0) Sound.play('clink', landed / N);
       }
@@ -3580,6 +3584,7 @@ function duelRender() {
     if (played) { P.duel = P.duel || { w: 0, l: 0, d: 0 }; P.duel[draw_ ? 'd' : won ? 'w' : 'l']++; }
     save(false);
     Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
+    D.burst = won && reward > 0;
     track('done', { p_stars: won ? 3 : draw_ ? 2 : 1, p_helped: false });
   }
   if (gone && D.rematch) { D.rematch = false; toast(T('היריב כבר יצא מהמשחק')); }
@@ -3591,6 +3596,7 @@ function duelRender() {
     ${gone ? `<p><b>${T('היריב יצא, אי אפשר לשחק שוב באותו חדר.')}</b></p>` : `<button class="btn green" id="duelAgain"${D.rematch || P.balance < (st.stake || 0) ? ' disabled' : ''}>${D.rematch ? T('ממתינים ליריב…') : P.balance < (st.stake || 0) ? T('אין מספיק נקודות למשחק חוזר') : st.rematch[opp] ? T('היריב רוצה משחק חוזר. לשחק!') : T('משחק חוזר')}</button>`}
     <button class="btn blue" id="duelHome">${T('חזרה לבית')}</button>
     ${D.friendAsked || isFriend(st.names[opp]) ? '' : `<button class="linkbtn" id="duelFriend">${T`הוספת ${st.names[opp] || ''} לחברים`}</button>`}`;
+  if (D.burst) { D.burst = false; const chip = box.querySelector('.gains .coin'); if (chip) requestAnimationFrame(() => coinBurst(reward, { chip })); }   // a won duel pays out in flying coins too
   const fr = box.querySelector('#duelFriend');
   if (fr) fr.onclick = async () => {
     D.friendAsked = true; duelRender();
