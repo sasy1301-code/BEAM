@@ -1629,7 +1629,7 @@ const SHOP = {
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 4000, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 5000, icon: '🫧' },
     { id: 'stars', name: 'גשם כוכבים', price: 6000, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 6000, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 7000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 7000, icon: '❄️' },
-    { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }, { id: 'portal', name: 'שער האור', price: 14000, icon: '🌀' }] },
+    { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }] },
   // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
   char: { title: 'דמויות', items: [
     { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועל הצללים', price: 0 }, { id: 'bunny', name: 'ארנבת הכוכבים', price: 0 },
