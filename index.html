@@ -379,7 +379,7 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .mpad.s-locked .num{color:rgba(255,255,255,.55); text-shadow:none; font-size:calc(var(--u) * 6.4 * var(--k,1)); top:39%} .mpad.s-locked img.art{filter:brightness(.74) saturate(.7) drop-shadow(0 calc(var(--u) * 1.2) calc(var(--u) * 1) rgba(20,0,60,.55))}
 .mpad.s-cur::after{content:''; position:absolute; left:50%; top:40%; width:158%; aspect-ratio:1/.62; transform:translate(-50%,-50%); border-radius:50%; border:calc(var(--u) * .6) solid rgba(255,225,130,.32); pointer-events:none}
 .mpad.s-cur::before{aspect-ratio:1/.62; width:124%; box-shadow:0 0 calc(var(--u) * 4) rgba(255,200,60,.8), inset 0 0 calc(var(--u) * 4) rgba(255,200,60,.5)}
-#map .mscene .mfly{width:calc(var(--u) * 22)} #map .mscene .mportal{width:calc(var(--u) * 44); transform:translate(-50%,-58%)} #map .mscene .mportal.shut img.pt{filter:grayscale(.5) brightness(.82)}
+#map .mscene .mfly{width:calc(var(--u) * 22); z-index:40} #map .mscene .mportal{width:calc(var(--u) * 44); transform:translate(-50%,-58%)} #map .mscene .mportal.shut img.pt{filter:grayscale(.5) brightness(.82)}
 .mprize{position:absolute; transform:translate(-50%,0); z-index:5; display:flex; align-items:center; gap:6px; background:linear-gradient(#FFCB52,#F59A0C); color:#5A2A00; font-weight:700; font-size:calc(var(--u) * 3.6); padding:calc(var(--u) * .9) calc(var(--u) * 3.4); border-radius:999px; box-shadow:0 3px 0 #A85C00; white-space:nowrap; pointer-events:none}
 .mprize img{width:calc(var(--u) * 5); height:calc(var(--u) * 5)} .mprize.got{background:linear-gradient(#7BE08A,#2FA84A); color:#fff; box-shadow:0 3px 0 #1F7A34}
 #map .mscene .mcot{width:calc(var(--u) * 15)}
@@ -2543,7 +2543,7 @@ function openMap(ch, justSolved) {
   mapCh = ch; show('map'); renderMap(true, justSolved);
 }
 /* the firefly waits beside the stop, on the side that has room; she faces right, so she is turned round when she stands on its right */
-const flyAt = j => { const [x, y] = MAP_PADS[j], k = padScale(j), left = x > 50, off = 13 + 15 * k; return [left ? x - off : x + off, y - 5.5 * k, left]; };
+const flyAt = j => { const [x, y] = MAP_PADS[j], k = padScale(j), left = x < 50, off = 13 + 15 * k, want = left ? x - off : x + off, fx = Math.max(13, Math.min(87, want)), squeezed = Math.abs(want - fx); return [fx, y - (5.5 + squeezed * .75) * k, left]; };   // on the outer side of the road, where no other stop stands; near the edge she rises above the stop instead
 /* the road: one smooth line through the entry at the bottom, every stop and the gate; it is gold as far as the player has come */
 const MAP_ROAD = (() => {
   const c = [[90, 85], ...MAP_PADS, [MAP_GATE[0], MAP_GATE[1] + 3]], segs = [];
