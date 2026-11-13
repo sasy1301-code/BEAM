@@ -464,7 +464,7 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .mapwarp.on{opacity:1; transition:opacity .7s ease-in .15s}
 @media (prefers-reduced-motion: reduce){ .mscene *, .mscene > img.mpath{animation:none !important; transition:none !important} .mote{display:none} .mscene.warp{transform:none} }
 /* the firefly's garden */
-.gscene{position:relative; width:100%; aspect-ratio:3/4; border-radius:24px; overflow:hidden; background:#2A0F66 center/cover no-repeat; box-shadow:0 8px 0 #2A0A6E, 0 0 30px rgba(170,90,255,.45), 0 0 0 2px rgba(255,214,90,.35)}
+.gscene{position:relative; isolation:isolate; width:100%; aspect-ratio:3/4; border-radius:24px; overflow:hidden; background:#2A0F66 center/cover no-repeat; box-shadow:0 8px 0 #2A0A6E, 0 0 30px rgba(170,90,255,.45), 0 0 0 2px rgba(255,214,90,.35)}
 .gscene img.gi{position:absolute; transform:translate(-50%,-100%); pointer-events:auto; user-select:none; -webkit-user-drag:none; filter:drop-shadow(0 6px 8px rgba(20,0,60,.45))}
 .gscene img.gi.flip{transform:translate(-50%,-100%) scaleX(-1)}
 .gscene img.gi.new{animation:gPop .6s cubic-bezier(.3,1.5,.6,1) both}
@@ -808,7 +808,9 @@ body.tabbed .lb li.mine{position:sticky; bottom:calc(96px + env(safe-area-inset-
 #login .or{font-size:14px; margin:14px 0} #login .or[hidden],.sso[hidden]{display:none}
 #login .login-note{margin-top:14px; font-size:13px}
 /* ---- the shell: one top bar and one bottom bar on every main screen ---- */
-#hud{position:relative; z-index:6; margin-bottom:10px}
+#hud{position:sticky; top:0; z-index:12; margin:-16px -16px 10px; padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background:transparent; transition:background-color .2s}
+#hud.stuck{background:linear-gradient(180deg,rgba(28,6,84,.96) 0%,rgba(28,6,84,.88) 70%,rgba(28,6,84,0) 100%)}
 #hud[hidden],#tabbar[hidden]{display:none}
 #hud .me{background:linear-gradient(180deg,#5B3BC4,#3E2499); box-shadow:0 4px 0 #24126b, inset 0 2px 0 rgba(255,255,255,.25); color:#fff; padding:4px 5px 4px 29px; gap:8px}
 #hud .me .badge{width:42px; height:42px; background:#FFE9A8; border:3px solid #FFD23F}
@@ -4520,6 +4522,7 @@ $('setLeave').onclick = leaveLeaderboard;
 $('langHe').setAttribute('aria-pressed', LANG === 'he'); $('langEn').setAttribute('aria-pressed', LANG === 'en');
 for (const [id, v] of [['themeLight', 'light'], ['themeDark', 'dark'], ['themeAuto', 'auto']]) $(id).onclick = () => { Sound.play('tap'); setTheme(v); };
 applyTheme(getTheme());
+addEventListener('scroll', () => { const h = $('hud'); if (h) h.classList.toggle('stuck', scrollY > 4); }, { passive: true });
 $('langHe').onclick = () => LANG !== 'he' && setLang('he'); $('langEn').onclick = () => LANG !== 'en' && setLang('en');
 $('optHaptic').onchange = e => { P.haptic = e.target.checked; applySoundPrefs(); save(false); if (P.haptic) Haptic.play('win'); };
 $('optMusic').onchange = e => { P.music = e.target.checked; applySoundPrefs(); save(false); if (P.music) previewMusic(); };
