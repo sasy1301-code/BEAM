@@ -178,6 +178,12 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .wlive{background:#FF3B4E; color:#fff; font-weight:800; font-size:12px; letter-spacing:1px; padding:4px 10px; border-radius:999px; animation:wLive 1.4s ease-in-out infinite} @keyframes wLive{50%{opacity:.45}}
 .wstats{display:flex; justify-content:center; gap:10px; margin-top:12px} .wstats .pill{background:linear-gradient(180deg,#5B3BC4,#3E2499); color:#fff; border-radius:16px; padding:6px 16px; font-size:18px; font-weight:700; box-shadow:0 4px 0 #24126b}
 .wnote{text-align:center; color:#fff; font-size:17px; font-weight:600; margin:18px 8px 0; min-height:1.4em}
+.frlist button.more{width:40px; padding:0 0 8px; font-size:22px; line-height:1; background:#EDE5FB; color:#4B1FA8}
+.fhead{display:flex; align-items:center; gap:12px; margin:0 44px 14px 0; text-align:start} .fhead .av{position:relative; width:60px; height:60px; border-radius:50%; background:#E6DBFA; display:grid; place-items:center; flex:none} .fhead .av img{width:54px; height:54px; object-fit:contain}
+.fhead .dot{position:absolute; bottom:0; inset-inline-end:0; width:13px; height:13px; border-radius:50%; background:#B9AFCF; border:2px solid #fff} .fhead .dot.on{background:#2DBE60} .fhead b{display:block; font-size:23px} .fhead small{color:var(--muted); font-size:14px}
+.fact{display:flex; align-items:center; gap:12px; width:100%; border:none; background:#F6F1FF; border-radius:16px; padding:10px 12px; margin-top:8px; font:inherit; text-align:start; color:#2D1B4E} .fact:disabled{opacity:.45}
+.fact .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; flex:none} .fact .ic img{width:34px; height:34px; object-fit:contain} .fact b{display:block; font-size:17px} .fact small{color:#6B5A8C; font-size:13px}
+.fact.red{background:#FFF3F4} .fact.red b, .fact.red .ic{color:#C2283C; font-weight:700}
 .frlist button.eye{background:#E3F4FF; padding:4px 9px; font-size:19px; line-height:1}
 .duelbox h3{font-size:24px; margin:0 0 6px}
 .duelbox p{margin:0 0 12px; color:var(--muted)}
@@ -1223,6 +1229,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'עוד פעולות': 'More', 'לראות את הלוח בזמן אמת': 'See the board live', 'נקודות מהארנק שלכם': 'Points from your wallet', 'הזמנה לדו-קרב': 'Invite to a duel', 'בוחרים רמת קושי וסכום': 'Pick a difficulty and a stake', 'אפשר כשהחבר מחובר ופנוי': 'When your friend is online and free', 'הסרה מהחברים': 'Remove from friends',
   'סובבו את הטלפון לאורך': 'Turn your phone upright',
   'מתחברים…': 'Connecting…', 'אי אפשר לצפות ביריב באמצע דו-קרב': 'You cannot watch your opponent during a duel', '{} לא משחק כרגע': '{0} is not playing right now', 'דו-קרב · סיבוב {}': 'Duel · round {0}', '{} פתר את הלוח!': '{0} solved the board!', 'מהלכים: {}': 'Moves: {0}', 'צפייה במשחק': 'Watch the game',
   'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
@@ -4027,7 +4034,7 @@ function renderFriends() {
     const i = d.friends.indexOf(f);
     const sub = f.rel === 'in' ? T('בקשת חברות') : f.rel === 'out' ? T('ממתין לאישור') : !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
     const act = f.rel === 'in' ? `<button class="go" data-a="yes" data-i="${i}">${T('אישור')}</button><button data-a="no" data-i="${i}">${T('דחייה')}</button>`
-      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button>${f.online && (f.state === 'level' || f.state === 'duel') ? `<button class="eye" data-a="watch" data-i="${i}" aria-label="${T('צפייה במשחק')}">👁</button>` : ''}${gift ? `<button class="gift" data-a="gift" data-i="${i}" aria-label="${T('שליחת מתנה')}"><img alt="" src="media/ui/gift.webp"></button>` : ''}<button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
+      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button><button class="more" data-a="menu" data-i="${i}" aria-label="${T('עוד פעולות')}">⋯</button>`
       : `<button class="x" data-a="remove" data-i="${i}" aria-label="${T('ביטול הבקשה')}">✕</button>`;
     return `<li><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
   };
@@ -4060,11 +4067,25 @@ function giftFriend(f) {
       };
     });
 }
+/* everything else one can do with a friend sits behind the three dots, so the row keeps room for the name */
+function friendMenu(f) {
+  const playing = f.online && (f.state === 'level' || f.state === 'duel');
+  const sub = !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
+  const item = (a, ic, bg, title, note, off) => `<button class="fact${a === 'remove' ? ' red' : ''}" data-m="${a}"${off ? ' disabled' : ''}><span class="ic" style="background:${bg}">${ic}</span><span><b>${title}</b>${note ? `<small>${note}</small>` : ''}</span></button>`;
+  modal(`<div class="fhead"><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><div><b>${esc(f.name || '')}</b><small>${sub}</small></div></div>` +
+    (playing ? item('watch', '👁', '#E3F4FF', T('צפייה במשחק'), T('לראות את הלוח בזמן אמת')) : '') +
+    item('gift', '<img alt="" src="media/ui/gift.webp">', '#FFE7C2', T('שליחת מתנה'), T('נקודות מהארנק שלכם')) +
+    item('invite', '<img alt="" src="media/ui/duel.webp">', '#FFE3B8', T('הזמנה לדו-קרב'), f.online && f.state !== 'duel' ? T('בוחרים רמת קושי וסכום') : T('אפשר כשהחבר מחובר ופנוי'), !(f.online && f.state !== 'duel')) +
+    item('remove', '✕', '#FFE1E5', T('הסרה מהחברים')), m => {
+      for (const b of m.querySelectorAll('[data-m]')) b.onclick = () => { closeModal(); friendAction(b.dataset.m, f); };
+    });
+}
 async function friendAction(a, f) {
   const base = { p_id: P.id, p_secret: playerKey() };
   if (a === 'invite') return chooseStake(stake => inviteFriend(f, stake));
   if (a === 'gift') return giftFriend(f);
   if (a === 'watch') return watchFriend(f);
+  if (a === 'menu') return friendMenu(f);
   if (a === 'remove') {
     modal(`<h3>${T`להסיר את ${esc(f.name)} מהחברים?`}</h3>
       <button class="btn danger" id="rmGo">${T('הסרה')}</button>
