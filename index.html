@@ -3426,7 +3426,8 @@ const CHEERS = LANG === 'en'   // width / height of each picture; the English se
 const cheerSrc = k => `media/cheer/${LANG === 'en' ? 'en-' : ''}${k}.webp`;
 let cheerLast = '', cheerAt = 0;
 function cheer(st, gained) {
-  if (Date.now() - cheerAt < 900 || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (const old of document.querySelectorAll('.cheerbox')) old.remove();   // a quick second right move replaces the phrase
   let pool = st.total - st.lit === 1 ? ['od'] : gained > 1 ? ['gaon', 'mutzlach', 'mushlam'] : st.lit === 1 ? ['meula', 'yafe', 'kavod', 'mutzlach'] : ['kavod', 'gaon', 'mushlam', 'meula', 'yafe', 'mutzlach'];
   if (pool.length > 1) pool = pool.filter(k => k !== cheerLast);
   const k = pool[Math.floor(Math.random() * pool.length)]; cheerLast = k; cheerAt = Date.now();
@@ -3508,7 +3509,7 @@ function renderGame(flash) {
     }, 1500);
   }
   if (G.lastTap) {                                         // cheer only a real step forward: more stars lit the honest way than before
-    const hon = st.bomb ? -1 : onTrack();
+    const hon = onTrack();   // a bomb the light only reaches past the end of the right route is not the player's mistake
     if (hon > (G.hon || 0) && st.lit < st.total) cheer(st, hon - (G.hon || 0));
     G.hon = Math.max(0, hon);
   }
