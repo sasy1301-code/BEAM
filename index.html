@@ -515,6 +515,9 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .shopitem button.fxtry{border:none; width:100%; height:96px; overflow:hidden; border-radius:12px; background:#241047; font-size:34px; min-height:0}
 .fxbox{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
 .fxtry img[src*="classic"]{height:72px; margin-top:11px} .fxtry img{height:94px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.fxbox img.fxd{position:absolute; left:0; top:0; height:auto; opacity:0; pointer-events:none; will-change:transform,opacity; filter:drop-shadow(0 0 6px rgba(255,214,120,.8))}
+.fxbox i.fxdot{position:absolute; left:0; top:0; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle,#FFFBE6 0%,#FFD95A 40%,rgba(255,170,40,0) 72%); will-change:transform,opacity}
+.fxbox i.fxdglow{position:absolute; left:0; top:0; width:150px; height:150px; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle, rgba(255,240,190,.95) 0%, rgba(255,200,90,.55) 22%, rgba(190,120,255,.3) 48%, rgba(190,120,255,0) 70%); mix-blend-mode:screen}
 .fxbox img.fxp{position:absolute; left:var(--x); top:var(--y); width:var(--w); height:auto; opacity:0; animation-fill-mode:both; animation-timing-function:linear; will-change:transform,opacity; filter:drop-shadow(0 4px 8px rgba(30,0,60,.35))}
 @keyframes pFall{0%{opacity:0; transform:translate(0,0) rotate(var(--r0))} 8%{opacity:1} 88%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),125vh) rotate(var(--r))}}
 @keyframes pRise{0%{opacity:0; transform:translate(0,0) rotate(var(--r0)) scale(.8)} 10%{opacity:1} 85%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),-125vh) rotate(var(--r)) scale(1.05)}}
@@ -2948,6 +2951,49 @@ function buyLook(cat, it) {
 const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
 const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=1`;
 function fxPreload(kind) { if (FX_N[kind]) for (let i = 0; i < FX_N[kind]; i++) new Image().src = fxSrc(kind, i); }
+/* magic dust: two glowing wand-sparks write looping trails across the screen, shedding twinkling dust that drifts down, then burst */
+function magicDust(box) {
+  const W = innerWidth, H = innerHeight, rnd = (a, b) => a + Math.random() * (b - a);
+  const img = (i, size) => { const im = document.createElement('img'); im.alt = ''; im.src = fxSrc('dust', i); im.className = 'fxd'; im.style.width = size + 'px'; box.appendChild(im); return im; };
+  const speck = (x, y, big) => {                       // one grain of dust: pops, twinkles, drifts down and fades
+    const r = Math.random(), sz = big ? rnd(26, 44) : rnd(8, 20);
+    let im;
+    if (r < .45 && !big) { im = document.createElement('i'); im.className = 'fxdot'; im.style.width = im.style.height = sz * .6 + 'px'; box.appendChild(im); }   // a plain golden grain
+    else im = img(r < .75 ? (Math.random() < .5 ? 1 : 3) : r < .88 ? 5 : (Math.random() < .5 ? 2 : 4), sz);
+    const dx = rnd(-26, 26), dy = rnd(30, 120), sp = rnd(-120, 120), t = rnd(900, 1700);
+    im.animate([
+      { transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(0) rotate(0)`, opacity: 0 },
+      { transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(1.3) rotate(${sp * .2}deg)`, opacity: 1, offset: .12 },
+      { transform: `translate(${x + dx * .5}px,${y + dy * .4}px) translate(-50%,-50%) scale(.7) rotate(${sp * .6}deg)`, opacity: .9, offset: .45 },
+      { transform: `translate(${x + dx * .7}px,${y + dy * .65}px) translate(-50%,-50%) scale(1.05) rotate(${sp * .8}deg)`, opacity: 1, offset: .6 },
+      { transform: `translate(${x + dx}px,${y + dy}px) translate(-50%,-50%) scale(.2) rotate(${sp}deg)`, opacity: 0 }], { duration: t, easing: 'ease-out', fill: 'both' });
+  };
+  // each wand flies a lazy figure across the screen; the two cross each other
+  const paths = [
+    t => [W * (-.1 + 1.2 * t), H * (.62 - .3 * t) + Math.sin(t * Math.PI * 3) * H * .1],
+    t => [W * (1.1 - 1.2 * t), H * (.2 + .32 * t) + Math.sin(t * Math.PI * 2.4 + 1) * H * .09]];
+  paths.forEach((path, n) => {
+    const head = img(1, 76), glow = document.createElement('i'); glow.className = 'fxdglow'; box.appendChild(glow);
+    const t0 = performance.now() + n * 380, dur = 1700; let last = 0;
+    const step = now => {
+      const t = Math.min(1, Math.max(0, (now - t0) / dur));
+      if (now >= t0) {
+        const [x, y] = path(t);
+        head.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%) rotate(${t * 540}deg) scale(${.9 + Math.sin(now / 60) * .15})`; head.style.opacity = 1;
+        glow.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`; glow.style.opacity = 1;
+        if (now - last > 16) { last = now; for (let k = 0; k < 3; k++) speck(x + rnd(-10, 10), y + rnd(-10, 10), Math.random() < .12); }
+      }
+      if (t < 1) return requestAnimationFrame(step);
+      const [x, y] = path(1);                            // the wand vanishes in a little burst of dust
+      head.animate([{ opacity: 1 }, { opacity: 0, transform: head.style.transform + ' scale(2.4)' }], { duration: 380, fill: 'forwards' });
+      glow.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, fill: 'forwards' });
+      for (let k = 0; k < 22; k++) { const a = Math.random() * Math.PI * 2, d = rnd(30, 110); speck(Math.min(W - 20, Math.max(20, x + Math.cos(a) * d)), Math.min(H - 20, Math.max(20, y + Math.sin(a) * d)), Math.random() < .3); }
+    };
+    requestAnimationFrame(step);
+  });
+  // a soft glitter that keeps falling for a moment after the wands have passed
+  for (let k = 0; k < 26; k++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4), false), 600 + k * 60);
+}
 function winFx(kind) {
   if (!FX_N[kind] || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
   const box = document.createElement('div'); box.className = 'fxbox fx-' + kind;
@@ -2970,10 +3016,7 @@ function winFx(kind) {
     shower([3, 4], 8, 'pFall', [50, 80], { r: 0 }); shower([5, 6], 14, 'pFall', [22, 40]);
   } else if (kind === 'lightning') { pops(range(0, 3), 9, [60, 110], 'pFlick', .2, 1.2); pops(range(4, 6), 10, [24, 40], 'pPop', .15, 1); }
   else if (kind === 'fireworks') { pops(range(0, 4), 7, [110, 190], 'pBoom', .32, 1.5); pops([5, 6], 12, [22, 36], 'pPop', .18, 1.1); }
-  else if (kind === 'dust') {
-    add(0, { x: 50, y: 45, w: Math.min(innerWidth * .7, 300), a: 'pGlow', d: 3 });
-    shower(range(1, 5), 30, 'pRise', [16, 34]);
-  } else if (kind === 'portal') {
+  else if (kind === 'dust') { document.body.appendChild(box); magicDust(box); setTimeout(() => box.remove(), 4800); return; } else if (kind === 'portal') {
     add(0, { x: 50, y: 42, w: Math.min(innerWidth * .62, 280), a: 'pSwirl', d: 2.8 });
     for (let k = 0; k < 18; k++) { const an = rnd(0, Math.PI * 2), dist = rnd(140, 260); add(pick(range(1, 9)), { x: 50, y: 42, w: rnd(30, 58), dx: Math.cos(an) * dist, dy: Math.sin(an) * dist, r: rnd(-180, 180), a: 'pBurst', d: rnd(1.4, 2), dl: .5 + rnd(0, 1.2) }); }
   }
