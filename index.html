@@ -2638,20 +2638,20 @@ function buyGarden(key) {
    and the firefly's garden next. Buying comes out of the spending balance only, so it never costs a leaderboard place. */
 const SHOP = {
   beam: { title: 'צבע הקרן', items: [
-    { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
-    { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 }] },
+    { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 2000 }, { id: 'ice', name: 'קרח', price: 2000 }, { id: 'lime', name: 'ליים', price: 2000 },
+    { id: 'violet', name: 'סגול לילה', price: 3000 }, { id: 'fire', name: 'אש', price: 6000 }, { id: 'rainbow', name: 'קשת', price: 9000 }, { id: 'star', name: 'אבק כוכבים', price: 12000 }] },
   board: { title: 'עיצוב הלוח', items: [
     { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'candy', name: 'ממתקים', price: 4000 }, { id: 'forest', name: 'יער קסום', price: 5000 }, { id: 'flower', name: 'גן פרחים', price: 6000 }, { id: 'coral', name: 'פריחת שקיעה', price: 6000 },
     { id: 'ocean', name: 'אוקיינוס', price: 8000 }, { id: 'crystal', name: 'קריסטל ירח', price: 8000 }, { id: 'mushroom', name: 'פטריות קסם', price: 10000 }, { id: 'stars', name: 'שמש וירח', price: 12000 }, { id: 'royal', name: 'מלכותי', price: 15000 }] },
   fx: { title: 'אפקט ניצחון', items: [
-    { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
-    { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 3000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 3000, icon: '❄️' },
-    { id: 'rainbow', name: 'שובל קשת', price: 3500, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 4000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 4500, icon: '⚡' }, { id: 'portal', name: 'שער האור', price: 6000, icon: '🌀' }] },
+    { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 4000, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 5000, icon: '🫧' },
+    { id: 'stars', name: 'גשם כוכבים', price: 6000, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 6000, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 7000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 7000, icon: '❄️' },
+    { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }, { id: 'portal', name: 'שער האור', price: 14000, icon: '🌀' }] },
   // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
   char: { title: 'דמויות', items: [
     { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועלה חוקרת', price: 0 }, { id: 'bunny', name: 'ארנבת ממציאה', price: 0 },
-    { id: 'owl', name: 'ינשוף קוסם', price: 1500 }, { id: 'cat', name: 'חתול נינג\'ה', price: 1500 }, { id: 'hedgehog', name: 'קיפודה גננת', price: 2000 }, { id: 'frog', name: 'צפרדע אלכימאי', price: 2000 },
-    { id: 'raccoon', name: 'דביבון מכונאי', price: 2500 }, { id: 'deer', name: 'איילה שומרת', price: 3000 }, { id: 'moth', name: 'נסיכת העשים', price: 4000 }, { id: 'dragon', name: 'דרקונצ\'יק', price: 5000 }, { id: 'unicorn', name: 'חד-קרן', price: 8000 }] },
+    { id: 'owl', name: 'ינשוף קוסם', price: 4000 }, { id: 'cat', name: 'חתול נינג\'ה', price: 4000 }, { id: 'hedgehog', name: 'קיפודה גננת', price: 5000 }, { id: 'frog', name: 'צפרדע אלכימאי', price: 5000 },
+    { id: 'raccoon', name: 'דביבון מכונאי', price: 6000 }, { id: 'deer', name: 'איילה שומרת', price: 8000 }, { id: 'moth', name: 'נסיכת העשים', price: 10000 }, { id: 'dragon', name: 'דרקונצ\'יק', price: 12000 }, { id: 'unicorn', name: 'חד-קרן', price: 18000 }] },
 };
 const CHAR_IDS = new Set(SHOP.char.items.map(x => x.id).filter(x => x !== 'bug'));
 const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-', char: 'ch-' };
