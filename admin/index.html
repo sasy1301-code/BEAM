@@ -18,6 +18,7 @@ header img{width:40px; height:40px} header h1{margin:0; font-size:24px; flex:1} 
 .who{color:var(--muted); font-size:14px; text-align:left; direction:ltr}
 .btn{border:none; border-radius:14px; padding:10px 18px; font-weight:700; cursor:pointer; background:var(--card2); box-shadow:0 3px 0 rgba(0,0,0,.35)}
 .btn.gold{background:linear-gradient(#FFCB52,#F59A0C); color:#4A2300} .btn.green{background:linear-gradient(#5BD46D,#2FA84A)} .btn.ghost{background:transparent; box-shadow:none; border:1px solid var(--line)}
+.btn.red{background:linear-gradient(#FF6B7E,#D6334A)} .danger{margin-top:18px; border:1px solid rgba(255,90,110,.45); background:rgba(255,90,110,.08); border-radius:16px; padding:4px 14px 14px} .danger h3{color:#FF8A98} .danger p{color:var(--muted); font-size:14px; margin:0 0 8px} .danger label{display:flex; gap:8px; align-items:flex-start; font-size:14px; margin-bottom:10px} .danger input{margin-top:4px}
 .btn:disabled{opacity:.5; cursor:default}
 .tabs{display:flex; gap:6px; overflow-x:auto; margin-bottom:16px; scrollbar-width:none}
 .tabs button{border:none; background:var(--card); color:var(--muted); padding:10px 16px; border-radius:999px; font-weight:600; white-space:nowrap; cursor:pointer}
@@ -146,6 +147,13 @@ async function players() {
       <span class="num opt"><b>${fmt(p.levels)}</b><small>שלבים</small></span><span class="num"><b>${fmt(p.total)}</b><small>ניקוד</small></span><span class="num"><b>${fmt(p.balance)}</b><small>בארנק</small></span></div>`).join('') : '<p class="empty">לא נמצאו שחקנים.</p>';
     for (const r of document.querySelectorAll('[data-id]')) r.onclick = () => player(r.dataset.id);
   };
+  const banned = await rpc('beam_admin_banned');
+  if (banned.length) {
+    const box = document.createElement('div'); box.className = 'panel';
+    box.innerHTML = `<h2>חסומים</h2><div class="feed">${banned.map(b => `<div><b>${esc(b.name || '(בלי שם)')}</b><span style="color:var(--muted); direction:ltr">${esc(b.id)}</span><small>${when(b.at)}</small><button class="btn" data-unb="${esc(b.id)}">ביטול חסימה</button></div>`).join('')}</div>`;
+    $('#main').appendChild(box);
+    for (const u of box.querySelectorAll('[data-unb]')) u.onclick = async () => { if (!confirm('לבטל את החסימה? השחקן יוכל לחזור לשחק, והמשחק במכשיר שלו יעלה אותו מחדש.')) return; await rpc('beam_admin_unblock', { p_id: u.dataset.unb }); toast('החסימה בוטלה'); show(); };
+  }
   $('#go').onclick = run; $('#sort').onchange = run; $('#q').onkeydown = e => { if (e.key === 'Enter') run(); };
   await run();
 }
@@ -165,8 +173,18 @@ async function player(id) {
     <h3>פרטים</h3><div class="chips"><span>הצטרף ${when(p.created_at)}</span><span>${p.account ? 'מחובר עם Google' : 'אורח (בלי חשבון)'}</span>${p.visible === false ? '<span>מוסתר מחברים</span>' : ''}${p.look && p.look.board ? `<span>לוח: ${esc(p.look.board)}</span>` : ''}</div>
     <h3>מה קנה</h3><div class="chips">${(p.own || []).length ? p.own.map(k => `<span>${esc(k)}</span>`).join('') : '<span>עוד לא קנה כלום</span>'}</div>
     <h3>מתנות שקיבל</h3><div class="feed">${(p.gifts || []).length ? p.gifts.map(g => `<div><b>+${fmt(g.amount)}</b><span>${esc(g.from_name ? 'מ-' + g.from_name : noteOf(g.note))}</span><small>${when(g.created_at)} · ${g.claimed_at ? 'נאסף' : '<span class="pill y">ממתין</span>'}</small></div>`).join('') : '<p class="empty">אין.</p>'}</div>
+    <div class="danger"><h3>מחיקת שחקן</h3><p>מוחק את השחקן מהשרת: מטבלת המובילים, מהחברים של אחרים, מהדו-קרבים ומהמתנות. אי אפשר לבטל.</p>
+      <label><input type="checkbox" id="blk" checked> לחסום אותו מלחזור (בלי חסימה, המשחק במכשיר שלו יעלה אותו מחדש בפעם הבאה שהוא משחק)</label>
+      <button class="btn red" id="del">מחיקת ${esc(p.name || 'השחקן')}</button></div>
     <h3>דו-קרבים אחרונים</h3><div class="feed">${(p.duels || []).length ? p.duels.map(x => { const mine = x.me_p1 ? 1 : 2, won = x.winner === mine; return `<div><span class="pill ${x.winner ? (won ? 'g' : 'r') : ''}">${x.winner ? (won ? 'ניצחון' : 'הפסד') : 'לא הסתיים'}</span><span>מול ${esc(x.me_p1 ? x.p2_name : x.p1_name)} · ${x.me_p1 ? x.p1_wins : x.p2_wins}:${x.me_p1 ? x.p2_wins : x.p1_wins}${x.stake ? ' · על ' + fmt(x.stake) : ''}</span><small>${when(x.created_at)}</small></div>`; }).join('') : '<p class="empty">אין.</p>'}</div>`;
   $('#px').onclick = () => cover.remove();
+  $('#del').onclick = async () => {
+    const block = $('#blk').checked;
+    if (!confirm(`למחוק את ${p.name || p.id}${block ? ' ולחסום אותו' : ''}? אי אפשר לבטל את המחיקה.`)) return;
+    $('#del').disabled = true;
+    try { const r = await rpc('beam_admin_delete', { p_id: p.id, p_block: block }); toast(r === 'ok' ? `${p.name || 'השחקן'} נמחק${block ? ' ונחסם' : ''}` : 'השחקן כבר לא קיים'); cover.remove(); if (tab === 'players') show(); }
+    catch (e) { toast('המחיקה נכשלה'); $('#del').disabled = false; }
+  };
   for (const b of cover.querySelectorAll('[data-n]')) b.onclick = () => { $('#amt').value = b.dataset.n; };
   $('#send').onclick = async () => {
     const n = Math.round(+$('#amt').value);
