@@ -170,6 +170,16 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbtns{grid-row:1 / span 2; grid-column:2; display:flex; gap:8px; position:relative; z-index:1}
 .daily.duelcard h2,.daily.duelcard p{text-shadow:0 2px 0 rgba(0,30,90,.25)}
 .duelbox{text-align:center; padding:22px 18px}
+.emobtn{position:fixed; left:18px; bottom:calc(52px + env(safe-area-inset-bottom)); width:60px; height:60px; z-index:45; border-radius:50%; border:3px solid #FFE08A; background:linear-gradient(#A98BFF,#6B3FF0); box-shadow:0 4px 0 #3F1FA8, 0 6px 14px rgba(0,0,0,.35); font-size:28px; line-height:1; padding:0}
+.emobtn[hidden], .emopick[hidden]{display:none}
+.emopick{position:fixed; left:12px; bottom:calc(124px + env(safe-area-inset-bottom)); z-index:46; display:grid; grid-template-columns:repeat(5,1fr); gap:6px; background:#fff; border-radius:20px; padding:10px; box-shadow:0 10px 30px rgba(20,0,60,.45); animation:emoIn .18s ease-out}
+.emopick button{border:none; background:#F3EDFF; border-radius:14px; width:48px; height:48px; font-size:28px; line-height:1; padding:0} .emopick button:active{transform:scale(.9)}
+@keyframes emoIn{from{opacity:0; transform:translateY(10px) scale(.95)}}
+.emofly{position:fixed; left:50%; top:30%; z-index:70; pointer-events:none; text-align:center; animation:emoFly 2.6s cubic-bezier(.2,1.4,.4,1) both}
+.emofly b{display:block; font-size:110px; line-height:1; filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))} .emofly span{display:inline-block; margin-top:6px; background:rgba(25,8,70,.85); color:#fff; font-weight:700; font-size:16px; padding:4px 14px; border-radius:999px}
+.emofly.mine{top:auto; bottom:calc(120px + env(safe-area-inset-bottom)); left:22px} .emofly.mine b{font-size:56px} .emofly.mine span{font-size:13px}
+@keyframes emoFly{0%{opacity:0; transform:translateX(-50%) scale(.2)} 12%{opacity:1; transform:translateX(-50%) scale(1.15)} 22%{transform:translateX(-50%) scale(1)} 80%{opacity:1; transform:translateX(-50%) translateY(-20px)} 100%{opacity:0; transform:translateX(-50%) translateY(-60px)}}
+.emofly.mine{animation-name:emoMine} @keyframes emoMine{0%{opacity:0; transform:scale(.3)} 15%{opacity:1; transform:scale(1.1)} 75%{opacity:1; transform:translateY(-30px)} 100%{opacity:0; transform:translateY(-70px)}}
 /* the game is played upright: a phone turned on its side gets a curtain asking to turn it back (a web page cannot stop the turn itself) */
 #turn{display:none; position:fixed; inset:0; z-index:9999; background:#24086A; color:#fff; place-items:center; text-align:center}
 #turn b{display:block; font-size:22px; margin-top:12px} #turn svg{animation:turnIt 2s ease-in-out infinite} @keyframes turnIt{0%,20%{rotate:90deg} 60%,100%{rotate:0deg}}
@@ -1232,6 +1242,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'שליחת אימוג׳י': 'Send an emoji', 'שלחתם': 'Sent',
   'הנקודות כבר בארנק שלכם.': 'The points are already in your wallet.', 'תודה!': 'Thanks!',
   'עוד פעולות': 'More', 'לראות את הלוח בזמן אמת': 'See the board live', 'נקודות מהארנק שלכם': 'Points from your wallet', 'הזמנה לדו-קרב': 'Invite to a duel', 'בוחרים רמת קושי וסכום': 'Pick a difficulty and a stake', 'אפשר כשהחבר מחובר ופנוי': 'When your friend is online and free', 'הסרה מהחברים': 'Remove from friends',
   'סובבו את הטלפון לאורך': 'Turn your phone upright',
@@ -3699,7 +3710,38 @@ function startDuel(code) {
   duelSync();
   D.timer = setInterval(duelSync, 900);
 }
-function stopDuel() { if (D) { clearInterval(D.timer); D = null; } clearInterval(timerInt); }
+function stopDuel() { if (D) { clearInterval(D.timer); D = null; } clearInterval(timerInt); emoteBar(false); }
+/* ---- reactions in a duel: a little face sent to the other side, shown big over their screen ---- */
+const EMOTES = { laugh: '😂', wow: '😮', cool: '😎', angry: '😡', cry: '😭', love: '😍', clap: '👏', fire: '🔥', think: '🤔', gg: '🤝' };
+function emoteBar(on) {
+  let b = $('emoBtn');
+  if (!on) { if (b) b.hidden = true; const pk = $('emoPick'); if (pk) pk.hidden = true; return; }
+  if (!b) {
+    b = document.createElement('button'); b.id = 'emoBtn'; b.className = 'emobtn'; b.setAttribute('aria-label', T('שליחת אימוג׳י')); b.textContent = '😊';
+    const pk = document.createElement('div'); pk.id = 'emoPick'; pk.className = 'emopick'; pk.hidden = true;
+    pk.innerHTML = Object.entries(EMOTES).map(([k, e]) => `<button data-emo="${k}">${e}</button>`).join('');
+    document.body.append(b, pk);
+    b.onclick = () => { pk.hidden = !pk.hidden; Sound.play('tap'); };
+    pk.onclick = e => { const k = e.target.closest('[data-emo]'); if (k) sendEmote(k.dataset.emo); };
+    document.addEventListener('pointerdown', e => { if (!pk.hidden && !pk.contains(e.target) && e.target !== b) pk.hidden = true; });
+  }
+  b.hidden = false;
+}
+let emoLast = 0;
+function sendEmote(k) {
+  $('emoPick').hidden = true;
+  if (!D || Date.now() - emoLast < 1500) return;          // one face at a time, so nobody floods the other screen
+  emoLast = Date.now();
+  rpc('beam_duel_emote', { p_code: D.code, p_id: P.id, p_secret: playerKey(), p_emo: k }).catch(() => {});
+  emoteFly(EMOTES[k], T('שלחתם'), true);
+}
+function emoteFly(face, who, mine) {
+  const el = document.createElement('div'); el.className = 'emofly' + (mine ? ' mine' : '');
+  el.innerHTML = `<b>${face}</b>${who ? `<span>${esc(who)}</span>` : ''}`;
+  document.body.appendChild(el);
+  if (!mine) { Sound.play('pop'); Haptic.play('tap'); }
+  setTimeout(() => el.remove(), 2600);
+}
 function leaveDuel() {
   if (D) rpc('beam_duel_sync', { p_code: D.code, p_id: P.id, p_secret: playerKey(), p_leave: true }).catch(() => {});
   stopDuel(); G = null; hideWin(); goHome();
@@ -3717,6 +3759,12 @@ async function duelSync() {
   if (D !== d) return;                                    // the player left while we were asking
   if (!st) { toast(T('החדר נסגר')); stopDuel(); G = null; goHome(); return; }
   d.fails = 0; d.offset = st.now - Date.now(); d.st = st;
+  if (st.emo_n) {                                          // the other side sent a face since we last looked
+    const opp = 2 - st.me, n = st.emo_n[opp];
+    if (d.emoSeen != null && n > d.emoSeen && st.emo[opp] && EMOTES[st.emo[opp]]) emoteFly(EMOTES[st.emo[opp]], st.names[opp] || '');
+    d.emoSeen = n;
+  }
+  emoteBar(st.status !== 'waiting' && st.left_by == null);
   duelRender();
 }
 function duelRender() {
