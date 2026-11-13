@@ -325,7 +325,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frlist li{display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7}
 .frlist button.gift{background:#FFE7C2; padding:4px 8px; display:grid; place-items:center} .frlist button.gift img{width:28px; height:28px; display:block}
 .giftsizes{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 16px} .giftsizes button{border:2px solid #DCCFF7; background:#fff; color:#2D1B4E; border-radius:14px; font:inherit; font-weight:800; font-size:17px; min-height:50px}
-.giftsizes button.on{background:#7B4DFF; border-color:#7B4DFF; color:#fff} .giftsizes button:disabled{opacity:.35}
+.giftsizes.diff{grid-template-columns:repeat(3,1fr)} .giftsizes button.on{background:#7B4DFF; border-color:#7B4DFF; color:#fff} .giftsizes button:disabled{opacity:.35}
 .frlist .dot{width:12px; height:12px; border-radius:50%; background:#B9AFCF; flex:none}
 .frlist .dot.on{background:#2DBE60; box-shadow:0 0 0 4px rgba(45,190,96,.2)}
 .frlist .who{flex:1; min-width:0; display:flex; flex-direction:column; font-weight:700}
@@ -1205,6 +1205,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
   'פרק {} מתוך {}': 'Chapter {0} of {1}', 'פרס הפרק!': 'Chapter prize!', 'הפרק הושלם · לפרק הבא': 'Chapter complete · on to the next', 'הפרק הושלם': 'Chapter complete', 'פרס הפרק · עוד שלב אחד': 'Chapter prize · 1 level to go', 'פרס הפרק · עוד {} שלבים': 'Chapter prize · {0} levels to go', 'לפרק הבא': 'Next chapter',
   'שליחת מתנה': 'Send a gift', 'מתנה ל-{}': 'A gift for {0}', 'הנקודות יורדות מהארנק שלכם. יש לכם {}.': 'The points come out of your wallet. You have {0}.', 'שליחה': 'Send', 'המתנה נשלחה ל-{}': 'Gift sent to {0}', 'הגעתם למכסת המתנות להיום. נסו שוב מחר.': 'You have reached today\'s gift limit. Try again tomorrow.', 'אפשר לשלוח מתנות רק לחברים': 'Gifts can only be sent to friends', 'מתנה מ-{}!': 'A gift from {0}!',
   'קיבלתם מתנה!': 'You got a gift!',
@@ -3548,21 +3549,30 @@ function goHome() {
    Two players, the same generated board, first to light every star takes the round; first to three wins (at most five rounds).
    The server is the referee (clock, who finished first, who went quiet). This side asks it about once a second
    and draws whatever it answers: waiting room, countdown, the race, the result. */
-const DUEL_GEN = 2;   // raise whenever duelLevel() or the level generator changes, so mismatched versions cannot meet
-/* one spec per round, growing harder; five mirrors and four or five stars on every board, 8 by 8 from the second round on */
-const DUEL_SPECS = [
-  { W: 7, H: 7, k: 5, nt: 4, walls: 3, bombs: 4, maxSols: 2, budget: 150000 },
-  { W: 8, H: 8, k: 5, nt: 4, walls: 4, bombs: 4, maxSols: 2, budget: 200000 },
-  { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 },
-  { W: 8, H: 8, k: 5, nt: 4, walls: 3, bombs: 4, fixed: 1, maxSols: 2, budget: 200000 },
-  { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 },
+/* The room's number says which boards it plays: 30 easy, 31 medium, 32 hard. Raise the base whenever duelLevel() or the level
+   generator changes, so mismatched versions cannot meet. */
+const DUEL_BASE = 30, DUEL_NAMES = ['קל', 'בינוני', 'קשה'];
+let duelDiff = 1;
+const DUEL_SETS = [
+  [ { W: 6, H: 6, k: 3, nt: 3, walls: 2, bombs: 2, maxSols: 3, budget: 80000 },
+    { W: 7, H: 7, k: 3, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 120000 },
+    { W: 7, H: 7, k: 4, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 150000 } ],
+  [ { W: 7, H: 7, k: 4, nt: 3, walls: 3, bombs: 3, maxSols: 2, budget: 150000 },
+    { W: 7, H: 7, k: 4, nt: 4, walls: 3, bombs: 4, maxSols: 2, budget: 150000 },
+    { W: 7, H: 7, k: 5, nt: 4, walls: 3, bombs: 4, maxSols: 2, budget: 150000 } ],
+  [ { W: 7, H: 7, k: 5, nt: 4, walls: 3, bombs: 4, maxSols: 2, budget: 150000 },
+    { W: 8, H: 8, k: 5, nt: 4, walls: 4, bombs: 4, maxSols: 2, budget: 200000 },
+    { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 },
+    { W: 8, H: 8, k: 5, nt: 4, walls: 3, bombs: 4, fixed: 1, maxSols: 2, budget: 200000 },
+    { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 } ],
 ];
+const duelDiffOf = gen => Math.max(0, Math.min(2, (gen || DUEL_BASE + 1) - DUEL_BASE));
 const DUEL_REWARD = { win: 300, draw: 150, lose: 100 };
 /* both players build the round's board from the room's seed, so it is identical without ever being sent */
-function duelLevel(seed, round) {
-  const R = mulberry32(hashStr('duel-' + seed + '-' + round)), sp = DUEL_SPECS[(round - 1) % DUEL_SPECS.length];
+function duelLevel(seed, round, gen) {
+  const set = DUEL_SETS[duelDiffOf(gen)], R = mulberry32(hashStr('duel-' + seed + '-' + round)), sp = set[(round - 1) % set.length];
   for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, sp); if (lv) return lv; }
-  for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, DUEL_SPECS[0]); if (lv) return lv; }   // a rare seed that finds no 8 by 8 board still gets a hard one
+  for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, set[0]); if (lv) return lv; }   // a rare seed that finds no board of this size still gets one of this difficulty
   return { rows: ['......', '....T.', '......', '......', '.T....', '......'], lasers: [['L', 1]], max: 2, sol: [['5,1', '\\'], ['5,4', '/']] };
 }
 /* What this player has put into a pot and which matches were already paid out, kept with the profile: a room entered again
@@ -3597,16 +3607,19 @@ function withName(next) { if (P.name) next(); else askName(next); }
 const STAKES = [0, 200, 500, 1000];
 function chooseStake(next) {
   modal(`<img class="bug" alt="" src="${POSE.power}">
+    <h3>${T('רמת קושי')}</h3>
+    <div class="giftsizes diff">${DUEL_NAMES.map((n, d) => `<button data-d="${d}"${d === duelDiff ? ' class="on"' : ''}>${T(n)}</button>`).join('')}</div>
     <h3>${T('על מה משחקים?')}</h3>
     <p>${T('שני השחקנים שמים את אותו סכום, והמנצח לוקח את הקופה.')}</p>
     ${STAKES.map(v => `<button class="btn ${v ? 'orange' : 'green'}" data-st="${v}" style="margin-top:10px"${P.balance < v ? ' disabled' : ''}>${v ? T`${fmt(v)} נקודות` : T('משחק ידידותי')}</button>`).join('')}`, m => {
+      for (const b of m.querySelectorAll('[data-d]')) b.onclick = () => { duelDiff = +b.dataset.d; Sound.play('tap'); for (const x of m.querySelectorAll('[data-d]')) x.classList.toggle('on', x === b); };
       for (const b of m.querySelectorAll('[data-st]')) b.onclick = () => { closeModal(); next(+b.dataset.st); };
     });
 }
 async function createDuel(stake = 0) {
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
   let code = null;
-  try { code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN, p_stake: stake }); } catch (e) { /* handled below */ }
+  try { code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_BASE + duelDiff, p_stake: stake }); } catch (e) { /* handled below */ }
   if (!code) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); goHome(); return; }
   startDuel(code);
 }
@@ -3636,7 +3649,8 @@ async function joinDuel(code, agreed) {
   }
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('מצטרפים לחדר…')}</p>`;
   let res = null;
-  try { res = await rpc('beam_duel_join', { p_code: code, p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN }); } catch (e) { /* handled below */ }
+  // the room knows its difficulty and only lets in a caller who names it, so ask with each in turn
+  try { for (const d of [1, 0, 2]) { res = await rpc('beam_duel_join', { p_code: code, p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_BASE + d }); if (res !== 'version') break; } } catch (e) { /* handled below */ }
   if (res !== 'ok') {
     toast(res === 'full' ? T('החדר הזה כבר מלא') : res === 'version' ? T('צריך לרענן את הדף כדי לשחק מול החבר') : res === 'missing' ? T('לא מצאנו חדר עם הקוד הזה') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
     goHome(); return;
@@ -3685,12 +3699,12 @@ function duelRender() {
   if (st.status === 'countdown') {
     const left = Math.max(0, Math.ceil((st.round_start - duelNow()) / 1000));
     const key = st.seed + ':' + st.round;
-    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round); D.rematch = false; D.view = ''; }   // build the board while the clock runs
+    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round, st.gen); D.rematch = false; D.view = ''; }   // build the board while the clock runs
     const head = st.round > 1 && st.last_winner != null
       ? (st.last_winner === 0 ? T('הסיבוב נגמר בתיקו') : st.last_winner - 1 === me ? T('ניצחתם בסיבוב!') : T('היריב היה מהיר יותר'))
       : T('יריב נמצא!');
     if (D.view !== 'countdown') {
-      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = st.stake ? T`סיבוב ${st.round} · הקופה: ${fmt(st.stake * 2)}` : T`סיבוב ${st.round} · עד 3 ניצחונות`;
+      D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = T(DUEL_NAMES[duelDiffOf(st.gen)]) + ' · ' + (st.stake ? T`סיבוב ${st.round} · הקופה: ${fmt(st.stake * 2)}` : T`סיבוב ${st.round} · עד 3 ניצחונות`);
       if (st.stake && st.round === 1 && !duelHas('paid', st.seed)) { duelMark('paid', st.seed); P.balance = Math.max(0, P.balance - st.stake); save(false); toast(T('שמתם בקופה'), `-${fmt(st.stake)}`); }
       box.innerHTML = `<img class="dbug" alt="" src="${POSE.power}"><h3>${head}</h3>${vs}<div class="duelcount" id="duelCount"></div><p>${T('הלוח ייחשף לשניכם באותו רגע.')}</p>`;
       if (st.round > 1 && st.last_winner != null) Sound.play(st.last_winner - 1 === me ? 'win' : 'unlit', 1);
@@ -3705,7 +3719,7 @@ function duelRender() {
   }
   if (st.status === 'playing') {
     const key = st.seed + ':' + st.round;
-    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round); }
+    if (D.key !== key) { D.key = key; D.lv = duelLevel(st.seed, st.round, st.gen); }
     if (!G || G.mode !== 'duel' || G.key !== key) {
       D.view = 'playing';
       G = session('duel', { ...D.lv, tip: '' }, { round: st.round, key });
@@ -3996,7 +4010,7 @@ async function inviteFriend(f, stake = 0) {
   show('duel'); $('duelSub').textContent = ' '; $('duelBox').innerHTML = `<p>${T('פותחים חדר…')}</p>`;
   let code = null, res = null;
   try {
-    code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_GEN, p_stake: stake });
+    code = await rpc('beam_duel_create', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_gen: DUEL_BASE + duelDiff, p_stake: stake });
     if (code) res = await rpc('beam_invite_send', { p_id: P.id, p_secret: playerKey(), p_friend: f.id, p_code: code });
   } catch (e) { /* handled below */ }
   if (res !== 'ok') {
