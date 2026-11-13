@@ -3901,6 +3901,10 @@ function giftShow(n, who) {
     });
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) claimGifts(); });
+/* "still playing": once a minute while the game is on screen, so the owner can see when each visit began and ended */
+const sessionPing = () => { if (P && P.id && !document.hidden && !isNewcomer()) rpc('beam_session_ping', { p_id: P.id, p_secret: playerKey() }).catch(() => {}); };
+setInterval(sessionPing, 60 * 1000);
+document.addEventListener('visibilitychange', sessionPing);
 setInterval(() => { if (!document.hidden) claimGifts(); }, 20 * 1000);   // a gift sent now shows up within seconds, not at the next visit
 function socialRender() {
   const d = Social.data, online = d.friends.filter(f => f.online).length, asks = d.friends.filter(f => f.rel === 'in').length;
@@ -4677,6 +4681,7 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   dailyBonus();
   checkAchievements();
   setTimeout(claimGifts, 2500);
+  setTimeout(sessionPing, 1500);
 })();
 
 </script>
