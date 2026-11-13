@@ -938,3 +938,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 .fxbox i.fxring{position:absolute; width:60px; height:60px; border-radius:50%; border:4px solid rgba(255,236,170,.95); opacity:0}
 .fxbox i.fxfly{position:absolute; left:0; top:0; width:14px; height:14px; border-radius:50%; opacity:0; background:radial-gradient(circle,#FFFFFF 0%,#FFF2A8 30%,#FFC93C 55%,rgba(255,190,40,0) 72%); box-shadow:0 0 12px 4px rgba(255,214,90,.55)}
 .fxbox i.fxcore{position:absolute; width:180px; height:180px; border-radius:50%; opacity:0; background:radial-gradient(circle,#FFFFFF 0%,rgba(255,240,180,.9) 25%,rgba(255,200,80,.45) 50%,rgba(255,180,60,0) 72%)}
+/* the home screen does not scroll: lock the page so a swipe cannot drag the top bar (iPhone's rubber-band) */
+html{overscroll-behavior-y:none}
+body.onhome{overflow:hidden; height:100dvh; overscroll-behavior:none}
+body.onhome #hud{position:fixed; top:0; left:0; right:0; margin:0 auto; max-width:480px; z-index:12}

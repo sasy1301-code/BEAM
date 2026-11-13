@@ -1303,7 +1303,7 @@ function show(id) {
   if (id !== 'game' && id !== 'login') setTimeout(claimGifts, 300);          // coming out of a board, or into the game: anything waiting is collected right away
   for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game');
   const tab = TAB_OF[id];
-  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game');
+  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game'); document.body.classList.toggle('onhome', id === 'home');
   for (const b of $('tabbar').children) b.classList.toggle('on', b.dataset.tab === tab);
   if (tab) hudSync();
   flyShow(id === 'home' ? $('homeFly') : id === 'garden' ? GFLY : null);
