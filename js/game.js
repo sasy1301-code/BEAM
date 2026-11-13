@@ -24,6 +24,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'נחיל גחליליות': 'Firefly swarm',
   'שועל הצללים': 'Shadow Fox', 'ארנבת הכוכבים': 'Star Bunny', 'ינשוף הלילה': 'Night Owl', 'חתול הירח': 'Moon Cat', 'קיפוד הברקים': 'Lightning Hedgehog', 'צפרדע הרעל': 'Poison Frog', 'דביבון התעלומות': 'Mystery Raccoon', 'איילת הזוהר': 'Aurora Deer', 'פרפר הקסם': 'Magic Butterfly', 'דרקון האש': 'Fire Dragon',
   'אתגר השבוע': 'Weekly challenge', 'בונים את הלוח של השבוע…': 'Building this week\'s board…', 'שיא חדש לשבוע!': 'New best this week!', 'אתגר השבוע הושלם!': 'Weekly challenge complete!',
   '{} נקודות בטבלת השבוע. {}:{} דקות, {}.{}': '{0} points on the weekly board. {1}:{2} minutes, {3}.{4}', 'לטבלת השבוע': 'To the weekly board', 'השבוע': 'This week', 'היום': 'Today',
@@ -1629,7 +1630,7 @@ const SHOP = {
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 4000, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 5000, icon: '🫧' },
     { id: 'stars', name: 'גשם כוכבים', price: 6000, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 6000, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 7000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 7000, icon: '❄️' },
-    { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }] },
+    { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }, { id: 'swarm', name: 'נחיל גחליליות', price: 14000, icon: '✨' }] },
   // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
   char: { title: 'דמויות', items: [
     { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועל הצללים', price: 0 }, { id: 'bunny', name: 'ארנבת הכוכבים', price: 0 },
@@ -1720,9 +1721,9 @@ function buyLook(cat, it) {
     });
 }
 /* the win effect: a short shower of the painted pieces (media/fx/p) over the screen; plain images, so it costs nothing when idle */
-const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
+const FX_N = { swarm: 0, bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
 const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=${kind === 'confetti' || kind === 'hearts' || kind === 'dust' ? 2 : 1}`;
-function fxPreload(kind) { if (!FX_N[kind]) return; for (const k of [kind, 'dust']) for (let i = 0; i < FX_N[k]; i++) new Image().src = fxSrc(k, i); }
+function fxPreload(kind) { if (FX_N[kind] === undefined) return; for (const k of kind === 'swarm' ? ['portal', 'dust'] : [kind, 'dust']) for (let i = 0; i < FX_N[k]; i++) new Image().src = fxSrc(k, i); }
 /* ---- the win effects: each one is a small scene made of the painted pieces, moved by the Web Animations API ---- */
 function fxKit(box, kind) {
   const W = innerWidth, H = innerHeight, rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
@@ -1866,6 +1867,30 @@ const FX_SCENES = {
         burst(bx, by, 5, 90, { gravity: 60, make: () => sprite(5 + (j % 2), rnd(22, 34)) });
       }, '#FFC83A');
     }
+  },
+  swarm(k) {         // a swarm of fireflies flies in from every side, gathers into a big glowing star, holds, then bursts into light
+    const { W, H, rnd, tf, burst, flash } = k, box = k.box, cx = W / 2, cy = H * .42;
+    const R = Math.min(W, H) * .34, n = 40, pts = [];
+    for (let i = 0; i < n; i++) {           // points along the outline of a five-pointed star
+      const t = i / n * 10, seg = Math.floor(t), f = t - seg;
+      const r0 = seg % 2 ? R * .45 : R, r1 = seg % 2 ? R : R * .45, a0 = -Math.PI / 2 + seg * Math.PI / 5, a1 = a0 + Math.PI / 5;
+      const x0 = cx + Math.cos(a0) * r0, y0 = cy + Math.sin(a0) * r0, x1 = cx + Math.cos(a1) * r1, y1 = cy + Math.sin(a1) * r1;
+      pts.push([x0 + (x1 - x0) * f, y0 + (y1 - y0) * f]);
+    }
+    const dim = document.createElement('i'); dim.className = 'fxdim'; box.appendChild(dim);
+    dim.animate([{ opacity: 0 }, { opacity: .8, offset: .12 }, { opacity: .8, offset: .75 }, { opacity: 0 }], { duration: 3600, fill: 'both' });
+    pts.forEach(([x, y], i) => {
+      const fly = document.createElement('i'); fly.className = 'fxfly'; box.appendChild(fly);
+      const side = Math.random() * Math.PI * 2, sx = cx + Math.cos(side) * Math.max(W, H) * .8, sy = cy + Math.sin(side) * Math.max(W, H) * .8;
+      const mx = (sx + x) / 2 + rnd(-120, 120), my = (sy + y) / 2 + rnd(-120, 120), d = 1400 + rnd(-200, 200);
+      const kf = []; for (let s = 0; s <= 20; s++) { const t = s / 20, u = 1 - t; kf.push({ transform: tf(u * u * sx + 2 * u * t * mx + t * t * x, u * u * sy + 2 * u * t * my + t * t * y, .7 + .3 * t), opacity: t < .1 ? t * 10 : 1, offset: t * .55 }); }
+      kf.push({ transform: tf(x, y, 1.3), opacity: 1, offset: .7 }); kf.push({ transform: tf(x, y, 1), opacity: 1, offset: .8 });
+      kf.push({ transform: tf(cx + (x - cx) * 2.6, cy + (y - cy) * 2.6, .3), opacity: 0 });
+      fly.animate(kf, { duration: d / .55 * 1, delay: rnd(0, 250), fill: 'both', easing: 'ease-in-out' });
+    });
+    const core = document.createElement('i'); core.className = 'fxcore'; core.style.cssText = `left:${cx}px;top:${cy}px`; box.appendChild(core);
+    core.animate([{ transform: 'translate(-50%,-50%) scale(0)', opacity: 0, offset: 0 }, { transform: 'translate(-50%,-50%) scale(0)', opacity: 0, offset: .45 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: .62 }, { transform: 'translate(-50%,-50%) scale(1.15)', opacity: 1, offset: .74 }, { transform: 'translate(-50%,-50%) scale(3)', opacity: 0 }], { duration: 3000, fill: 'both' });
+    setTimeout(() => { flash('#FFF3C4', .4); burst(cx, cy, 30, Math.max(W, H) * .55, { gravity: 60, make: j => k.sprite(1 + (j % 9), rnd(26, 50), 'portal') }); }, 2250);
   },
   portal(k) {        // the gate of light: the screen dims, a door of light opens, rays turn behind it, and it bursts into stars
     const { W, H, rnd, sprite, path, burst, flash } = k, box = k.box, cx = W / 2, cy = H * .42;
