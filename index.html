@@ -172,6 +172,9 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbox{text-align:center; padding:22px 18px}
 .emobtn{position:fixed; left:18px; bottom:calc(52px + env(safe-area-inset-bottom)); width:60px; height:60px; z-index:45; border-radius:50%; border:3px solid #FFE08A; background:linear-gradient(#A98BFF,#6B3FF0); box-shadow:0 4px 0 #3F1FA8, 0 6px 14px rgba(0,0,0,.35); font-size:28px; line-height:1; padding:0}
 .emobtn[hidden], .emopick[hidden]{display:none}
+.stickset .stkrow{display:flex; justify-content:center; gap:4px; margin:4px 0 6px} .stickset .stkrow img{width:62px; height:62px}
+.stkgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px} .stkgrid button{border:none; background:#F1E8FF; border-radius:16px; padding:4px; aspect-ratio:1} .stkgrid button img{width:100%; height:100%; object-fit:contain; display:block} .stkgrid button:active{transform:scale(.92)}
+.stkhow{text-align:start; margin-top:14px; background:#F7F2FF; border-radius:14px; padding:10px 14px; font-size:14px; color:#4A3870} .stkhow ol{margin:6px 0 0; padding-inline-start:20px} .stkhow li{margin-bottom:4px}
 .emopick .emogrid{display:grid; grid-template-columns:repeat(6,1fr); gap:6px} .emopick .emogrid.bugs{padding-bottom:8px; margin-bottom:8px; border-bottom:2px solid #EDE4FF}
 .emopick button.bug{background:#EDE2FF; padding:2px} .emopick button.bug img{width:100%; height:100%; object-fit:contain; display:block}
 .emofly b img{width:150px; height:150px; display:block} .emofly.mine b img{width:76px; height:76px}
@@ -1181,6 +1184,12 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
     <button class="btn blue" id="setRename">הפרופיל שלי</button>
     <button class="linkbtn" id="setLeave">הסרת השם והניקוד מהטבלה</button>
   </div>
+  <div class="set stickset">
+    <h3>מדבקות לוואטסאפ</h3>
+    <div class="stkrow"><img alt="" src="media/emo/laugh.webp"><img alt="" src="media/emo/love.webp"><img alt="" src="media/emo/win.webp"><img alt="" src="media/emo/thumbs.webp"></div>
+    <p>12 הגחליליות של המשחק, לשמירה בטלפון ולשליחה בוואטסאפ.</p>
+    <button class="btn green" id="setStickers">להורדת המדבקות</button>
+  </div>
   <div class="set">
     <h3>איפוס התקדמות</h3>
     <p>מוחק שלבים, כוכבים, נקודות והישגים. רכישות נשמרות.</p>
@@ -1325,7 +1334,7 @@ const EN = {
   '· לא נתמך במכשיר הזה': '· not supported on this device', 'סגנון מוזיקה': 'Music style', 'רגועה': 'Calm', 'קצבית': 'Upbeat',
   'שם בטבלת המובילים': 'Leaderboard name', 'שינוי שם': 'Change name', 'הסרת השם והניקוד מהטבלה': 'Remove my name and score from the leaderboard',
   'איפוס התקדמות': 'Reset progress', 'מוחק שלבים, כוכבים, נקודות והישגים. רכישות נשמרות.': 'Erases levels, stars, points and achievements. Purchases are kept.',
-  'מדיניות פרטיות': 'Privacy Policy', 'תמיכה': 'Support', 'שפה': 'Language', 'תצוגה': 'Display', 'יום': 'Day', 'אוטומטי': 'Auto',
+  'מדיניות פרטיות': 'Privacy Policy', 'תמיכה': 'Support', 'שפה': 'Language', 'מדבקות לוואטסאפ': 'WhatsApp stickers', '12 הגחליליות של המשחק, לשמירה בטלפון ולשליחה בוואטסאפ.': "The game's 12 fireflies, to save on your phone and send on WhatsApp.", 'להורדת המדבקות': 'Get the stickers', 'הקישו על גחלילית כדי לשמור אותה, או שמרו את כולן יחד.': 'Tap a firefly to save it, or save them all at once.', 'שמירת כל ה-12': 'Save all 12', 'איך מוסיפים לוואטסאפ?': 'How to add them to WhatsApp?', 'לוחצים "שמירת כל ה-12" ובוחרים "שמירת תמונות".': 'Tap "Save all 12" and choose "Save images".', 'בוואטסאפ פותחים צ׳אט, נוגעים בסמל המדבקות ואז ב-+ (יצירת מדבקה).': 'In WhatsApp open a chat, tap the sticker icon, then + (Create sticker).', 'בוחרים גחלילית מהתמונות, והיא נשמרת אצלכם כמדבקה.': 'Pick a firefly from your photos and it is saved as a sticker.', 'לוחצים "שמירת כל ה-12" ושומרים את הקבצים בטלפון.': 'Tap "Save all 12" and keep the files on your phone.', 'פותחים אפליקציית מדבקות (למשל Sticker.ly) ויוצרים חבילה חדשה מהתמונות.': 'Open a sticker app (for example Sticker.ly) and make a new pack from the images.', 'לוחצים "הוספה לוואטסאפ", והחבילה מופיעה אצלכם במדבקות.': 'Tap "Add to WhatsApp" and the pack shows up in your stickers.', 'תצוגה': 'Display', 'יום': 'Day', 'אוטומטי': 'Auto',
   'הגחלילית יורה קרן אור. הציבו מראות כך שהקרן תעבור דרך כל הכוכבים.': 'The firefly shoots a beam of light. Place mirrors so the beam passes through every star.',
   'מראות': 'Mirrors', 'הקישו על משבצת כדי להציב מראה. הקשה שנייה מסובבת אותה, ושלישית מסירה. מראה מפנה את הקרן ברבע סיבוב.': 'Tap a tile to place a mirror. A second tap turns it, a third removes it. A mirror bends the beam a quarter turn.',
   'כוכבים': 'Stars', 'הקרן עוברת דרכם, מדליקה אותם וממשיכה הלאה. השלב נגמר כשכל הכוכבים דולקים.': 'The beam passes through them, lights them and carries on. The level ends when every star is lit.',
@@ -2972,6 +2981,37 @@ function winFx(kind) {
   setTimeout(() => box.remove(), 4800);
 }
 
+/* ================= WhatsApp stickers: the firefly faces as 512px files to save or share ================= */
+const STICKERS = ['happy', 'laugh', 'love', 'wow', 'think', 'wink', 'thumbs', 'luck', 'angry', 'sad', 'cry', 'win'];
+async function stickerFile(k) { const r = await fetch(`media/stickers/${k}.png`); return new File([await r.blob()], `beam-${k}.png`, { type: 'image/png' }); }
+async function shareStickers(keys) {
+  try {
+    const files = await Promise.all(keys.map(stickerFile));
+    if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  // no share sheet (most computers): download instead
+  const a = document.createElement('a');
+  if (keys.length === 1) { a.href = `media/stickers/${keys[0]}.png`; a.download = `beam-${keys[0]}.png`; }
+  else { a.href = 'media/stickers/beam-stickers.zip'; a.download = 'beam-stickers.zip'; }
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function openStickers() {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  modal(`<h3>${T('מדבקות לוואטסאפ')}</h3>
+    <p style="margin:0 0 10px">${T('הקישו על גחלילית כדי לשמור אותה, או שמרו את כולן יחד.')}</p>
+    <div class="stkgrid">${STICKERS.map(k => `<button data-stk="${k}"><img alt="" src="media/emo/${k}.webp"></button>`).join('')}</div>
+    <button class="btn green" id="stkAll">${T('שמירת כל ה-12')}</button>
+    <div class="stkhow"><b>${T('איך מוסיפים לוואטסאפ?')}</b>
+      ${ios ? `<ol><li>${T('לוחצים "שמירת כל ה-12" ובוחרים "שמירת תמונות".')}</li><li>${T('בוואטסאפ פותחים צ׳אט, נוגעים בסמל המדבקות ואז ב-+ (יצירת מדבקה).')}</li><li>${T('בוחרים גחלילית מהתמונות, והיא נשמרת אצלכם כמדבקה.')}</li></ol>`
+            : `<ol><li>${T('לוחצים "שמירת כל ה-12" ושומרים את הקבצים בטלפון.')}</li><li>${T('פותחים אפליקציית מדבקות (למשל Sticker.ly) ויוצרים חבילה חדשה מהתמונות.')}</li><li>${T('לוחצים "הוספה לוואטסאפ", והחבילה מופיעה אצלכם במדבקות.')}</li></ol>`}
+    </div>
+    <button class="btn ghosty" id="stkClose" style="margin-top:12px">${T('סגירה')}</button>`, m => {
+      for (const b of m.querySelectorAll('[data-stk]')) b.onclick = () => { Sound.play('tap'); shareStickers([b.dataset.stk]); };
+      m.querySelector('#stkAll').onclick = () => { Sound.play('tap'); shareStickers(STICKERS); };
+      m.querySelector('#stkClose').onclick = closeModal;
+    });
+}
+
 /* ================= my profile ================= */
 const AVATARS = SHOP.char.items.map(x => x.id), OLD_POSES = ['welcome', 'hero', 'power', 'cheer', 'thumbs', 'think', 'point', 'shrug', 'sleep'];
 function avatarSrc(k) { if (CHAR_IDS.has(k)) return `media/chars/${k}.webp`; return k === 'cheer' || k === 'think' || k === 'shrug' ? WIN_BUG[k] : POSE[k] || BUG_SRC; }
@@ -4526,6 +4566,7 @@ $('gearBtn').onclick = openSettings;
 $('adBannerRemove').onclick = openSettings;
 $('setBack').onclick = goHome;
 $('setRename').onclick = () => openProfile(openSettings);
+$('setStickers').onclick = () => { Sound.play('tap'); openStickers(); };
 $('setReset').onclick = confirmReset;
 function applySoundPrefs() {
   const sfx = P.sfx !== false, mus = P.music !== false;
