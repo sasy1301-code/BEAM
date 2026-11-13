@@ -3392,7 +3392,7 @@ function startGame() {
   if (G.mode === 'daily') timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
   G.t0 = Date.now(); track('start');
   renderGame(); show('game');
-  clockStart(); cheerPreload();
+  clockStart(); if (CHEERS_ON) cheerPreload();
 }
 const elapsed = () => Math.floor((Date.now() - G.start) / 1000);
 const maxMirrors = () => G.lv.max + G.extra;
@@ -3426,7 +3426,9 @@ const CHEERS = LANG === 'en'   // width / height of each picture; the English se
   : { meula: 3.13, yafe: 1.59, kavod: 1.68, mushlam: 3.27, gaon: 2.11, mutzlach: 1.6, od: 2.2 };
 const cheerSrc = k => `media/cheer/${LANG === 'en' ? 'en-' : ''}${k}.webp`;
 let cheerLast = '', cheerAt = 0;
+const CHEERS_ON = false;   // phrases are switched off for now; set to true to bring them back
 function cheer(st, gained) {
+  if (!CHEERS_ON) return;
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   for (const old of document.querySelectorAll('.cheerbox')) old.remove();   // a quick second right move replaces the phrase
   let pool = st.total - st.lit === 1 ? ['od'] : gained > 1 ? ['gaon', 'mutzlach', 'mushlam'] : st.lit === 1 ? ['meula', 'yafe', 'kavod', 'mutzlach'] : ['kavod', 'gaon', 'mushlam', 'meula', 'yafe', 'mutzlach'];
