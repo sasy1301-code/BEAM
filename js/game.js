@@ -24,6 +24,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'חדש בלוח!': 'New on the board!', 'הבנתי, בואו נשחק': 'Got it, let\'s play',
   'לשחק ולצבור נקודות': 'Play and earn points', 'הבית עולה {}. חסרות עוד {} נקודות.': 'The house costs {0}. You need {1} more points.',
   'הגחלילית צריכה בית!': 'The firefly needs a home!', 'בונים לה בית, ואז ממלאים את הגן ואת הבית בקישוטים.': 'Build her a house, then fill the garden and the house with decorations.', 'בנו בית · {}': 'Build a house · {0}', 'חסרות {} נקודות': '{0} points short',
   'בום! הפצצה התפוצצה, והסיבוב עובר ליריב.': 'Boom! The bomb went off, and the round goes to your opponent.',
@@ -2126,6 +2127,34 @@ function startGame() {
   G.t0 = Date.now(); track('start');
   renderGame(); show('game');
   clockStart(); if (CHEERS_ON) cheerPreload();
+  pieceIntro();
+}
+/* the first time a kind of piece shows up on a board, a short card explains it (the clock waits while a window is open) */
+const PIECES = [
+  { id: 'wall', ic: 'icWall', has: lv => lv.rows.some(r => r.includes('#')) },
+  { id: 'hammer', ic: 'icHammer', has: lv => !!(lv.hammer && lv.hammer.length) },
+  { id: 'bomb', ic: 'icBomb', has: lv => lv.rows.some(r => r.includes('X')) },
+  { id: 'fixed', ic: 'icFixed', has: lv => lv.rows.some(r => /[fg]/.test(r)) },
+  { id: 'split', ic: 'icSplit', has: lv => lv.rows.some(r => /[pq]/.test(r)) },
+  { id: 'twin', ic: 'icTwin', has: lv => lasersOf(lv).length > 1 },
+];
+function pieceIntro() {
+  if (!G || G.mode === 'duel' || G.coach) return;
+  P.seenPieces = P.seenPieces || {};
+  // a player who already solved a level with this piece has met it, even before this card existed
+  const met = pc => P.seenPieces[pc.id] || ALL.some(lv => P.levels[lv.id] && pc.has(lv));
+  const pc = PIECES.find(pc => pc.has(G.lv) && !met(pc));
+  for (const x of PIECES) if (met(x)) P.seenPieces[x.id] = 1;
+  if (!pc) return;
+  P.seenPieces[pc.id] = 1; save(false);
+  if (!$(pc.ic).childNodes.length) renderIcons();
+  const rule = $(pc.ic).closest('.rule');
+  setTimeout(() => {
+    if (!G || $('game').hidden || !$('overlay').hidden) return;
+    Sound.play('sparkle', 5);
+    modal(`<div class="newpiece"><span class="tag">${T('חדש בלוח!')}</span>${rule.innerHTML}</div>
+      <button class="btn green" id="pieceOk">${T('הבנתי, בואו נשחק')}</button>`, m => { m.querySelector('#pieceOk').onclick = () => { Sound.play('tap'); closeModal(); }; });
+  }, 450);
 }
 const elapsed = () => Math.floor((Date.now() - G.start) / 1000);
 const maxMirrors = () => G.lv.max + G.extra;

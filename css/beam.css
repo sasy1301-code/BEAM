@@ -922,3 +922,8 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 .or{display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--muted); font-weight:600}
 .or::before,.or::after{content:""; flex:1; height:1px; background:rgba(255,255,255,.22)}
 .login-note{color:var(--muted); font-size:14px; max-width:320px; margin:22px auto 0}
+
+/* a new kind of piece on the board: its help card, bigger */
+.newpiece{text-align:center} .newpiece .tag{display:inline-block; background:linear-gradient(#FFD95A,#FFB020); color:#5A2E12; font-weight:700; font-size:14px; border-radius:999px; padding:3px 14px; margin-bottom:10px; box-shadow:0 3px 0 #C77A10}
+.newpiece svg{width:110px; height:110px; display:block; margin:0 auto 8px; filter:drop-shadow(0 6px 12px rgba(40,10,90,.35))}
+.newpiece h3{font-size:24px; margin:0 0 6px} .newpiece p{margin:0 0 16px; color:var(--muted); font-weight:500; line-height:1.45}
