@@ -1183,7 +1183,7 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
   <div class="rule"><svg viewBox="0 0 1 1" id="icWall"></svg>
     <div><h3>חסימות</h3><p>משבצות עם איקס עוצרות את הקרן.</p></div></div>
 <div class="rule"><svg viewBox="0 0 1 1" id="icBomb"></svg>
-    <div><h3>פצצות</h3><p>אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה שלוש פעמים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש.</p></div></div>
+    <div><h3>פצצות</h3><p>אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה שלוש פעמים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש. בדו-קרב, פיצוץ מעביר את הסיבוב ליריב.</p></div></div>
 <div class="rule"><svg viewBox="0 0 1 1" id="icFixed"></svg>
     <div><h3>מראות קבועות</h3><p>מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.</p></div></div>
 <div class="rule"><svg viewBox="0 0 1 1" id="icSplit"></svg>
@@ -1233,6 +1233,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'בום! הפצצה התפוצצה, והסיבוב עובר ליריב.': 'Boom! The bomb went off, and the round goes to your opponent.',
   'שליחת אימוג׳י': 'Send an emoji', 'שלחתם': 'Sent',
   'הנקודות כבר בארנק שלכם.': 'The points are already in your wallet.', 'תודה!': 'Thanks!',
   'עוד פעולות': 'More', 'לראות את הלוח בזמן אמת': 'See the board live', 'נקודות מהארנק שלכם': 'Points from your wallet', 'הזמנה לדו-קרב': 'Invite to a duel', 'בוחרים רמת קושי וסכום': 'Pick a difficulty and a stake', 'אפשר כשהחבר מחובר ופנוי': 'When your friend is online and free', 'הסרה מהחברים': 'Remove from friends',
@@ -1285,7 +1286,7 @@ const EN = {
   'מראות': 'Mirrors', 'הקישו על משבצת כדי להציב מראה. הקשה שנייה מסובבת אותה, ושלישית מסירה. מראה מפנה את הקרן ברבע סיבוב.': 'Tap a tile to place a mirror. A second tap turns it, a third removes it. A mirror bends the beam a quarter turn.',
   'כוכבים': 'Stars', 'הקרן עוברת דרכם, מדליקה אותם וממשיכה הלאה. השלב נגמר כשכל הכוכבים דולקים.': 'The beam passes through them, lights them and carries on. The level ends when every star is lit.',
   'חסימות': 'Blocks', 'משבצות עם איקס עוצרות את הקרן.': 'Tiles with an X stop the beam.',
-  'פצצות': 'Bombs', 'אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה שלוש פעמים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש.': 'If any beam touches a bomb, everything goes dark. You have a moment to fix it. Leave the beam on a bomb three times in the same level and it blows up, and the level starts over.',
+  'פצצות': 'Bombs', 'אם קרן כלשהי נוגעת בפצצה, הכול נכבה. יש רגע לתקן. מי שמשאיר את הקרן על פצצה שלוש פעמים באותו שלב, הפצצה מתפוצצת והשלב מתחיל מחדש. בדו-קרב, פיצוץ מעביר את הסיבוב ליריב.': 'If any beam touches a bomb, everything goes dark. You have a moment to fix it. Leave the beam on a bomb three times in the same level and it blows up, and the level starts over. In a duel, a blast hands the round to your opponent.',
   'מראות קבועות': 'Fixed mirrors', 'מראות כהות עם ברגים. הן כבר מותקנות, ואי אפשר להזיז או לסובב אותן.': 'Dark mirrors with bolts. They are already installed and cannot be moved or turned.',
   'זכוכית מפצלת': 'Splitter glass', 'חלק מהאור ממשיך ישר וחלק מוחזר הצידה. מקרן אחת נוצרות שתיים, וכל אחת מהן יכולה להדליק כוכבים או לפגוע בפצצה.': 'Part of the light goes straight on and part is turned aside. One beam becomes two, and each can light stars or hit a bomb.',
   'שתי גחליליות': 'Two fireflies', 'בשלבים המתקדמים יש שתי קרניים. כל מראה משפיעה על שתיהן.': 'Later levels have two beams. Every mirror affects both.',
@@ -3128,10 +3129,11 @@ function explodeAt(k) {
 }
 function bombOut() {
   Sound.play('explode'); Haptic.play('bomb'); explodeAt(G.lastSt && G.lastSt.bombKey);
-  if (G.mode === 'duel') {          // in a race the board is simply wiped, which costs time but not the round
-    for (const k of Object.keys(G.mirrors)) if (!G.locked.has(k)) delete G.mirrors[k];
-    G.bombs = 0; G.prevSt = null; G.bombHeld = false;
-    return renderGame(T('בום! הפצצה התפוצצה, והלוח התאפס.'));
+  if (G.mode === 'duel') {          // in a race a bomb that blows up hands the round to the other side
+    G.done = true; G.boom = true;
+    $('status').className = 'status bad'; $('status').textContent = T('בום! הפצצה התפוצצה, והסיבוב עובר ליריב.');
+    duelSync();
+    return;
   }
   const g = G; G.done = true; track('done', { p_stars: 0, p_moves: G.moves, p_helped: !!G.helped });
   $('status').className = 'status bad'; $('status').textContent = T('בום! הפצצה התפוצצה.');
@@ -3744,7 +3746,7 @@ async function duelSync() {
   let st;
   try {
     st = await rpc('beam_duel_sync', { p_code: d.code, p_id: P.id, p_secret: playerKey(), p_round: mine ? G.round : 0,
-      p_lit: mine && G.lastSt ? G.lastSt.lit : 0, p_done: !!(mine && G.done), p_rematch: d.rematch });
+      p_lit: mine && G.boom ? -1 : mine && G.lastSt ? G.lastSt.lit : 0, p_done: !!(mine && G.done && !G.boom), p_rematch: d.rematch });
   } catch (e) { d.busy = false; if (D === d && ++d.fails === 4) toast(T('החיבור נקטע. מנסים להתחבר מחדש…')); return; }
   d.busy = false;
   if (D !== d) return;                                    // the player left while we were asking
@@ -3801,7 +3803,7 @@ function duelRender() {
       G.t0 = Date.now(); track('start'); $('timeBar').hidden = true;
       clearInterval(timerInt); timerInt = setInterval(() => { if (G && G.mode === 'duel' && !$('game').hidden) { renderPills(); } }, 500);
       Sound.play('whoosh'); renderGame(); show('game');
-    } else { renderDuelBar(); if (G.done) $('status').textContent = T('פתרתם! בודקים מי היה ראשון…'); }
+    } else { renderDuelBar(); if (G.done && !G.boom) $('status').textContent = T('פתרתם! בודקים מי היה ראשון…'); }
     return;
   }
   // done
