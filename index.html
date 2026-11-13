@@ -318,6 +318,8 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 /* leaderboard */
 .screen-title{font-size:36px; text-align:center; margin:8px 0 4px}
 .frlist{list-style:none; padding:0; margin:0 0 14px}
+.frfind{display:flex; gap:8px; margin:0 0 10px} .frfind input{flex:1; min-width:0; border:none; border-radius:14px; padding:0 14px; min-height:48px; font:inherit; font-size:16px; background:#fff; color:#2D1B4E; box-shadow:0 3px 0 #DCCFF7}
+.frfind .btn{width:auto; flex:none; padding:0 18px; min-height:48px; margin:0} .frnote{color:#E9DEFF; text-align:center; margin:0 0 12px; font-size:15px} #friends #frAdd{margin-bottom:18px}
 .frlist li{display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7}
 .frlist .dot{width:12px; height:12px; border-radius:50%; background:#B9AFCF; flex:none}
 .frlist .dot.on{background:#2DBE60; box-shadow:0 0 0 4px rgba(45,190,96,.2)}
@@ -997,6 +999,10 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
   <h3 class="frhead">החברים שלי <small id="frSub">&nbsp;</small></h3>
   <ul class="frlist" id="frList"></ul>
   <button class="btn orange" id="frAdd">שליחת קישור לחבר</button>
+  <h3 class="frhead">הוספת חבר</h3>
+  <div class="frfind"><input id="frQ" type="search" maxlength="24" autocomplete="off" enterkeyhint="search" placeholder="חיפוש לפי שם שחקן" aria-label="חיפוש לפי שם שחקן"><button class="btn blue" id="frGo">חיפוש</button></div>
+  <ul class="frlist" id="frFound"></ul>
+  <div id="frRecentBox" hidden><h3 class="frhead">שיחקתם לאחרונה</h3><ul class="frlist" id="frRecent"></ul></div>
   <div class="set" style="margin-top:16px">
     <label class="toggle" style="border-top:none"><span>הצג אותי כמחובר לחברים</span><input type="checkbox" id="optPresence"><i></i></label>
   </div>
@@ -1164,6 +1170,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'הוספת חבר': 'Add a friend', 'חיפוש לפי שם שחקן': 'Search by player name', 'חיפוש': 'Search', 'שיחקתם לאחרונה': 'Played recently', 'כבר חברים': 'Already friends', 'הוספה': 'Add', 'לא נמצא שחקן בשם הזה': 'No player with that name', 'כתבו לפחות שתי אותיות': 'Type at least two letters', 'מחפשים…': 'Searching…', 'יש יותר מדי בקשות פתוחות': 'Too many open requests',
   'נקודות': 'Points', 'הכי משתלם': 'Best value', 'אוצר': 'Treasure', 'חסרות נקודות ללוח או לדמות? אפשר להשלים כאן.': 'Short on points for a board or a character? Top up here.', 'בקרוב': 'Coming soon', 'הבנתי': 'Got it', 'הנקודות נוספו': 'Points added',
   'רכישת נקודות תיפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.': 'Buying points opens soon. Meanwhile you can earn points in levels, the daily challenge and duels.',
   'פריחת שקיעה': 'Sunset bloom', 'פטריות קסם': 'Magic mushrooms', 'שמש וירח': 'Sun and moon',
@@ -1288,7 +1295,7 @@ const EN = {
   'ממתינים ל-{}…': 'Waiting for {0}…', 'הוספת {} לחברים': 'Add {0} to friends', 'אתם חברים עכשיו': 'You are friends now', 'בקשת החברות נשלחה': 'Friend request sent',
   'יש לכם בקשת חברות חדשה': 'You have a new friend request', '{} חברים מחוברים עכשיו': '{0} friends online now', 'ההזמנה כבר לא בתוקף': 'That invitation is no longer open',
   'הזמנה לדו-קרב מ-{}': '{0} invites you to a duel', 'קבל': 'Accept', 'לא עכשיו': 'Not now', '{}: לא עכשיו': '{0}: not now', 'אין תשובה מ-{}': 'No answer from {0}',
-  'טוען…': 'Loading…', 'מחוברים עכשיו: {}': 'Online now: {0}', 'חבר אחד מחובר עכשיו': '1 friend online now', 'עוד אין לכם חברים כאן. שלחו קישור לחבר, או הוסיפו יריב בסוף דו-קרב.': 'No friends here yet. Send a friend your link, or add an opponent after a duel.',
+  'טוען…': 'Loading…', 'מחוברים עכשיו: {}': 'Online now: {0}', 'חבר אחד מחובר עכשיו': '1 friend online now', 'עוד אין לכם חברים כאן. שלחו קישור לחבר, או חפשו שחקן לפי שם.': 'No friends here yet. Send a friend a link, or search for a player by name.',
   'בקשת חברות': 'Friend request', 'ממתין לאישור': 'Waiting for approval', 'לא מחובר': 'Offline', 'בדו-קרב': 'In a duel', 'משחק כרגע': 'Playing now', 'מחובר': 'Online',
   'אישור': 'Accept', 'דחייה': 'Decline', 'הזמן לדו-קרב': 'Invite', 'הסרת חבר': 'Remove friend', 'ביטול הבקשה': 'Cancel request', 'להסיר את {} מהחברים?': 'Remove {0} from your friends?', 'הסרה': 'Remove',
   '{} כבר לא מחובר': '{0} is no longer online', 'בואו נהיה חברים ב-BEAM ונשחק דו-קרב!': 'Be my friend on BEAM and let\'s duel!',
@@ -3619,6 +3626,7 @@ function duelRender() {
     save(false);
     Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
     D.burst = won && reward > 0;
+    if (played) rememberOpponent(st.code);
     track('done', { p_stars: won ? 3 : draw_ ? 2 : 1, p_helped: false });
   }
   if (gone && D.rematch) { D.rematch = false; toast(T('היריב כבר יצא מהמשחק')); }
@@ -3754,12 +3762,54 @@ function openFriends() {
   $('duelRec').innerHTML = `<div>${w.w}<small>${T('ניצחונות')}</small></div><div>${w.l}<small>${T('הפסדים')}</small></div><div>${w.d}<small>${T('תיקו')}</small></div>`;
   renderFriends(); socialStart();
 }
+/* adding a friend without a link: by searching a player's name, or from the last few duel opponents. The other side approves the request. */
+const personRow = (f, i, kind) => {
+  const known = f.rel === 'ok' || isFriend(f.name) ? T('כבר חברים') : f.rel === 'out' ? T('ממתין לאישור') : '';
+  return `<li><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"></span><span class="who"><b>${esc(f.name || '…')}</b>${known ? `<small>${known}</small>` : ''}</span>${known ? '' : `<button class="go" data-${kind}="${i}">${f.rel === 'in' ? T('אישור') : T('הוספה')}</button>`}</li>`;
+};
+async function askFriend(f, again) {
+  let res = null;
+  try { res = await rpc('beam_friend_request', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_friend: f.id }); } catch (e) { /* told below */ }
+  toast(res === 'friends' ? T('אתם חברים עכשיו') : res === 'sent' ? T('בקשת החברות נשלחה') : res === 'full' ? T('יש יותר מדי בקשות פתוחות') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
+  if (res === 'sent') f.rel = 'out'; if (res === 'friends') f.rel = 'ok';
+  again(); pulse();
+}
+let frHits = null;
+function renderFound() {
+  const box = $('frFound');
+  if (!frHits) { box.innerHTML = ''; return; }
+  box.innerHTML = frHits.length ? frHits.map((f, i) => personRow(f, i, 'hit')).join('') : `<p class="frnote">${T('לא נמצא שחקן בשם הזה')}</p>`;
+  for (const b of box.querySelectorAll('[data-hit]')) b.onclick = () => { b.disabled = true; askFriend(frHits[+b.dataset.hit], renderFound); };
+}
+async function findFriends() {
+  const q = $('frQ').value.trim();
+  if (q.length < 2) { frHits = null; renderFound(); toast(T('כתבו לפחות שתי אותיות')); return; }
+  $('frFound').innerHTML = `<p class="frnote">${T('מחפשים…')}</p>`;
+  try { frHits = await rpc('beam_friend_search', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_q: q }) || []; }
+  catch (e) { frHits = null; $('frFound').innerHTML = ''; toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); return; }
+  renderFound();
+}
+function renderRecent() {
+  const rec = (P.recent || []).filter(f => f.id && f.name && !isFriend(f.name));
+  $('frRecentBox').hidden = !rec.length;
+  $('frRecent').innerHTML = rec.map((f, i) => personRow(f, i, 'rec')).join('');
+  for (const b of $('frRecent').querySelectorAll('[data-rec]')) b.onclick = () => { b.disabled = true; askFriend(rec[+b.dataset.rec], () => { save(false); renderRecent(); }); };
+}
+/* remember who we just played, so they can be added later from the duel tab */
+async function rememberOpponent(code) {
+  let o = null;
+  try { o = await rpc('beam_duel_opponent', { p_id: P.id, p_secret: playerKey(), p_code: code }); } catch (e) { return; }
+  if (!o || !o.id || !o.name) return;
+  P.recent = [{ id: o.id, name: o.name, avatar: o.avatar || '' }, ...(P.recent || []).filter(f => f.id !== o.id)].slice(0, 5);
+  save(false);
+}
 function renderFriends() {
+  renderRecent();
   const d = Social.data, list = $('frList');
   if (!d) { $('frSub').textContent = T('טוען…'); list.innerHTML = ''; list.dataset.sig = ''; return; }
   const online = d.friends.filter(f => f.online).length;
   $('frSub').textContent = d.friends.length ? T`מחוברים עכשיו: ${online}` : ' ';
-  if (!d.friends.length) { list.innerHTML = `<p class="frempty"><img alt="" src="${POSE.sleep}">${T('עוד אין לכם חברים כאן. שלחו קישור לחבר, או הוסיפו יריב בסוף דו-קרב.')}</p>`; list.dataset.sig = ''; return; }
+  if (!d.friends.length) { list.innerHTML = `<p class="frempty"><img alt="" src="${POSE.sleep}">${T('עוד אין לכם חברים כאן. שלחו קישור לחבר, או חפשו שחקן לפי שם.')}</p>`; list.dataset.sig = ''; return; }
   const sig = JSON.stringify(d.friends);
   if (list.dataset.sig === sig) return;
   list.dataset.sig = sig;
@@ -3818,6 +3868,7 @@ async function acceptFriendLink(fcode) {
   openFriends();
 }
 $('frBack').onclick = goHome;
+$('frGo').onclick = () => withName(findFriends); $('frQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('frQ').blur(); withName(findFriends); } });
 $('gardenBack').onclick = goHome; $('gTabOut').onclick = () => gGo('out'); $('gTabIn').onclick = () => gGo('in'); $('gardenBtn').onclick = openGarden;
 $('shopBack').onclick = goHome; $('shopBtn').onclick = openShop; $('homePoints').onclick = openShop;
 $('helpBug').src = POSE.point;
