@@ -1156,6 +1156,13 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
         <button id="langEn" aria-pressed="false">English</button>
       </div>
     </div>
+    <div class="musicstyle"><span>תצוגה</span>
+      <div class="segm" role="group" aria-label="תצוגה">
+        <button id="themeLight" aria-pressed="false">יום</button>
+        <button id="themeDark" aria-pressed="false">לילה</button>
+        <button id="themeAuto" aria-pressed="true">אוטומטי</button>
+      </div>
+    </div>
   </div>
   <div class="set">
     <h3>שם ודמות</h3>
@@ -1231,6 +1238,21 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 <div class="toast" id="toast" role="status"></div>
 
 <script>
+/* day / night: flip every dark-mode media block on or off by the saved choice */
+function getTheme() { try { return localStorage.getItem('beam:theme') || 'auto'; } catch (e) { return 'auto'; } }
+function applyTheme(t) {
+  const walk = rules => { for (const r of rules) {
+    if (r.media && (r._orig || r.media.mediaText).includes('prefers-color-scheme')) {
+      r._orig = r._orig || r.media.mediaText;
+      r.media.mediaText = t === 'dark' ? 'all' : t === 'light' ? 'not all' : r._orig;
+    }
+    if (r.cssRules) walk(r.cssRules);
+  } };
+  for (const sh of document.styleSheets) { try { walk(sh.cssRules); } catch (e) { /* cross-origin sheet */ } }
+  for (const [id, v] of [['themeLight', 'light'], ['themeDark', 'dark'], ['themeAuto', 'auto']]) { const b = document.getElementById(id); if (b) b.setAttribute('aria-pressed', String(t === v)); }
+}
+function setTheme(t) { try { localStorage.setItem('beam:theme', t); } catch (e) { /* storage blocked */ } applyTheme(t); }
+applyTheme(getTheme());
 /* ================= language =================
    The game is written in Hebrew. Every visible string passes through T(), and when the language is English
    T() looks the Hebrew text up in EN below. Templates use a tag: T`שלב ${n}` is looked up as "שלב {}" and
@@ -1292,7 +1314,7 @@ const EN = {
   '· לא נתמך במכשיר הזה': '· not supported on this device', 'סגנון מוזיקה': 'Music style', 'רגועה': 'Calm', 'קצבית': 'Upbeat',
   'שם בטבלת המובילים': 'Leaderboard name', 'שינוי שם': 'Change name', 'הסרת השם והניקוד מהטבלה': 'Remove my name and score from the leaderboard',
   'איפוס התקדמות': 'Reset progress', 'מוחק שלבים, כוכבים, נקודות והישגים. רכישות נשמרות.': 'Erases levels, stars, points and achievements. Purchases are kept.',
-  'מדיניות פרטיות': 'Privacy Policy', 'תמיכה': 'Support', 'שפה': 'Language',
+  'מדיניות פרטיות': 'Privacy Policy', 'תמיכה': 'Support', 'שפה': 'Language', 'תצוגה': 'Display', 'יום': 'Day', 'אוטומטי': 'Auto',
   'הגחלילית יורה קרן אור. הציבו מראות כך שהקרן תעבור דרך כל הכוכבים.': 'The firefly shoots a beam of light. Place mirrors so the beam passes through every star.',
   'מראות': 'Mirrors', 'הקישו על משבצת כדי להציב מראה. הקשה שנייה מסובבת אותה, ושלישית מסירה. מראה מפנה את הקרן ברבע סיבוב.': 'Tap a tile to place a mirror. A second tap turns it, a third removes it. A mirror bends the beam a quarter turn.',
   'כוכבים': 'Stars', 'הקרן עוברת דרכם, מדליקה אותם וממשיכה הלאה. השלב נגמר כשכל הכוכבים דולקים.': 'The beam passes through them, lights them and carries on. The level ends when every star is lit.',
@@ -4496,6 +4518,8 @@ $('optSfx').onchange = e => { P.sfx = e.target.checked; applySoundPrefs(); save(
 if (/^https?:$/.test(location.protocol)) { $('legalPrivacy').href = 'privacy/'; $('legalSupport').href = 'support/'; }   // on the web the pages sit next to the game
 $('setLeave').onclick = leaveLeaderboard;
 $('langHe').setAttribute('aria-pressed', LANG === 'he'); $('langEn').setAttribute('aria-pressed', LANG === 'en');
+for (const [id, v] of [['themeLight', 'light'], ['themeDark', 'dark'], ['themeAuto', 'auto']]) $(id).onclick = () => { Sound.play('tap'); setTheme(v); };
+applyTheme(getTheme());
 $('langHe').onclick = () => LANG !== 'he' && setLang('he'); $('langEn').onclick = () => LANG !== 'en' && setLang('en');
 $('optHaptic').onchange = e => { P.haptic = e.target.checked; applySoundPrefs(); save(false); if (P.haptic) Haptic.play('win'); };
 $('optMusic').onchange = e => { P.music = e.target.checked; applySoundPrefs(); save(false); if (P.music) previewMusic(); };
