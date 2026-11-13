@@ -1153,6 +1153,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'פריחת שקיעה': 'Sunset bloom', 'פטריות קסם': 'Magic mushrooms', 'שמש וירח': 'Sun and moon',
   'יער קסום': 'Enchanted forest', 'גן פרחים': 'Flower garden', 'קריסטל ירח': 'Moon crystal',
   'עדינה': 'Gentle', 'תיבת נגינה': 'Music box',
   'נקודות': 'Points',
@@ -1565,6 +1566,12 @@ const FRAMES = {
   forest:  { src: 'frame-forest',  w: 1185, h: 1130, bx: 100, by: 111, bw: 988, bh: 901, bed: '#D1E9DA', edge: '#B4D2C0' },
   crystal: { src: 'frame-crystal', w: 1164, h: 1126, bx: 89,  by: 115, bw: 988, bh: 901, bed: '#DBE3FD', edge: '#BFC9F0' },
   flower:  { src: 'frame-flower',  w: 1220, h: 1139, bx: 117, by: 120, bw: 988, bh: 901, bed: '#F0E2F9', edge: '#DCC3EC' },
+  stars: { src: 'frame-stars', w: 1250, h: 1182, bx: 141, by: 162, bw: 967, bh: 877, bed: '#E9DAF4', edge: '#CDBFD6' },
+  coral: { src: 'frame-coral', w: 1145, h: 1055, bx: 97, by: 97, bw: 951, bh: 861, bed: '#F1D3ED', edge: '#D4B9D0' },
+  mushroom: { src: 'frame-mushroom', w: 1210, h: 1136, bx: 118, by: 126, bw: 973, bh: 882, bed: '#EADDF6', edge: '#CDC2D8' },
+  candy: { src: 'frame-candy', w: 1197, h: 1130, bx: 102, by: 119, bw: 993, bh: 901, bed: '#EDDEF9', edge: '#D0C3DB' },
+  ocean: { src: 'frame-ocean', w: 1196, h: 1093, bx: 113, by: 126, bw: 971, bh: 868, bed: '#EBDDFA', edge: '#CEC2DC' },
+  royal: { src: 'frame-royal', w: 1197, h: 1139, bx: 104, by: 152, bw: 990, bh: 883, bed: '#ECDBFA', edge: '#CFC0DC' },
 };
 const frameOf = () => FRAMES[typeof P !== 'undefined' && P ? lookOf('board') : 'classic'] || FRAMES.classic;
 function pic(g, name, x, y, w, h, cls) {
@@ -2634,7 +2641,8 @@ const SHOP = {
     { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
     { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 }] },
   board: { title: 'עיצוב הלוח', items: [
-    { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'forest', name: 'יער קסום', price: 2000 }, { id: 'flower', name: 'גן פרחים', price: 2500 }, { id: 'crystal', name: 'קריסטל ירח', price: 3000 }] },
+    { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'candy', name: 'ממתקים', price: 1500 }, { id: 'forest', name: 'יער קסום', price: 2000 }, { id: 'flower', name: 'גן פרחים', price: 2500 }, { id: 'coral', name: 'פריחת שקיעה', price: 2500 },
+    { id: 'ocean', name: 'אוקיינוס', price: 3000 }, { id: 'crystal', name: 'קריסטל ירח', price: 3000 }, { id: 'mushroom', name: 'פטריות קסם', price: 3500 }, { id: 'stars', name: 'שמש וירח', price: 4000 }, { id: 'royal', name: 'מלכותי', price: 5000 }] },
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
     { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 3000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 3000, icon: '❄️' },
@@ -2651,7 +2659,7 @@ const P_KEY = cat => cat === 'char' ? 'avatar' : cat, BASE = cat => cat === 'cha
 const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות' };
 const owns = (cat, id) => (SHOP[cat].items.find(x => x.id === id) || {}).price === 0 || !!(P.own && P.own[cat + ':' + id]);
 const lookOf = cat => SHOP[cat].items.some(x => x.id === P[P_KEY(cat)]) && owns(cat, P[P_KEY(cat)]) ? P[P_KEY(cat)] : BASE(cat);
-const OLD_BOARDS = { candy: 'flower', royal: 'flower', ocean: 'crystal', night: 'crystal' };   // the drawn boards were replaced by painted ones; a purchase carries over
+const OLD_BOARDS = { night: 'stars' };   // the drawn boards were replaced by painted ones; a purchase carries over
 function migrateBoards() {
   let ch = false;
   for (const [o, n] of Object.entries(OLD_BOARDS)) {
