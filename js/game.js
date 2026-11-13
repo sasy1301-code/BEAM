@@ -981,6 +981,7 @@ const hintLimit = lv => Math.max(1, Math.floor(lv.max / 2));
 const START_POINTS = 500;
 const REMOVE_ADS = { id: 'remove_ads', price: '14.90 ₪', bonus: 5000 };
 const AD_EVERY = 3;
+const ADS_LIVE = false;   // no ad network yet: the empty ad space between levels and on the home screen stays hidden until one is connected
 const RANKS = [
   { at: 0, name: T('ניצוץ') }, { at: 2000, name: T('גחלילית') }, { at: 6000, name: T('פנס') }, { at: 12000, name: T('מגדלור') },
   { at: 20000, name: T('ירח') }, { at: 32000, name: T('שמש') }, { at: 50000, name: T('גלקסיה') },
@@ -1915,7 +1916,7 @@ function renderHome() {
   $('dailyText').textContent = d ? T`השיא שלכם היום: ${fmt(d.score)} נקודות` : T('שלב חדש היום, אותו שלב לכולם');
     $('achLabel').textContent = `${P.ach.length}/${ACH.length}`;
   $('dailyDot').hidden = !!d; $('bonusDot').hidden = P.streak.last === todayStr();
-  $('adBanner').hidden = !!P.adFree;
+  $('adBanner').hidden = !!P.adFree || !ADS_LIVE;
 
   const box = $('chapters'); box.innerHTML = ''; let idx = 0;
   CHAPTERS.forEach((ch, ci) => {
@@ -3364,7 +3365,7 @@ async function restorePurchases() {
   else toast(T('לא נמצאו רכישות קודמות'));
 }
 function maybeInterstitial(next) {
-  if (P.adFree) return next();
+  if (P.adFree || !ADS_LIVE) return next();
   P.adCount = (P.adCount || 0) + 1; save(false);
   if (P.adCount % AD_EVERY !== 0) return next();
   let left = 5, iv;
