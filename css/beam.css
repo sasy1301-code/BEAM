@@ -928,3 +928,5 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 .newpiece svg{width:110px; height:110px; display:block; margin:0 auto 8px; filter:drop-shadow(0 6px 12px rgba(40,10,90,.35))}
 .newpiece h3{font-size:24px; margin:0 0 6px} .newpiece p{margin:0 0 16px; color:var(--muted); font-weight:500; line-height:1.45}
 .modal ol.steps{text-align:start; margin:4px 0 16px; padding-inline-start:22px; line-height:1.45} .modal ol.steps li{margin-bottom:6px}
+.fx-confetti img.fxd{filter:drop-shadow(0 2px 3px rgba(20,0,50,.35))}   /* confetti reads cleaner without the gold glow */
+.fx-hearts img.fxd{filter:drop-shadow(0 2px 3px rgba(20,0,50,.35))}   /* hearts too */

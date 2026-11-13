@@ -1721,7 +1721,7 @@ function buyLook(cat, it) {
 }
 /* the win effect: a short shower of the painted pieces (media/fx/p) over the screen; plain images, so it costs nothing when idle */
 const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
-const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=1`;
+const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=${kind === 'confetti' || kind === 'hearts' ? 2 : 1}`;
 function fxPreload(kind) { if (!FX_N[kind]) return; for (const k of [kind, 'dust']) for (let i = 0; i < FX_N[k]; i++) new Image().src = fxSrc(k, i); }
 /* ---- the win effects: each one is a small scene made of the painted pieces, moved by the Web Animations API ---- */
 function fxKit(box, kind) {
