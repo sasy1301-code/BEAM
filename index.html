@@ -443,14 +443,6 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .shopitem svg{width:100%; height:64px; background:#241047; border-radius:12px}
 .shopitem svg.bsample{background:none}
 .shopitem button.fxtry{border:none; width:100%; height:64px; border-radius:12px; background:#241047; font-size:34px; min-height:0}
-.bd-candy{--t-blue:#FFC1DD; --t-green:#BDF3DF; --t-purple:#FFF0A8; --t-orange:#C4E4FF; --tray:#FFF7FB; --tray-edge:#F3A9CC; --t-shade:rgba(160,40,110,.18)}
-.bd-ocean{--t-blue:#8FD3F4; --t-green:#7FE3D4; --t-purple:#A9C4FF; --t-orange:#C9F2FF; --tray:#EAF8FF; --tray-edge:#5FA8D8; --t-shade:rgba(10,60,110,.2)}
-.bd-forest{--t-blue:#B9E38A; --t-green:#8FCB7A; --t-purple:#E3D7A3; --t-orange:#D9B58A; --tray:#F4F8E6; --tray-edge:#7FA35C; --t-shade:rgba(40,70,20,.2)}
-.bd-night{--t-blue:#3D4F99; --t-green:#2F6F78; --t-purple:#5B429B; --t-orange:#7A4A72; --tray:#1B1540; --tray-edge:#0D0A26; --t-shade:rgba(0,0,0,.4)}
-.bd-royal{--t-blue:#F6E3A1; --t-green:#EAC56B; --t-purple:#FFF3CF; --t-orange:#DDB04E; --tray:#3A1B66; --tray-edge:#240E45; --t-shade:rgba(60,30,0,.28)}
-.bd-candy .boardwrap{background:linear-gradient(160deg,#FFE6F2,#FFC9E3)} .bd-ocean .boardwrap{background:linear-gradient(160deg,#D9F3FF,#9FD5F5)}
-.bd-forest .boardwrap{background:linear-gradient(160deg,#EAF5D3,#BFDD9B)} .bd-night .boardwrap{background:linear-gradient(160deg,#2A2160,#120D33)}
-.bd-royal .boardwrap{background:linear-gradient(160deg,#5A2D99,#34125F)}
 .fxbox{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
 .fxbox i{position:absolute; top:-30px; width:var(--s); height:calc(var(--s) * .6); background:var(--c); border-radius:2px; font-style:normal; animation:fxFall 2.6s linear both}
 .fx-stars i,.fx-hearts i,.fx-dust i,.fx-snow i,.fx-lightning i{background:none; color:var(--c); font-size:calc(var(--s) * 1.8); width:auto; height:auto; text-shadow:0 0 8px var(--c)}
@@ -706,7 +698,7 @@ svg.board image{pointer-events:none}
 /* ---- inner pages of the shell ---- */
 #hud .wallet{flex-direction:row-reverse}
 .tabs.four{grid-template-columns:repeat(4,1fr)} .tabs.four button{font-size:15px}
-.shopitem img.thumb.char{height:104px}
+.shopitem img.thumb.char{height:104px} .shopitem img.thumb.brd{height:104px}
 .avgrid button.lock{opacity:.45} .avgrid button.lock img{filter:grayscale(1)}
 .lb li.pod{display:flex; align-items:flex-end; justify-content:center; gap:8px; background:none; box-shadow:none; padding:102px 0 0; margin-bottom:12px}
 .lb li.pod div{position:relative; flex:1; max-width:112px; border-radius:18px 18px 0 0; text-align:center; color:#fff; font-weight:700; padding:40px 4px 8px; box-shadow:inset 0 3px 0 rgba(255,255,255,.35); min-width:0}
@@ -1161,6 +1153,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'יער קסום': 'Enchanted forest', 'גן פרחים': 'Flower garden', 'קריסטל ירח': 'Moon crystal',
   'עדינה': 'Gentle', 'תיבת נגינה': 'Music box',
   'נקודות': 'Points',
   'הבסיס': 'Basics', 'מכשולים': 'Obstacles',
@@ -1565,23 +1558,30 @@ function el(tag, attrs, parent) {
 /* The classic board is painted: every piece is a picture from media/board. A board bought in the shop keeps the drawn pieces,
    because those take their colours from the shop's palette. */
 const ART_DIR = 'media/board/';
-const painted = () => typeof P === 'undefined' || !P || lookOf('board') === 'classic';
+const painted = () => true;   // every board is painted now; the old drawn pieces below stay only as a fallback
+/* the frame pictures: size of the cropped picture, where its bed of tiles starts and how big it is (all in picture pixels), and the colour that hides the grid painted into it */
+const FRAMES = {
+  classic: { src: 'frame', w: 1154, h: 1111, bx: 98, by: 124, bw: 958, bh: 863, bed: '#EDE1F6', edge: '#CDB6E6' },
+  forest:  { src: 'frame-forest',  w: 1185, h: 1130, bx: 100, by: 111, bw: 988, bh: 901, bed: '#D1E9DA', edge: '#B4D2C0' },
+  crystal: { src: 'frame-crystal', w: 1164, h: 1126, bx: 89,  by: 115, bw: 988, bh: 901, bed: '#DBE3FD', edge: '#BFC9F0' },
+  flower:  { src: 'frame-flower',  w: 1220, h: 1139, bx: 117, by: 120, bw: 988, bh: 901, bed: '#F0E2F9', edge: '#DCC3EC' },
+};
+const frameOf = () => FRAMES[typeof P !== 'undefined' && P ? lookOf('board') : 'classic'] || FRAMES.classic;
 function pic(g, name, x, y, w, h, cls) {
   const im = el('image', { href: ART_DIR + name + '.webp', x, y, width: w, height: h, preserveAspectRatio: 'none', ...(cls ? { class: cls } : {}) }, g);
   im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', ART_DIR + name + '.webp');
   return im;
 }
-/* where the frame picture goes so that its inner lip meets the bed of tiles; the picture is 1154 x 1111 and its bed starts 98 in and 124 down */
+/* where the frame picture goes so that its inner lip meets the bed of tiles */
 function frameBox(W, H) {
-  const bed = .1, sx = (W + 2 * bed) / 958, sy = (H + 2 * bed) / 863;
-  return { x: -bed - 98 * sx, y: -bed - 124 * sy, w: 1154 * sx, h: 1111 * sy, side: bed + 98 * sx, top: bed + 124 * sy, bed };
+  const F = frameOf(), bed = .1, sx = (W + 2 * bed) / F.bw, sy = (H + 2 * bed) / F.bh;
+  return { F, x: -bed - F.bx * sx, y: -bed - F.by * sy, w: F.w * sx, h: F.h * sy, side: bed + F.bx * sx, top: bed + F.by * sy, bed };
 }
 function tray(g, W, H) {
-  if (!painted()) return el('rect', { x: -.12, y: -.12, width: W + .24, height: H + .24, rx: .35, fill: 'var(--tray)', stroke: 'var(--tray-edge)', 'stroke-width': .06 }, g);
   const f = frameBox(W, H);
-  pic(g, 'frame', f.x, f.y, f.w, f.h, 'frame');
-  el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: '#EDE1F6' }, g);          // the frame was painted with a 7 by 7 grid; the bed hides it for every size
-  el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: 'none', stroke: '#CDB6E6', 'stroke-width': .03 }, g);
+  pic(g, f.F.src, f.x, f.y, f.w, f.h, 'frame');
+  el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: f.F.bed }, g);          // the frames were painted with a grid of their own; the bed hides it for every size
+  el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: 'none', stroke: f.F.edge, 'stroke-width': .03 }, g);
 }
 const TILE_ART = { 'var(--t-blue)': 't-blue', 'var(--t-green)': 't-green', 'var(--t-purple)': 't-purple', 'var(--t-orange)': 't-orange' };
 function tile(g, x, y, face) {
@@ -2634,8 +2634,7 @@ const SHOP = {
     { id: 'classic', name: 'קלאסית', price: 0 }, { id: 'gold', name: 'זהב', price: 800 }, { id: 'ice', name: 'קרח', price: 800 }, { id: 'lime', name: 'ליים', price: 800 },
     { id: 'violet', name: 'סגול לילה', price: 1200 }, { id: 'fire', name: 'אש', price: 2500 }, { id: 'rainbow', name: 'קשת', price: 4000 }, { id: 'star', name: 'אבק כוכבים', price: 6000 }] },
   board: { title: 'עיצוב הלוח', items: [
-    { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'candy', name: 'ממתקים', price: 1500 }, { id: 'ocean', name: 'אוקיינוס', price: 1500 }, { id: 'forest', name: 'יער', price: 2000 },
-    { id: 'night', name: 'לילה', price: 3000 }, { id: 'royal', name: 'מלכותי', price: 5000 }] },
+    { id: 'classic', name: 'קלאסי', price: 0 }, { id: 'forest', name: 'יער קסום', price: 2000 }, { id: 'flower', name: 'גן פרחים', price: 2500 }, { id: 'crystal', name: 'קריסטל ירח', price: 3000 }] },
   fx: { title: 'אפקט ניצחון', items: [
     { id: 'classic', name: 'בלי אפקט', price: 0, icon: '✨' }, { id: 'confetti', name: 'קונפטי', price: 1500, icon: '🎊' }, { id: 'bubbles', name: 'בועות', price: 2000, icon: '🫧' },
     { id: 'stars', name: 'גשם כוכבים', price: 2500, icon: '🌟' }, { id: 'hearts', name: 'לבבות', price: 2500, icon: '💜' }, { id: 'dust', name: 'אבקת קסם', price: 3000, icon: '✨' }, { id: 'snow', name: 'שלג קריסטל', price: 3000, icon: '❄️' },
@@ -2652,7 +2651,17 @@ const P_KEY = cat => cat === 'char' ? 'avatar' : cat, BASE = cat => cat === 'cha
 const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות' };
 const owns = (cat, id) => (SHOP[cat].items.find(x => x.id === id) || {}).price === 0 || !!(P.own && P.own[cat + ':' + id]);
 const lookOf = cat => SHOP[cat].items.some(x => x.id === P[P_KEY(cat)]) && owns(cat, P[P_KEY(cat)]) ? P[P_KEY(cat)] : BASE(cat);
+const OLD_BOARDS = { candy: 'flower', royal: 'flower', ocean: 'crystal', night: 'crystal' };   // the drawn boards were replaced by painted ones; a purchase carries over
+function migrateBoards() {
+  let ch = false;
+  for (const [o, n] of Object.entries(OLD_BOARDS)) {
+    if (P.own && P.own['board:' + o]) { delete P.own['board:' + o]; P.own['board:' + n] = 1; ch = true; }
+    if (P.board === o) { P.board = n; ch = true; }
+  }
+  if (ch) save();
+}
 function applyLook() {
+  migrateBoards();
   for (const el of [$('game'), $('help')]) {          // only where a board is drawn, so the shop's samples keep their own look
     for (const c of [...el.classList]) if (/^b[md]-/.test(c)) el.classList.remove(c);
     for (const cat of ['beam', 'board']) if (lookOf(cat) !== 'classic') el.classList.add(PREFIX[cat] + lookOf(cat));
@@ -2661,7 +2670,7 @@ function applyLook() {
 const BEAM_SAMPLE = '<svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg>';
 const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" height="1.2" fill="var(--tray)"/>' +
   [0, 1, 2, 3, 4, 5].map(i => `<rect x="${.27 + i * .42}" y=".12" width=".36" height=".4" rx=".08" fill="var(--t-${['blue', 'green', 'purple', 'orange'][i % 4]})"/><rect x="${.27 + i * .42}" y=".66" width=".36" height=".4" rx=".08" fill="var(--t-${['purple', 'orange', 'blue', 'green'][i % 4]})"/>`).join('') + '</svg>';
-const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? BOARD_SAMPLE : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.id === 'classic' ? it.icon : `<img alt="" src="media/fx/${it.id}.webp">`}</button>`;
+const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? `<img class="thumb brd" alt="" src="media/board/thumb-${it.id}.webp">` : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.id === 'classic' ? it.icon : `<img alt="" src="media/fx/${it.id}.webp">`}</button>`;
 function openShop() { show('shop'); renderShop(); }
 let shopCat = 'beam';
 function renderShop() {
