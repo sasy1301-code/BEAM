@@ -340,6 +340,8 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .frrow{display:flex; align-items:center; justify-content:space-between; gap:8px} .frmore{border:none; border-radius:999px; background:#FF9F1C; color:#fff; font:inherit; font-weight:800; font-size:14px; padding:7px 14px; box-shadow:0 3px 0 #C46A00; flex:none}
 .frlist li{display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); color:var(--ink); --ink:#2D1B4E; --muted:#6B5A8C; --rule:#DCCFF7}
 .frlist button.gift{background:#FFE7C2; padding:4px 8px; display:grid; place-items:center} .frlist button.gift img{width:28px; height:28px; display:block}
+.giftpic{width:130px; height:130px; object-fit:contain; animation:giftPop .6s cubic-bezier(.3,1.7,.5,1) both} @keyframes giftPop{from{scale:.2; rotate:-20deg; opacity:0}}
+.gains.big .coin{font-size:30px; padding:8px 22px} .gains.big{margin:4px 0 10px}
 .giftsizes{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 16px} .giftsizes button{border:2px solid #DCCFF7; background:#fff; color:#2D1B4E; border-radius:14px; font:inherit; font-weight:800; font-size:17px; min-height:50px}
 .giftsizes.diff{grid-template-columns:repeat(3,1fr)} .giftsizes button.on{background:#7B4DFF; border-color:#7B4DFF; color:#fff} .giftsizes button:disabled{opacity:.35}
 .frlist .dot{width:12px; height:12px; border-radius:50%; background:#B9AFCF; flex:none}
@@ -1229,6 +1231,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'הנקודות כבר בארנק שלכם.': 'The points are already in your wallet.', 'תודה!': 'Thanks!',
   'עוד פעולות': 'More', 'לראות את הלוח בזמן אמת': 'See the board live', 'נקודות מהארנק שלכם': 'Points from your wallet', 'הזמנה לדו-קרב': 'Invite to a duel', 'בוחרים רמת קושי וסכום': 'Pick a difficulty and a stake', 'אפשר כשהחבר מחובר ופנוי': 'When your friend is online and free', 'הסרה מהחברים': 'Remove from friends',
   'סובבו את הטלפון לאורך': 'Turn your phone upright',
   'מתחברים…': 'Connecting…', 'אי אפשר לצפות ביריב באמצע דו-קרב': 'You cannot watch your opponent during a duel', '{} לא משחק כרגע': '{0} is not playing right now', 'דו-קרב · סיבוב {}': 'Duel · round {0}', '{} פתר את הלוח!': '{0} solved the board!', 'מהלכים: {}': 'Moves: {0}', 'צפייה במשחק': 'Watch the game',
@@ -2633,8 +2636,8 @@ function renderMap(scroll, justSolved) {
   scene.innerHTML = html;
   scene.style.setProperty('--u', u + 'px');
   // the big button carries on from where the player is: the next unsolved level here, or the gate once the chapter is done
-  const nextI = cel >= 0 ? -1 : firstOpen, play = $('mapPlay');
-  play.hidden = cel >= 0 || (firstOpen < 0 && mapCh >= CHAPTERS.length - 1) || (firstOpen >= 0 && !unlocked(base + firstOpen));
+  const nextI = firstOpen, play = $('mapPlay');
+  play.hidden = (firstOpen < 0 && mapCh >= CHAPTERS.length - 1) || (firstOpen >= 0 && !unlocked(base + firstOpen));
   if (!play.hidden) {
     const lv = nextI >= 0 ? ch.levels[nextI] : null, secs = lv ? timeLimit(lv) : 0;
     $('mapPlayMain').textContent = lv ? T`שלב ${base + nextI + 1}` : T('לפרק הבא');
@@ -3879,7 +3882,19 @@ async function claimGifts() {
   if (n <= 0) return;
   gain(n, false); save(false); cloudSoon(); renderHome(); hudSync();
   if (!$('shop').hidden) renderShop();
-  Sound.play('purchase'); Haptic.play('win'); toast(who.length ? T`מתנה מ-${who.slice(0, 2).join(', ')}!` : T('קיבלתם מתנה!'), `+${fmt(n)}`);
+  giftShow(n, who);
+}
+/* the gift arrives in the middle of the screen, with its sum and a burst of coins; while a board or another window is open it waits its turn */
+function giftShow(n, who) {
+  if (!$('overlay').hidden || !$('game').hidden || !$('duel').hidden || !$('watch').hidden || !$('login').hidden) return void setTimeout(() => giftShow(n, who), 2500);
+  modal(`<img class="bug giftpic" alt="" src="media/ui/gift.webp">
+    <h3>${who.length ? T`מתנה מ-${who.slice(0, 2).map(esc).join(', ')}!` : T('קיבלתם מתנה!')}</h3>
+    <div class="gains big"><div class="coin">${ICON_POINTS}<span dir="ltr">+${fmt(n)}</span></div></div>
+    <p>${T('הנקודות כבר בארנק שלכם.')}</p>
+    <button class="btn green" id="giftOk">${T('תודה!')}</button>`, m => {
+      m.querySelector('#giftOk').onclick = closeModal;
+      requestAnimationFrame(() => coinBurst(n, { chip: m.querySelector('.gains .coin') }));
+    });
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) claimGifts(); });
 setInterval(() => { if (!document.hidden) claimGifts(); }, 5 * 60 * 1000);
