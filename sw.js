@@ -1,7 +1,7 @@
 /* BEAM service worker: the game keeps working with no connection.
    The page itself is fetched fresh whenever the network answers, so updates arrive on the next visit;
    everything else (clips, icons) is served from the cache first. Bump VERSION when those files change. */
-const VERSION = 'beam-v93';
+const VERSION = 'beam-v94';
 const SHELL = ['./', 'css/beam.css', 'js/levels.js', 'js/game.js', 'media/font/fredoka-a.woff2', 'media/font/fredoka-b.woff2', 'media/inline/bug.webp', 'media/inline/logo.webp', 'manifest.webmanifest', 'icon.webp', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/favicon-96.png', 'icons/apple-180.png', 'media/cheer2.mp4', 'media/fly.mp4', 'media/hero.webp', 'media/garden/bg.webp', 'media/map/bg.webp', 'media/ui/shop.webp', 'media/ui/home.webp', 'media/ui/invite.webp', 'media/ui/trophy.webp', 'media/ui/decor.webp', 'media/ui/duel.webp', 'media/ui/medal.webp', 'media/ui/calendar.webp', 'media/ui/gift.webp', 'media/ui/help.webp', 'media/ui/gear.webp', 'media/ui/star.webp', 'media/splash/bg.webp', 'media/splash/logo.webp', 'media/splash/fly.webp', 'media/ui/coin1.webp', 'media/ui/coin2.webp', 'media/ui/coin3.webp', 'media/ui/t-reset.webp', 'media/ui/t-mirror.webp', 'media/ui/t-hint.webp', 'media/ui/t-hammer.webp', 'media/board/frame.webp', 'media/board/bg.webp', 'media/board/t-blue.webp', 'media/board/t-green.webp', 'media/board/t-orange.webp', 'media/board/t-purple.webp', 'media/board/wall.webp', 'media/board/bomb.webp', 'media/board/mir-a.webp', 'media/board/mir-b.webp', 'media/board/star.webp', 'media/board/star-off.webp', 'media/board/fly.webp'];
 
 self.addEventListener('install', e => {

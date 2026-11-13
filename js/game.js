@@ -24,6 +24,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'שועל הצללים': 'Shadow Fox', 'ארנבת הכוכבים': 'Star Bunny', 'ינשוף הלילה': 'Night Owl', 'חתול הירח': 'Moon Cat', 'קיפוד הברקים': 'Lightning Hedgehog', 'צפרדע הרעל': 'Poison Frog', 'דביבון התעלומות': 'Mystery Raccoon', 'איילת הזוהר': 'Aurora Deer', 'פרפר הקסם': 'Magic Butterfly', 'דרקון האש': 'Fire Dragon',
   'אתגר השבוע': 'Weekly challenge', 'בונים את הלוח של השבוע…': 'Building this week\'s board…', 'שיא חדש לשבוע!': 'New best this week!', 'אתגר השבוע הושלם!': 'Weekly challenge complete!',
   '{} נקודות בטבלת השבוע. {}:{} דקות, {}.{}': '{0} points on the weekly board. {1}:{2} minutes, {3}.{4}', 'לטבלת השבוע': 'To the weekly board', 'השבוע': 'This week', 'היום': 'Today',
   'לוח אחד קשה לכל השבוע. כולם מקבלים את אותו לוח': 'One hard board for the whole week. Everyone gets the same one', 'אף אחד עוד לא פתר את אתגר השבוע.': 'Nobody has solved this week\'s challenge yet.',
@@ -1631,9 +1632,9 @@ const SHOP = {
     { id: 'rainbow', name: 'שובל קשת', price: 8000, icon: '🌈' }, { id: 'fireworks', name: 'זיקוקים', price: 10000, icon: '🎆' }, { id: 'lightning', name: 'ברק', price: 11000, icon: '⚡' }, { id: 'portal', name: 'שער האור', price: 14000, icon: '🌀' }] },
   // the face a player shows in the top bar, to friends and on the podium; the firefly herself stays the guide of the game
   char: { title: 'דמויות', items: [
-    { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועלה חוקרת', price: 0 }, { id: 'bunny', name: 'ארנבת ממציאה', price: 0 },
-    { id: 'owl', name: 'ינשוף קוסם', price: 4000 }, { id: 'cat', name: 'חתול נינג\'ה', price: 4000 }, { id: 'hedgehog', name: 'קיפודה גננת', price: 5000 }, { id: 'frog', name: 'צפרדע אלכימאי', price: 5000 },
-    { id: 'raccoon', name: 'דביבון מכונאי', price: 6000 }, { id: 'deer', name: 'איילה שומרת', price: 8000 }, { id: 'moth', name: 'נסיכת העשים', price: 10000 }, { id: 'dragon', name: 'דרקונצ\'יק', price: 12000 }, { id: 'unicorn', name: 'חד-קרן', price: 18000 }] },
+    { id: 'bug', name: 'גחלילית', price: 0 }, { id: 'fox', name: 'שועל הצללים', price: 0 }, { id: 'bunny', name: 'ארנבת הכוכבים', price: 0 },
+    { id: 'owl', name: 'ינשוף הלילה', price: 4000 }, { id: 'cat', name: 'חתול הירח', price: 4000 }, { id: 'hedgehog', name: 'קיפוד הברקים', price: 5000 }, { id: 'frog', name: 'צפרדע הרעל', price: 5000 },
+    { id: 'raccoon', name: 'דביבון התעלומות', price: 6000 }, { id: 'deer', name: 'איילת הזוהר', price: 8000 }, { id: 'moth', name: 'פרפר הקסם', price: 10000 }, { id: 'dragon', name: 'דרקון האש', price: 12000 }, { id: 'unicorn', name: 'חד-קרן', price: 18000 }] },
 };
 const CHAR_IDS = new Set(SHOP.char.items.map(x => x.id).filter(x => x !== 'bug'));
 const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-', char: 'ch-' };
