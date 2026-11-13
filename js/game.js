@@ -1766,14 +1766,14 @@ function fxKit(box, kind) {
     }
   };
   const flash = (color = '#FFF6D6', peak = .55, delay = 0) => { const f = document.createElement('i'); f.className = 'fxflash'; f.style.background = color; box.appendChild(f); f.animate([{ opacity: 0 }, { opacity: peak, offset: .1 }, { opacity: 0 }], { duration: 420, delay, fill: 'both' }); };
-  return { W, H, rnd, pick, tf, sprite, dot, path, fade, speck, comet, burst, flash };
+  return { W, H, box, rnd, pick, tf, sprite, dot, path, fade, speck, comet, burst, flash };
 }
 const FX_SCENES = {
   dust(k) {          // two wand-sparks write looping trails across the screen
     const { W, H, rnd, sprite, comet, speck } = k;
     const paths = [t => [W * (-.1 + 1.2 * t), H * (.62 - .3 * t) + Math.sin(t * Math.PI * 3) * H * .1],
                    t => [W * (1.1 - 1.2 * t), H * (.2 + .32 * t) + Math.sin(t * Math.PI * 2.4 + 1) * H * .09]];
-    paths.forEach((p, n) => comet(sprite(1, 76), p, 1700, n * 380, 40, 540, (x, y) => { for (let j = 0; j < 14; j++) { const a = Math.random() * 6.3, d = rnd(30, 110); speck(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.random() < .3); } }));
+    paths.forEach((p, n) => comet(sprite(1, 76), p, 1700, n * 380, 28, 540, (x, y) => { for (let j = 0; j < 14; j++) { const a = Math.random() * 6.3, d = rnd(30, 110); speck(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.random() < .3); } }));
     for (let j = 0; j < 16; j++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4)), 600 + j * 90);
   },
   confetti(k) {      // two cannons in the bottom corners blast ribbons up; they flutter down
@@ -1794,12 +1794,25 @@ const FX_SCENES = {
       setTimeout(() => burst(x0 + Math.sin(7 + ph) * sw, top, 7, size * .9, { gravity: 30, make: () => sprite(3, rnd(10, 18), 'dust') }), dl + dur * .93);
     }
   },
-  stars(k) {         // shooting stars streak across the sky, leaving gold trails
-    const { W, H, rnd, sprite, comet } = k;
-    for (let j = 0; j < 9; j++) {
-      const x0 = rnd(-W * .5, W * .3), y0 = rnd(H * .45, H * 1.05), len = rnd(1, 1.4);
-      comet(sprite(j % 9, rnd(70, 120)), t => [x0 + W * len * t, y0 - H * .7 * len * t + Math.sin(t * 3) * 20], rnd(900, 1300), j * 260 + rnd(0, 120), 26, 0);
+  stars(k) {         // a meteor shower falls across the sky, then the stars settle into a glowing constellation
+    const { W, H, rnd, sprite, path } = k, box = k.box;
+    for (let j = 0; j < 20; j++) {   // the painted shooting stars fly up-right, so turned round they fall down-left
+      const x0 = rnd(W * .2, W * 1.25), y0 = rnd(-H * .15, H * .35), dist = rnd(W * .8, W * 1.2), size = rnd(52, 96);
+      path(sprite(j % 9, size), t => [x0 - dist * t, y0 + dist * .75 * t, 1, 180, t < .08 ? t / .08 : t > .85 ? (1 - t) / .15 : 1], rnd(650, 950), rnd(0, 1300), 12, 'ease-in');
     }
+    // the constellation: points on a gentle wave, joined one by one by a thin line of light
+    const n = 6, pts = Array.from({ length: n }, (_, i) => [W * (.12 + .76 * i / (n - 1)), H * (.36 + Math.sin(i * 1.3) * .07 + (i % 2 ? .05 : -.03))]);
+    const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'fxsky'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); box.appendChild(svg);
+    pts.slice(1).forEach((q, i) => {
+      const p0 = pts[i], len = Math.hypot(q[0] - p0[0], q[1] - p0[1]);
+      const ln = el('line', { x1: p0[0], y1: p0[1], x2: q[0], y2: q[1], 'stroke-dasharray': len, 'stroke-dashoffset': len }, svg);
+      ln.animate([{ strokeDashoffset: len, opacity: 1 }, { strokeDashoffset: 0, opacity: 1, offset: .3 }, { strokeDashoffset: 0, opacity: 1, offset: .8 }, { strokeDashoffset: 0, opacity: 0 }], { duration: 2600, delay: 1500 + i * 160, fill: 'both' });
+    });
+    pts.forEach(([x, y], i) => {
+      const st = document.createElement('img'); st.alt = ''; st.src = 'media/board/star.webp'; st.className = 'fxd'; st.style.width = (i === 2 || i === 4 ? 46 : 34) + 'px'; box.appendChild(st);
+      st.animate([{ transform: k.tf(x, y, 0, -90), opacity: 0 }, { transform: k.tf(x, y, 1.4, 10), opacity: 1, offset: .12 }, { transform: k.tf(x, y, 1, 0), opacity: 1, offset: .22 },
+        { transform: k.tf(x, y, 1.15, 0), opacity: 1, offset: .5 }, { transform: k.tf(x, y, 1, 0), opacity: 1, offset: .78 }, { transform: k.tf(x, y, .4, 40), opacity: 0 }], { duration: 2700, delay: 1350 + i * 160, fill: 'both', easing: 'ease-out' });
+    });
   },
   hearts(k) {        // a big heart beats twice and bursts; a fountain of hearts floats up
     const { W, H, rnd, sprite, path, burst } = k;
@@ -1854,16 +1867,26 @@ const FX_SCENES = {
       }, '#FFC83A');
     }
   },
-  portal(k) {        // a swirl opens, stars spiral into it, then it flares and flings them out
-    const { W, H, rnd, sprite, path, flash, burst } = k;
-    const cx = W / 2, cy = H * .42, size = Math.min(W * .62, 280);
-    path(sprite(0, size), t => [cx, cy, t < .2 ? t * 5 : t < .6 ? 1 + (t - .2) * .3 : t < .7 ? 1.12 - (t - .6) * 3 : .82 + (t - .7) * 2.6, -720 * t, t > .82 ? (1 - t) / .18 : Math.min(1, t * 8)], 3000, 0, 40);
-    for (let j = 0; j < 18; j++) {
-      const a0 = rnd(0, Math.PI * 2), r0 = rnd(W * .45, W * .7), turn = rnd(2.5, 4);
-      path(sprite(1 + (j % 9), rnd(28, 52)), t => [cx + Math.cos(a0 + turn * t) * r0 * (1 - t), cy + Math.sin(a0 + turn * t) * r0 * (1 - t) * .8, 1 - t * .7, t * 360, t < .1 ? t * 10 : 1], rnd(1100, 1500), rnd(0, 700), 30, 'ease-in');
-    }
-    flash('#E9D2FF', .6, 1750);
-    setTimeout(() => burst(cx, cy, 22, Math.max(W, H) * .55, { gravity: 0, make: j => sprite(1 + (j % 9), rnd(30, 56)) }), 1800);
+  portal(k) {        // the gate of light: the screen dims, a door of light opens, rays turn behind it, and it bursts into stars
+    const { W, H, rnd, sprite, path, burst, flash } = k, box = k.box, cx = W / 2, cy = H * .42;
+    const part = (cls, css) => { const d = document.createElement('i'); d.className = cls; if (css) d.style.cssText = css; box.appendChild(d); return d; };
+    part('fxdim').animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 1, offset: .75 }, { opacity: 0 }], { duration: 3600, fill: 'both' });
+    const R = Math.max(W, H) * 1.1;
+    part('fxrays', `left:${cx}px;top:${cy}px;width:${R}px;height:${R}px`).animate([
+      { transform: 'translate(-50%,-50%) rotate(0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-50%) rotate(40deg) scale(1)', opacity: .9, offset: .3 },
+      { transform: 'translate(-50%,-50%) rotate(110deg) scale(1.1)', opacity: .9, offset: .75 }, { transform: 'translate(-50%,-50%) rotate(150deg) scale(1.2)', opacity: 0 }], { duration: 3400, delay: 250, fill: 'both' });
+    const gw = Math.min(W * .5, 220), gh = Math.min(H * .62, 460);
+    part('fxgate', `left:${cx}px;top:${cy}px;width:${gw}px;height:${gh}px`).animate([
+      { transform: 'translate(-50%,-50%) scaleX(0) scaleY(.6)', opacity: 0 }, { transform: 'translate(-50%,-50%) scaleX(.04) scaleY(1)', opacity: 1, offset: .12 },
+      { transform: 'translate(-50%,-50%) scaleX(1) scaleY(1)', opacity: 1, offset: .38 }, { transform: 'translate(-50%,-50%) scaleX(1.05) scaleY(1.02)', opacity: 1, offset: .62 },
+      { transform: 'translate(-50%,-50%) scaleX(1.6) scaleY(1.2)', opacity: 0 }], { duration: 3000, delay: 300, fill: 'both', easing: 'cubic-bezier(.3,.7,.3,1)' });
+    path(sprite(0, gw * 1.05), t => [cx, cy, t < .3 ? t / .3 * .9 : .9 + (t - .3) * .5, -360 * t, t < .15 ? t / .15 : t > .7 ? (1 - t) / .3 : 1], 2500, 900, 30);
+    for (let r = 0; r < 3; r++) part('fxring', `left:${cx}px;top:${cy}px`).animate([{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(9)', opacity: 0 }], { duration: 1200, delay: 1750 + r * 180, fill: 'both', easing: 'ease-out' });
+    flash('#FFF3C4', .45, 1700);
+    setTimeout(() => {
+      burst(cx, cy, 26, Math.max(W, H) * .6, { gravity: 80, make: j => sprite(1 + (j % 9), rnd(30, 58)) });
+      burst(cx, cy, 30, Math.max(W, H) * .45, { gravity: 120, color: ['#FFE27A', '#FFFFFF', '#E3C2FF'] });
+    }, 1750);
   },
 };
 function winFx(kind) {
