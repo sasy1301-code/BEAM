@@ -2868,7 +2868,7 @@ function applyLook() {
 const BEAM_SAMPLE = '<svg viewBox="0 0 3 1.2"><path class="glow" d="M.2 .9H1.5V.3H2.8"/><path class="beamline" d="M.2 .9H1.5V.3H2.8"/></svg>';
 const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" height="1.2" fill="var(--tray)"/>' +
   [0, 1, 2, 3, 4, 5].map(i => `<rect x="${.27 + i * .42}" y=".12" width=".36" height=".4" rx=".08" fill="var(--t-${['blue', 'green', 'purple', 'orange'][i % 4]})"/><rect x="${.27 + i * .42}" y=".66" width=".36" height=".4" rx=".08" fill="var(--t-${['purple', 'orange', 'blue', 'green'][i % 4]})"/>`).join('') + '</svg>';
-const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? `<img class="thumb brd" alt="" src="media/board/thumb-${it.id}.webp">` : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.id === 'classic' ? it.icon : `<img alt="" src="media/fx/${it.id}.webp">`}</button>`;
+const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? `<img class="thumb brd" alt="" src="media/board/thumb-${it.id}.webp">` : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}"><img alt="" src="media/fx/${it.id}.webp"></button>`;
 function openShop() { show('shop'); renderShop(); }
 let shopCat = 'beam';
 /* points for money. The amounts climb faster than the prices, so a bigger pack is a better deal. */
