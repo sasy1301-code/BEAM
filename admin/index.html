@@ -231,7 +231,10 @@ async function buys() {
   for (const r of rows) (byItem[r.item] = byItem[r.item] || []).push(r);
   const items = Object.entries(byItem).sort((a, b) => b[1].length - a[1].length);
   const buyers = new Set(rows.map(r => r.player_id)).size, money = rows.filter(r => r.money).length;
-  $('#main').innerHTML = `<div class="grid"><div class="stat hot"><b>${fmt(rows.length)}</b><span>פריטים שנקנו</span></div><div class="stat"><b>${fmt(buyers)}</b><span>שחקנים שקנו</span></div><div class="stat"><b>${fmt(d.today)}</b><span>רכישות היום</span></div><div class="stat"><b>${fmt(d.points_spent)}</b><span>נקודות שהוצאו (מאז היום)</span></div><div class="stat"><b>${fmt(money)}</b><span>רכישות בכסף אמיתי</span></div></div>
+  $('#main').innerHTML = `<div class="grid"><div class="stat hot"><b>${fmt(rows.length)}</b><span>פריטים שנקנו</span></div><div class="stat"><b>${fmt(buyers)}</b><span>שחקנים שקנו</span></div><div class="stat"><b>${fmt(d.today)}</b><span>רכישות היום</span></div><div class="stat"><b>${fmt(d.points_spent)}</b><span>נקודות שהוצאו (מאז היום)</span></div></div>
+    <div class="panel"><h2>תשלומים בכסף אמיתי <span class="pill g">${fmt(money)} תשלומים</span> <span class="pill y">₪${(rows.filter(r => r.money).reduce((n, r) => n + (r.price || 0), 0) / 100).toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span></h2>
+      <div class="feed">${rows.filter(r => r.money).length ? rows.filter(r => r.money).map(r => `<div class="buyer" data-id="${esc(r.player_id)}" style="cursor:pointer">${av(r.avatar)}<b>${esc(r.name || r.player_id)}</b><span>${esc(itemOf(r.item).name)}</span>${r.price ? `<span class="pill g">₪${(r.price / 100).toFixed(2)}</span>` : ''}<small>${r.at ? when(r.at) : ''}</small></div>`).join('')
+        : '<p class="empty">עוד אף אחד לא שילם. התשלום עדיין לא מחובר למשחק: כשיחובר, כל מי שקונה נקודות או מסיר פרסומות יופיע כאן, עם הסכום והשעה.</p>'}</div></div>
     <div class="tabs" style="margin-top:14px"><button data-v="items" class="${bview === 'items' ? 'on' : ''}">לפי פריט</button><button data-v="feed" class="${bview === 'feed' ? 'on' : ''}">לפי זמן</button></div>
     <div id="bv"></div>`;
   for (const b of document.querySelectorAll('[data-v]')) b.onclick = () => { bview = b.dataset.v; buys(); };
@@ -240,7 +243,7 @@ async function buys() {
       <div class="chips">${list.map(r => `<span class="buyer" data-id="${esc(r.player_id)}" style="cursor:pointer">${esc(r.name || r.player_id)}${r.at ? ' · ' + when(r.at) : ''}</span>`).join('')}</div></div>`; }).join('') : '<p class="empty">עוד אף אחד לא קנה כלום.</p>';
   } else {
     const dated = rows.filter(r => r.at), old = rows.length - dated.length;
-    $('#bv').innerHTML = `<div class="panel"><div class="feed">${dated.length ? dated.map(r => { const it = itemOf(r.item); return `<div class="buyer" data-id="${esc(r.player_id)}" style="cursor:pointer">${av(r.avatar)}<b>${esc(r.name || r.player_id)}</b><span>קנה ${esc(it.name)}</span><span class="pill">${esc(it.cat)}</span>${r.price ? `<span class="pill y">${fmt(r.price)} נק׳</span>` : ''}${r.money ? '<span class="pill g">כסף אמיתי</span>' : ''}<small>${when(r.at)}</small></div>`; }).join('') : '<p class="empty">מעכשיו כל רכישה תופיע כאן עם התאריך.</p>'}</div>
+    $('#bv').innerHTML = `<div class="panel"><div class="feed">${dated.length ? dated.map(r => { const it = itemOf(r.item); return `<div class="buyer" data-id="${esc(r.player_id)}" style="cursor:pointer">${av(r.avatar)}<b>${esc(r.name || r.player_id)}</b><span>קנה ${esc(it.name)}</span><span class="pill">${esc(it.cat)}</span>${r.money ? `<span class="pill g">${r.price ? '₪' + (r.price / 100).toFixed(2) : 'כסף אמיתי'}</span>` : r.price ? `<span class="pill y">${fmt(r.price)} נק׳</span>` : ''}<small>${when(r.at)}</small></div>`; }).join('') : '<p class="empty">מעכשיו כל רכישה תופיע כאן עם התאריך.</p>'}</div>
       ${old ? `<p class="empty">${old} רכישות קודמות נעשו לפני שהתחלנו לרשום תאריכים. הן מופיעות בתצוגה "לפי פריט".</p>` : ''}</div>`;
   }
   for (const b of document.querySelectorAll('.buyer')) b.onclick = () => player(b.dataset.id);

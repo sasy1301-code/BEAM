@@ -1245,7 +1245,7 @@ const EN = {
   'זהירות! עוד שתי פגיעות בפצצה והיא מתפוצצת.': 'Careful! Two more hits and the bomb blows up.',
   'הוספת חבר': 'Add a friend', 'חיפוש לפי שם שחקן': 'Search by player name', 'חיפוש': 'Search', 'שיחקתם לאחרונה': 'Played recently', 'כבר חברים': 'Already friends', 'הוספה': 'Add', 'לא נמצא שחקן בשם הזה': 'No player with that name', 'כתבו לפחות שתי אותיות': 'Type at least two letters', 'מחפשים…': 'Searching…', 'יש יותר מדי בקשות פתוחות': 'Too many open requests',
   'נקודות': 'Points', 'הכי משתלם': 'Best value', 'אוצר': 'Treasure', 'חסרות נקודות ללוח או לדמות? אפשר להשלים כאן.': 'Short on points for a board or a character? Top up here.', 'בקרוב': 'Coming soon', 'הבנתי': 'Got it', 'הנקודות נוספו': 'Points added',
-  'רכישת נקודות תיפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.': 'Buying points opens soon. Meanwhile you can earn points in levels, the daily challenge and duels.',
+  'התשלום ייפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.': 'Payments open soon. Meanwhile you can earn points in levels, the daily challenge and duels.',
   'פריחת שקיעה': 'Sunset bloom', 'פטריות קסם': 'Magic mushrooms', 'שמש וירח': 'Sun and moon',
   'יער קסום': 'Enchanted forest', 'גן פרחים': 'Flower garden', 'קריסטל ירח': 'Moon crystal',
   'עדינה': 'Gentle', 'תיבת נגינה': 'Music box',
@@ -2835,14 +2835,15 @@ function renderCoins() {
   return `<p class="coinlead">${T('חסרות נקודות ללוח או לדמות? אפשר להשלים כאן.')}</p><div class="shopgrid">` + COIN_PACKS.map(k =>
     `<div class="shopitem coinpack">${k.tag ? `<i class="tag">${T(k.tag)}</i>` : ''}${coinPile(k.n)}<b>${fmt(k.coins)}</b><button class="act money" data-pack="${k.id}">${k.price}</button></div>`).join('') + '</div>';
 }
-async function buyCoins(k) {
-  if (!PAYMENTS.live) {                                   // no checkout is connected yet, and points must never be handed out for a tap
+function soonModal() {
     return modal(`<img class="bug" alt="" src="${POSE.thumbs}"><h3>${T('בקרוב')}</h3>
-      <p>${T('רכישת נקודות תיפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.')}</p>
+      <p>${T('התשלום ייפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.')}</p>
       <button class="btn green" id="soonOk">${T('הבנתי')}</button>`, m => { m.querySelector('#soonOk').onclick = closeModal; });
-  }
+}
+async function buyCoins(k) {
+  if (!PAYMENTS.live) return soonModal();             // no checkout is connected yet, and points must never be handed out for a tap
   if (!await PAYMENTS.buy(k)) return;
-  logPurchase(k.id, 0, true); gain(k.coins, false); save(); renderShop(); renderHome(); Sound.play('purchase'); Haptic.play('win');
+  logPurchase(k.id, agorot(k.price), true); gain(k.coins, false); save(); renderShop(); renderHome(); Sound.play('purchase'); Haptic.play('win');
   toast(T('הנקודות נוספו'), `+${fmt(k.coins)}`);
 }
 function renderShop() {
@@ -4262,11 +4263,13 @@ const PAYMENTS = {
   async restore() { return !!P.purchases && P.purchases.includes(REMOVE_ADS.id); },
 };
 /* every purchase is reported to the server, so the owner can see who bought what and when */
+const agorot = price => Math.round(parseFloat(String(price).replace(/[^\d.]/g, '')) * 100) || 0;   // '14.90 ₪' -> 1490
 const logPurchase = (item, price, money) => { rpc('beam_purchase_log', { p_id: P.id, p_secret: playerKey(), p_item: item, p_price: price, p_money: money }).catch(() => {}); };
 async function buyRemoveAds() {
   if (P.adFree) return;
+  if (!PAYMENTS.live) return soonModal();
   if (!await PAYMENTS.buy(REMOVE_ADS)) return;
-  P.adFree = true; P.purchases = [...new Set([...(P.purchases || []), REMOVE_ADS.id])]; logPurchase('remove_ads', 0, true);
+  P.adFree = true; P.purchases = [...new Set([...(P.purchases || []), REMOVE_ADS.id])]; logPurchase('remove_ads', agorot(REMOVE_ADS.price), true);
   gain(REMOVE_ADS.bonus, false); save(); openSettings(); Sound.play('purchase'); setTimeout(() => Sound.play('win', 0), 400);
   modal(`<img class="bug" alt="" src="${POSE.thumbs}">
     <h3>${T`תודה על התמיכה!`}</h3>
