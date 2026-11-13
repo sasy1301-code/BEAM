@@ -106,7 +106,8 @@ async function rpc(fn, args = {}) {
 let LEVELS = {};
 async function loadLevelNames() {
   try {
-    const src = await (await fetch('/', { cache: 'no-store' })).text();
+    // the game's code and levels live in their own files since the page was split
+    const src = (await Promise.all(['/js/levels.js', '/js/game.js'].map(async u => (await fetch(u, { cache: 'no-store' })).text()))).join('\n');
     await loadItemNames(src);
     const m = src.match(/const CHAPTERS = (\[.*?\]);\s*\n/s);
     const ch = JSON.parse(m[1]); let n = 0;
