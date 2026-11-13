@@ -169,6 +169,12 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbtns{grid-row:1 / span 2; grid-column:2; display:flex; gap:8px; position:relative; z-index:1}
 .daily.duelcard h2,.daily.duelcard p{text-shadow:0 2px 0 rgba(0,30,90,.25)}
 .duelbox{text-align:center; padding:22px 18px}
+#watch{min-height:100dvh; padding:calc(12px + env(safe-area-inset-top)) 12px 24px; background:#2A0C7A url(media/board/bg.webp) center / cover no-repeat fixed}
+#watch .boardwrap{background:none; box-shadow:none; padding:0; margin-top:18px} #watch .lvtitle h2{font-size:22px} #watch .lvtitle p{margin:0; color:#D9C9FF; font-size:14px}
+.wlive{background:#FF3B4E; color:#fff; font-weight:800; font-size:12px; letter-spacing:1px; padding:4px 10px; border-radius:999px; animation:wLive 1.4s ease-in-out infinite} @keyframes wLive{50%{opacity:.45}}
+.wstats{display:flex; justify-content:center; gap:10px; margin-top:12px} .wstats .pill{background:linear-gradient(180deg,#5B3BC4,#3E2499); color:#fff; border-radius:16px; padding:6px 16px; font-size:18px; font-weight:700; box-shadow:0 4px 0 #24126b}
+.wnote{text-align:center; color:#fff; font-size:17px; font-weight:600; margin:18px 8px 0; min-height:1.4em}
+.frlist button.eye{background:#E3F4FF; padding:4px 9px; font-size:19px; line-height:1}
 .duelbox h3{font-size:24px; margin:0 0 6px}
 .duelbox p{margin:0 0 12px; color:var(--muted)}
 .duelbox .btn{margin-top:10px}
@@ -1008,6 +1014,13 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 </section>
 
 <!-- DUEL: waiting room, countdown and result. The race itself happens on the game screen. -->
+<section id="watch" hidden>
+  <div class="gtop"><button class="rb" id="watchBack" aria-label="חזרה"><svg class="bk" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="lvtitle"><h2 id="watchTitle"></h2><p id="watchSub"></p></div><span class="wlive">LIVE</span></div>
+  <div class="wstats"><span class="pill" id="watchStars"></span><span class="pill" id="watchMoves"></span></div>
+  <div class="boardwrap"><svg class="board" id="watchBoard"></svg></div>
+  <p class="wnote" id="watchNote"></p>
+</section>
+
 <section id="duel" hidden>
   <button class="chip" id="duelBack">› חזרה</button>
   <h2 class="screen-title">דו-קרב</h2>
@@ -1205,6 +1218,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'מתחברים…': 'Connecting…', 'אי אפשר לצפות ביריב באמצע דו-קרב': 'You cannot watch your opponent during a duel', '{} לא משחק כרגע': '{0} is not playing right now', 'דו-קרב · סיבוב {}': 'Duel · round {0}', '{} פתר את הלוח!': '{0} solved the board!', 'מהלכים: {}': 'Moves: {0}', 'צפייה במשחק': 'Watch the game',
   'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
   'פרק {} מתוך {}': 'Chapter {0} of {1}', 'פרס הפרק!': 'Chapter prize!', 'הפרק הושלם · לפרק הבא': 'Chapter complete · on to the next', 'הפרק הושלם': 'Chapter complete', 'פרס הפרק · עוד שלב אחד': 'Chapter prize · 1 level to go', 'פרס הפרק · עוד {} שלבים': 'Chapter prize · {0} levels to go', 'לפרק הבא': 'Next chapter',
   'שליחת מתנה': 'Send a gift', 'מתנה ל-{}': 'A gift for {0}', 'הנקודות יורדות מהארנק שלכם. יש לכם {}.': 'The points come out of your wallet. You have {0}.', 'שליחה': 'Send', 'המתנה נשלחה ל-{}': 'Gift sent to {0}', 'הגעתם למכסת המתנות להיום. נסו שוב מחר.': 'You have reached today\'s gift limit. Try again tomorrow.', 'אפשר לשלוח מתנות רק לחברים': 'Gifts can only be sent to friends', 'מתנה מ-{}!': 'A gift from {0}!',
@@ -2410,7 +2424,7 @@ const movesText = n => n === 1 ? T('מהלך אחד') : T`${n} מהלכים`;
 const coinHTML = (icon, n) => `${icon}<span>${fmt(n)}</span>`;
 
 /* ================= ui helpers ================= */
-const SCREENS = ['allch', 'home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'friends', 'pals', 'shop', 'garden', 'map'];
+const SCREENS = ['allch', 'home', 'game', 'leader', 'achievements', 'help', 'settings', 'login', 'duel', 'watch', 'friends', 'pals', 'shop', 'garden', 'map'];
 /* the firefly on the entry page: a looping clip with its mask stacked underneath, painted onto a canvas so the forest shows through */
 let flyTarget = null;
 const GFLY = Object.assign(document.createElement('canvas'), { width: 320, height: 320, id: 'gardenFly', className: 'gbug' });       // the same clip inside the garden and the room; it survives every redraw of the scene
@@ -2438,6 +2452,7 @@ function flyShow(c) {
 }
 const TAB_OF = { allch: 'home', shop: 'shop', leader: 'leader', home: 'home', pals: 'home', friends: 'duel', garden: 'garden' };       // the screens that carry the two bars
 function show(id) {
+  if (id !== 'game') liveStop(); if (id !== 'watch') watchStop();
   for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game');
   const tab = TAB_OF[id];
   $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game');
@@ -3178,6 +3193,7 @@ function renderGame(flash) {
   }
   G.prevSt = st;
   G.lastSt = st;
+  liveSoon();
   $('duelBar').hidden = G.mode !== 'duel';
   if (G.mode === 'duel') { $('lvTitle').textContent = T`סיבוב ${G.round} · עד 3 ניצחונות`; $('lvChapter').textContent = T('הראשון שמדליק את כל הכוכבים מנצח'); renderDuelBar(); }
   else if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
@@ -3942,6 +3958,56 @@ async function rememberOpponent(code) {
   P.recent = [{ id: o.id, name: o.name, avatar: o.avatar || '' }, ...(P.recent || []).filter(f => f.id !== o.id)].slice(0, 5);
   save(false);
 }
+/* ---- watching a friend play ----
+   While a board is open, the game tells the server what is on it: the grid, the mirrors, the score so far. A friend who opens
+   the watch screen reads that every second and draws it. The daily challenge is never shown, because it is a contest for the
+   same board; the server also refuses to show a board to the opponent of a duel in progress. */
+let liveT = null, liveBeat = null, liveOn = false;
+function livePack() {
+  if (!G || G.mode === 'daily' || P.hidePresence === true || $('game').hidden) return null;
+  const st = G.lastSt || {};
+  return { mode: G.mode, n: G.mode === 'level' ? G.idx + 1 : G.round || 1, rows: G.lv.rows, lasers: G.lv.lasers, max: G.lv.max, mirrors: G.mirrors, locked: [...G.locked], lit: st.lit || 0, total: st.total || 0, moves: G.moves, done: !!G.done };
+}
+function liveSend() {
+  clearTimeout(liveT); liveT = null;
+  const pack = livePack();
+  if (!pack) return liveStop();
+  liveOn = true; rpc('beam_live_set', { p_id: P.id, p_secret: playerKey(), p_live: pack }).catch(() => {});
+  if (!liveBeat) liveBeat = setInterval(() => { if (!document.hidden) liveSend(); }, 6000);       // keeps the board marked as live while the player thinks
+}
+function liveSoon() { if (!liveT && Social.data && Social.data.friends.some(f => f.rel === 'ok')) liveT = setTimeout(liveSend, 350); }   // nobody to watch, nothing to send
+function liveStop() {
+  clearTimeout(liveT); liveT = null; clearInterval(liveBeat); liveBeat = null;
+  if (liveOn) { liveOn = false; rpc('beam_live_set', { p_id: P.id, p_secret: playerKey(), p_live: null }).catch(() => {}); }
+}
+let W = null;   // the friend being watched: { f, timer, sig, misses }
+function watchStop() { if (W) { clearInterval(W.timer); W = null; } }
+function watchFriend(f) {
+  watchStop(); W = { f, sig: '', misses: 0 };
+  show('watch'); $('watchTitle').textContent = f.name || ''; $('watchSub').textContent = ' '; $('watchStars').textContent = $('watchMoves').textContent = ''; $('watchBoard').innerHTML = ''; $('watchNote').textContent = T('מתחברים…');
+  const tick = async () => {
+    const w = W; let r = null;
+    try { r = await rpc('beam_watch', { p_id: P.id, p_secret: playerKey(), p_friend: f.id }); } catch (e) { r = undefined; }
+    if (W !== w) return;
+    if (!r || r.gone) {
+      if (r && r.gone === 'rival') { toast(T('אי אפשר לצפות ביריב באמצע דו-קרב')); return openFriends(); }
+      if (r === undefined && ++w.misses < 5) return;                 // a dropped answer or two is not the end of the show
+      $('watchNote').textContent = T`${f.name} לא משחק כרגע`; document.querySelector('.wlive').hidden = true; w.sig = '';
+      return;
+    }
+    w.misses = 0; document.querySelector('.wlive').hidden = false;
+    const sig = JSON.stringify(r);
+    if (sig === w.sig) return;
+    w.sig = sig;
+    const lv = { rows: r.rows, lasers: r.lasers, max: r.max };
+    draw($('watchBoard'), lv, r.mirrors || {}, null, !!r.done, new Set(r.locked || []), null);
+    $('watchSub').textContent = r.mode === 'duel' ? T`דו-קרב · סיבוב ${r.n}` : T`שלב ${r.n}`;
+    $('watchStars').textContent = `★ ${r.lit}/${r.total}`; $('watchMoves').textContent = T`מהלכים: ${r.moves}`;
+    $('watchNote').textContent = r.done ? T`${f.name} פתר את הלוח!` : '';
+    if (r.done) Sound.play('win', 1);
+  };
+  tick(); W.timer = setInterval(tick, 1000);
+}
 function renderFriends() {
   renderRecent();
   const d = Social.data, list = $('frList'), duel = $('duelList'), asksBox = $('frAsksBox');
@@ -3955,7 +4021,7 @@ function renderFriends() {
     const i = d.friends.indexOf(f);
     const sub = f.rel === 'in' ? T('בקשת חברות') : f.rel === 'out' ? T('ממתין לאישור') : !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
     const act = f.rel === 'in' ? `<button class="go" data-a="yes" data-i="${i}">${T('אישור')}</button><button data-a="no" data-i="${i}">${T('דחייה')}</button>`
-      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button>${gift ? `<button class="gift" data-a="gift" data-i="${i}" aria-label="${T('שליחת מתנה')}"><img alt="" src="media/ui/gift.webp"></button>` : ''}<button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
+      : f.rel === 'ok' ? `<button class="go" data-a="invite" data-i="${i}"${f.online && f.state !== 'duel' ? '' : ' disabled'}>${T('הזמן לדו-קרב')}</button>${f.online && (f.state === 'level' || f.state === 'duel') ? `<button class="eye" data-a="watch" data-i="${i}" aria-label="${T('צפייה במשחק')}">👁</button>` : ''}${gift ? `<button class="gift" data-a="gift" data-i="${i}" aria-label="${T('שליחת מתנה')}"><img alt="" src="media/ui/gift.webp"></button>` : ''}<button class="x" data-a="remove" data-i="${i}" aria-label="${T('הסרת חבר')}">✕</button>`
       : `<button class="x" data-a="remove" data-i="${i}" aria-label="${T('ביטול הבקשה')}">✕</button>`;
     return `<li><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><span class="who"><b>${esc(f.name || '…')}</b><small>${sub}</small></span>${act}</li>`;
   };
@@ -3992,6 +4058,7 @@ async function friendAction(a, f) {
   const base = { p_id: P.id, p_secret: playerKey() };
   if (a === 'invite') return chooseStake(stake => inviteFriend(f, stake));
   if (a === 'gift') return giftFriend(f);
+  if (a === 'watch') return watchFriend(f);
   if (a === 'remove') {
     modal(`<h3>${T`להסיר את ${esc(f.name)} מהחברים?`}</h3>
       <button class="btn danger" id="rmGo">${T('הסרה')}</button>
@@ -4034,7 +4101,7 @@ async function acceptFriendLink(fcode) {
   toast(res === 'ok' ? T('אתם חברים עכשיו') : res === 'self' ? T('זה הקישור שלכם. שלחו אותו לחבר.') : res === 'missing' ? T('הקישור הזה כבר לא פעיל') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
   openPals();
 }
-$('frBack').onclick = goHome;
+$('frBack').onclick = goHome; $('watchBack').onclick = () => { watchStop(); openPals(); };
 $('frGo').onclick = () => withName(findFriends); $('frQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('frQ').blur(); withName(findFriends); } });
 $('gardenBack').onclick = goHome; $('gTabOut').onclick = () => gGo('out'); $('gTabIn').onclick = () => gGo('in'); $('gardenBtn').onclick = openGarden;
 $('shopBack').onclick = goHome; $('shopBtn').onclick = openShop; $('homePoints').onclick = openShop;
