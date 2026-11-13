@@ -3451,11 +3451,34 @@ function cheer(st, gained) {
   setTimeout(() => Sound.play('sparkle', 3), 160);
   setTimeout(() => box.remove(), 2100);
 }
-// a move counts as right only when every mirror on the board sits where the solution has it, turned the same way
+/* A move counts as right only when it is a real step toward the answer:
+   the tile just tapped now holds the mirror the solution has there, every mirror on the board matches the solution,
+   and every lit star is reached by light that has stayed on the finished solution's route all the way (no lucky detours). */
+function beamCells(paths, each) {
+  const cells = new Set();
+  for (const p of paths) {
+    let off = false;
+    for (let i = 1; i < p.length && !off; i++) {
+      const [ax, ay] = p[i - 1], [bx, by] = p[i];
+      for (let t = .02; t < .99; t += .04) {
+        const c = Math.floor(ax + (bx - ax) * t) + ',' + Math.floor(ay + (by - ay) * t);
+        if (each && each(c) === false) { off = true; break; }
+        cells.add(c);
+      }
+    }
+  }
+  return cells;
+}
+// how many stars are lit the honest way right now, or -1 when the board is off the solution
 function onTrack() {
-  if (!G.lv.sol) return true;
-  const want = new Map(G.lv.sol);
-  return Object.entries(G.mirrors).every(([k, m]) => want.get(k) === m);
+  const lv = G.lv; if (!lv.sol || !G.lastTap) return -1;
+  const want = new Map(lv.sol);
+  if (G.mirrors[G.lastTap] === undefined || want.get(G.lastTap) !== G.mirrors[G.lastTap]) return -1;
+  if (!Object.entries(G.mirrors).every(([k, m]) => want.get(k) === m)) return -1;
+  if (!lv._solCells) lv._solCells = beamCells(traceAll(lv, Object.fromEntries(lv.sol)).paths);
+  const now = traceAll(lv, G.mirrors), honest = new Set();
+  beamCells(now.paths, c => { if (!lv._solCells.has(c)) return false; const [x, y] = c.split(',').map(Number); if (lv.rows[y] && lv.rows[y][x] === 'T') honest.add(c); });
+  return [...now.lit].every(k => honest.has(k)) ? now.lit.size : -1;
 }
 function cheerPreload() { for (const k in CHEERS) new Image().src = cheerSrc(k); for (const i of [1, 3, 5]) new Image().src = fxSrc('dust', i); }
 
@@ -3467,7 +3490,7 @@ function renderGame(flash) {
   if (G.prevSt) {
     if (st.bomb && !G.prevSt.bomb) Sound.play('bomb');
     else if (!st.bomb && G.prevSt.bomb) Sound.play('defuse');
-    if (st.lit > G.prevSt.lit) { for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90); if (st.lit < st.total && !st.bomb && onTrack()) cheer(st, st.lit - G.prevSt.lit); }
+    if (st.lit > G.prevSt.lit) for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90);
     else if (st.lit < G.prevSt.lit && !st.bomb) Sound.play('unlit');
   }
   /* A bomb forgives two touches per level; the third blows up and the level starts over. A touch only counts when the
@@ -3483,6 +3506,11 @@ function renderGame(flash) {
       g.bombHeld = true; g.bombs = (g.bombs || 0) + 1;
       if (g.bombs >= BOMB_HITS) bombOut(); else { Haptic.play('win'); renderGame(); }
     }, 1500);
+  }
+  if (G.lastTap) {                                         // cheer only a real step forward: more stars lit the honest way than before
+    const hon = st.bomb ? -1 : onTrack();
+    if (hon > (G.hon || 0) && st.lit < st.total) cheer(st, hon - (G.hon || 0));
+    G.hon = Math.max(0, hon);
   }
   G.prevSt = st;
   G.lastSt = st;
@@ -3540,8 +3568,8 @@ function tap(x, y) {
     G.mirrors[k] = '/'; Sound.play('place');
   } else if (m === '/') { G.mirrors[k] = '\\'; Sound.play('rotate'); }
   else { delete G.mirrors[k]; Sound.play('remove'); }
-  G.moves++;
-  renderGame();
+  G.moves++; G.lastTap = k;
+  renderGame(); G.lastTap = null;
 }
 
 function nextHint() {
@@ -4700,7 +4728,7 @@ $('duelBtn').onclick = openDuelMenu;
 $('resetBtn').onclick = () => {
   if (G.done) return;
   for (const k of Object.keys(G.mirrors)) if (!G.locked.has(k)) delete G.mirrors[k];
-  G.moves = 0; G.hammerMode = false; Sound.play('reset'); renderGame();
+  G.moves = 0; G.hammerMode = false; G.hon = 0; Sound.play('reset'); renderGame();
 };
 $('pauseBtn').onclick = () => {
   if (!G || G.done) return;
