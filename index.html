@@ -232,6 +232,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .linkbtn{background:none; border:none; color:inherit; font-weight:600; text-decoration:underline; font-size:15px; margin-top:10px; min-height:36px}
 .btn.danger{background:#E5484D; box-shadow:0 5px 0 #B3262B}
 .btn.ghosty{background:var(--rule); color:var(--ink); box-shadow:0 5px 0 rgba(0,0,0,.08)}
+.poor{background:#FFE9EC; border:2px solid #FF6B7E; border-radius:16px; padding:12px 14px; margin:6px 0 14px; display:flex; flex-direction:column; gap:4px; text-align:center; color:#8E1226} .poor b{font-size:18px} .poor span{font-size:15px}
 .demo-note{font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0}
 
 .hud{display:flex; justify-content:space-between; align-items:center; gap:8px}
@@ -1178,6 +1179,7 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'אין לכם מספיק נקודות': 'You do not have enough points', 'הדו-קרב על {} נקודות ויש לכם {}. חסרות {}.': 'The duel is for {0} points and you have {1}. You are {2} short.', '{} מזמין לדו-קרב': '{0} invites you to a duel',
   'חברים': 'Friends', 'חברים מחוברים': 'Friends online', '+ הוספת חבר': '+ Add a friend', 'בקשות חברות': 'Friend requests', 'אף חבר לא מחובר כרגע. אפשר להזמין בקישור.': 'No friend is online right now. You can invite with a link.', 'עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.': 'No friends here yet. Add friends from the Friends button on the home screen.',
   'זהירות! עוד שתי פגיעות בפצצה והיא מתפוצצת.': 'Careful! Two more hits and the bomb blows up.',
   'הוספת חבר': 'Add a friend', 'חיפוש לפי שם שחקן': 'Search by player name', 'חיפוש': 'Search', 'שיחקתם לאחרונה': 'Played recently', 'כבר חברים': 'Already friends', 'הוספה': 'Add', 'לא נמצא שחקן בשם הזה': 'No player with that name', 'כתבו לפחות שתי אותיות': 'Type at least two letters', 'מחפשים…': 'Searching…', 'יש יותר מדי בקשות פתוחות': 'Too many open requests',
@@ -3523,12 +3525,19 @@ async function createDuel(stake = 0) {
   if (!code) { toast(T('אין חיבור כרגע. נסו שוב מאוחר יותר.')); goHome(); return; }
   startDuel(code);
 }
+/* a duel for points that the player cannot afford: say so plainly, with the numbers */
+const poorNote = stake => `<div class="poor"><b>${T('אין לכם מספיק נקודות')}</b><span>${T`הדו-קרב על ${fmt(stake)} נקודות ויש לכם ${fmt(P.balance)}. חסרות ${fmt(stake - P.balance)}.`}</span></div>`;
 async function joinDuel(code, agreed) {
   if (!agreed) {            // a room played for points says so before anything is taken
     let room = null;
     try { room = await rpc('beam_duel_peek', { p_code: code }); } catch (e) { /* the join itself reports a lost connection */ }
     if (room && room.stake > 0 && room.status === 'waiting') {
-      if (P.balance < room.stake) { toast(T`הדו-קרב הזה על ${fmt(room.stake)} נקודות, ואין לכם מספיק`); goHome(); return; }
+      if (P.balance < room.stake) {
+        Sound.play('error'); Haptic.play('error');
+        modal(`<img class="bug" alt="" src="${POSE.sleep}"><h3>${T`${esc(room.name || '')} מזמין לדו-קרב`}</h3>${poorNote(room.stake)}
+          <button class="btn green" id="poorOk">${T('הבנתי')}</button>`, m => { m.querySelector('#poorOk').onclick = () => { closeModal(); goHome(); }; }, true);
+        return;
+      }
       modal(`<img class="bug" alt="" src="${POSE.power}">
         <h3>${T`דו-קרב על ${fmt(room.stake)} נקודות`}</h3>
         <p>${T`${esc(room.name || '')} מזמין לדו-קרב. המנצח לוקח ${fmt(room.stake * 2)}.`}</p>
@@ -3744,9 +3753,10 @@ function socialRender() {
     Social.invite = inv.id; Sound.play('whoosh'); Haptic.play('win');
     modal(`<img class="bug" alt="" src="${inv.avatar && inv.avatar !== 'bug' ? avatarSrc(inv.avatar) : POSE.power}">
       <h3>${T`הזמנה לדו-קרב מ-${esc(inv.name)}`}</h3>
-      ${inv.stake ? `<p>${P.balance < inv.stake ? T`הדו-קרב הזה על ${fmt(inv.stake)} נקודות, ואין לכם מספיק` : T`משחקים על ${fmt(inv.stake)} נקודות. המנצח לוקח ${fmt(inv.stake * 2)}.`}</p>` : ''}
-      <button class="btn green" id="invYes"${inv.stake && P.balance < inv.stake ? ' disabled' : ''}>${T('קבל')}</button>
-      <button class="btn ghosty" id="invNo" style="margin-top:12px">${T('לא עכשיו')}</button>`, m => {
+      ${inv.stake ? (P.balance < inv.stake ? poorNote(inv.stake) : `<p>${T`משחקים על ${fmt(inv.stake)} נקודות. המנצח לוקח ${fmt(inv.stake * 2)}.`}</p>`) : ''}
+      ${inv.stake && P.balance < inv.stake ? `<button class="btn green" id="invNo">${T('הבנתי')}</button><button id="invYes" hidden></button>`
+        : `<button class="btn green" id="invYes">${T('קבל')}</button><button class="btn ghosty" id="invNo" style="margin-top:12px">${T('לא עכשיו')}</button>`}`, m => {
+        if (inv.stake && P.balance < inv.stake) { Sound.play('error'); Haptic.play('error'); }
                 const answer = async yes => {
           Social.invite = null; closeModal();
           let code = null;
