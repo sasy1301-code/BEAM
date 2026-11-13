@@ -1721,7 +1721,7 @@ function buyLook(cat, it) {
 }
 /* the win effect: a short shower of the painted pieces (media/fx/p) over the screen; plain images, so it costs nothing when idle */
 const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
-const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=${kind === 'confetti' || kind === 'hearts' ? 2 : 1}`;
+const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=${kind === 'confetti' || kind === 'hearts' || kind === 'dust' ? 2 : 1}`;
 function fxPreload(kind) { if (!FX_N[kind]) return; for (const k of [kind, 'dust']) for (let i = 0; i < FX_N[k]; i++) new Image().src = fxSrc(k, i); }
 /* ---- the win effects: each one is a small scene made of the painted pieces, moved by the Web Animations API ---- */
 function fxKit(box, kind) {
@@ -1773,8 +1773,8 @@ const FX_SCENES = {
     const { W, H, rnd, sprite, comet, speck } = k;
     const paths = [t => [W * (-.1 + 1.2 * t), H * (.62 - .3 * t) + Math.sin(t * Math.PI * 3) * H * .1],
                    t => [W * (1.1 - 1.2 * t), H * (.2 + .32 * t) + Math.sin(t * Math.PI * 2.4 + 1) * H * .09]];
-    paths.forEach((p, n) => comet(sprite(1, 76), p, 1700, n * 380, 16, 540, (x, y) => { for (let j = 0; j < 22; j++) { const a = Math.random() * 6.3, d = rnd(30, 110); speck(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.random() < .3); } }));
-    for (let j = 0; j < 26; j++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4)), 600 + j * 60);
+    paths.forEach((p, n) => comet(sprite(1, 76), p, 1700, n * 380, 40, 540, (x, y) => { for (let j = 0; j < 14; j++) { const a = Math.random() * 6.3, d = rnd(30, 110); speck(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.random() < .3); } }));
+    for (let j = 0; j < 16; j++) setTimeout(() => speck(rnd(10, W - 10), rnd(-10, H * .4)), 600 + j * 90);
   },
   confetti(k) {      // two cannons in the bottom corners blast ribbons up; they flutter down
     const { W, H, rnd, sprite, path, fade, flash } = k;
