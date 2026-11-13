@@ -698,6 +698,17 @@ svg.board image{pointer-events:none}
 /* ---- inner pages of the shell ---- */
 #hud .wallet{flex-direction:row-reverse}
 .tabs.four{grid-template-columns:repeat(4,1fr)} .tabs.four button{font-size:15px}
+.tabs.five{grid-template-columns:repeat(5,1fr)} .tabs.five button{font-size:14px; padding:0 2px}
+.coinlead{text-align:center; color:#E9DEFF; margin:-4px 0 12px; font-size:15px}
+.coinpack{position:relative; padding-top:14px} .coinpack b{font-size:24px; font-weight:800; color:#B25E00; direction:ltr}
+.coinpack .tag{position:absolute; top:-8px; inset-inline-start:50%; transform:translateX(50%); background:#FF4F8B; color:#fff; font-style:normal; font-weight:800; font-size:12px; padding:3px 10px; border-radius:999px; white-space:nowrap; box-shadow:0 2px 0 #B8235A}
+[dir=ltr] .coinpack .tag{transform:translateX(-50%)}
+.shopitem .act.money{background:linear-gradient(#5BD46D,#2FA84A); color:#fff; box-shadow:0 3px 0 #1F7A34; direction:ltr}
+.pile{position:relative; display:block; height:92px; margin:0 auto; width:120px} .pile img{position:absolute; width:46px; height:46px; filter:drop-shadow(0 2px 2px rgba(90,40,0,.4))}
+.pile img:nth-child(1){left:37px; top:40px; width:52px; height:52px; z-index:5} .pile img:nth-child(2){left:8px; top:44px; z-index:4} .pile img:nth-child(3){left:70px; top:42px; z-index:4}
+.pile img:nth-child(4){left:22px; top:16px; z-index:3} .pile img:nth-child(5){left:56px; top:14px; z-index:3} .pile img:nth-child(6){left:-6px; top:22px; z-index:2} .pile img:nth-child(7){left:84px; top:20px; z-index:2}
+.pile img:nth-child(8){left:38px; top:-6px; z-index:1} .pile img:nth-child(9){left:4px; top:-2px; z-index:1}
+.pile.p1 img{left:30px; top:16px; width:60px; height:60px} .pile.p2 img:nth-child(1){left:20px; top:22px} .pile.p2 img:nth-child(2){left:58px; top:26px}
 .shopitem img.thumb.char{height:104px} .shopitem img.thumb.brd{height:104px}
 .avgrid button.lock{opacity:.45} .avgrid button.lock img{filter:grayscale(1)}
 .lb li.pod{display:flex; align-items:flex-end; justify-content:center; gap:8px; background:none; box-shadow:none; padding:102px 0 0; margin-bottom:12px}
@@ -1153,6 +1164,8 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'נקודות': 'Points', 'הכי משתלם': 'Best value', 'אוצר': 'Treasure', 'חסרות נקודות ללוח או לדמות? אפשר להשלים כאן.': 'Short on points for a board or a character? Top up here.', 'בקרוב': 'Coming soon', 'הבנתי': 'Got it', 'הנקודות נוספו': 'Points added',
+  'רכישת נקודות תיפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.': 'Buying points opens soon. Meanwhile you can earn points in levels, the daily challenge and duels.',
   'פריחת שקיעה': 'Sunset bloom', 'פטריות קסם': 'Magic mushrooms', 'שמש וירח': 'Sun and moon',
   'יער קסום': 'Enchanted forest', 'גן פרחים': 'Flower garden', 'קריסטל ירח': 'Moon crystal',
   'עדינה': 'Gentle', 'תיבת נגינה': 'Music box',
@@ -2657,7 +2670,7 @@ const SHOP = {
 const CHAR_IDS = new Set(SHOP.char.items.map(x => x.id).filter(x => x !== 'bug'));
 const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-', char: 'ch-' };
 const P_KEY = cat => cat === 'char' ? 'avatar' : cat, BASE = cat => cat === 'char' ? 'bug' : 'classic';
-const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות' };
+const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות', coins: 'נקודות' };
 const owns = (cat, id) => (SHOP[cat].items.find(x => x.id === id) || {}).price === 0 || !!(P.own && P.own[cat + ':' + id]);
 const lookOf = cat => SHOP[cat].items.some(x => x.id === P[P_KEY(cat)]) && owns(cat, P[P_KEY(cat)]) ? P[P_KEY(cat)] : BASE(cat);
 const OLD_BOARDS = { night: 'stars' };   // the drawn boards were replaced by painted ones; a purchase carries over
@@ -2682,15 +2695,36 @@ const BOARD_SAMPLE = '<svg class="bsample" viewBox="0 0 3 1.2"><rect width="3" h
 const sampleOf = (cat, it) => cat === 'char' ? `<img class="thumb char" alt="" src="${avatarSrc(it.id)}">` : cat === 'beam' ? BEAM_SAMPLE : cat === 'board' ? `<img class="thumb brd" alt="" src="media/board/thumb-${it.id}.webp">` : `<button class="fxtry" data-try="${it.id}" aria-label="${T('תצוגה מקדימה')}">${it.id === 'classic' ? it.icon : `<img alt="" src="media/fx/${it.id}.webp">`}</button>`;
 function openShop() { show('shop'); renderShop(); }
 let shopCat = 'beam';
+/* points for money. The amounts climb faster than the prices, so a bigger pack is a better deal. */
+const COIN_PACKS = [
+  { id: 'coins_500', coins: 500, price: '3.90 ₪', n: 1 }, { id: 'coins_1000', coins: 1000, price: '6.90 ₪', n: 2 }, { id: 'coins_2000', coins: 2000, price: '11.90 ₪', n: 3 },
+  { id: 'coins_5000', coins: 5000, price: '24.90 ₪', n: 4 }, { id: 'coins_12000', coins: 12000, price: '49.90 ₪', n: 5, tag: 'הכי משתלם' }, { id: 'coins_30000', coins: 30000, price: '99.90 ₪', n: 6, tag: 'אוצר' },
+];
+const coinPile = n => `<span class="pile p${n}">` + Array.from({ length: [1, 2, 3, 5, 7, 9][n - 1] }, (_, i) => `<img alt="" src="media/ui/coin${1 + i % 3}.webp">`).join('') + '</span>';
+function renderCoins() {
+  return `<p class="coinlead">${T('חסרות נקודות ללוח או לדמות? אפשר להשלים כאן.')}</p><div class="shopgrid">` + COIN_PACKS.map(k =>
+    `<div class="shopitem coinpack">${k.tag ? `<i class="tag">${T(k.tag)}</i>` : ''}${coinPile(k.n)}<b>${fmt(k.coins)}</b><button class="act money" data-pack="${k.id}">${k.price}</button></div>`).join('') + '</div>';
+}
+async function buyCoins(k) {
+  if (!PAYMENTS.live) {                                   // no checkout is connected yet, and points must never be handed out for a tap
+    return modal(`<img class="bug" alt="" src="${POSE.thumbs}"><h3>${T('בקרוב')}</h3>
+      <p>${T('רכישת נקודות תיפתח בקרוב. בינתיים אפשר לצבור נקודות בשלבים, באתגר היומי ובדו-קרב.')}</p>
+      <button class="btn green" id="soonOk">${T('הבנתי')}</button>`, m => { m.querySelector('#soonOk').onclick = closeModal; });
+  }
+  if (!await PAYMENTS.buy(k)) return;
+  gain(k.coins, false); save(); renderShop(); renderHome(); Sound.play('purchase'); Haptic.play('win');
+  toast(T('הנקודות נוספו'), `+${fmt(k.coins)}`);
+}
 function renderShop() {
   $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance); hudSync();
-  $('shopBody').innerHTML = `<div class="tabs four" role="tablist">` + Object.keys(SHOP).map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
-    [shopCat].map(cat => `<div class="shopgrid">` + SHOP[cat].items.map(it => {
+  $('shopBody').innerHTML = `<div class="tabs five" role="tablist">` + [...Object.keys(SHOP), 'coins'].map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
+    (shopCat === 'coins' ? [renderCoins()] : [shopCat].map(cat => `<div class="shopgrid">` + SHOP[cat].items.map(it => {
     const btn = it.id === lookOf(cat) ? `<button class="act on" disabled>${T('בשימוש')}</button>`
       : owns(cat, it.id) ? `<button class="act have" data-use="${cat}:${it.id}">${T('בחירה')}</button>`
       : `<button class="act" data-buy="${cat}:${it.id}"${P.balance < it.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(it.price)}</button>`;
     return `<div class="shopitem ${PREFIX[cat]}${it.id}">${sampleOf(cat, it)}<b>${T(it.name)}</b>${btn}</div>`;
-  }).join('') + '</div>').join('');
+  }).join('') + '</div>')).join('');
+  for (const el of $('shopBody').querySelectorAll('[data-pack]')) el.onclick = () => buyCoins(COIN_PACKS.find(k => k.id === el.dataset.pack));
   for (const el of $('shopBody').querySelectorAll('[data-cat]')) el.onclick = () => { shopCat = el.dataset.cat; Sound.play('tap'); renderShop(); };
   const find = key => { const [cat, id] = key.split(':'); return [cat, SHOP[cat].items.find(x => x.id === id)]; };
   for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[P_KEY(cat)] = it.id; save(cat === 'char'); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); if (cat === 'char') pulse(); };
@@ -3882,6 +3916,7 @@ function openAchievements() {
 /* ================= ads & purchases ================= */
 /* PAYMENTS: replace with the real store SDK (App Store / Google Play / web checkout) when publishing. */
 const PAYMENTS = {
+  live: false,                                            // true once a real checkout stands behind buy()
   buy(product) {
     return new Promise(resolve => {
       modal(`<h3>${T`אישור רכישה`}</h3>
