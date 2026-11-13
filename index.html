@@ -3370,6 +3370,12 @@ function cheer(st, gained) {
   setTimeout(() => Sound.play('sparkle', 3), 160);
   setTimeout(() => box.remove(), 2100);
 }
+// a move counts as right only when every mirror on the board sits where the solution has it, turned the same way
+function onTrack() {
+  if (!G.lv.sol) return true;
+  const want = new Map(G.lv.sol);
+  return Object.entries(G.mirrors).every(([k, m]) => want.get(k) === m);
+}
 function cheerPreload() { for (const k in CHEERS) new Image().src = `media/cheer/${k}.webp`; for (const i of [1, 3, 5]) new Image().src = fxSrc('dust', i); }
 
 const BOMB_HITS = 3;   // how many times the beam may rest on a bomb in one level before it blows up
@@ -3380,7 +3386,7 @@ function renderGame(flash) {
   if (G.prevSt) {
     if (st.bomb && !G.prevSt.bomb) Sound.play('bomb');
     else if (!st.bomb && G.prevSt.bomb) Sound.play('defuse');
-    if (st.lit > G.prevSt.lit) { for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90); if (st.lit < st.total) cheer(st, st.lit - G.prevSt.lit); }
+    if (st.lit > G.prevSt.lit) { for (let n = G.prevSt.lit; n < st.lit; n++) setTimeout(() => Sound.play('star', n), (n - G.prevSt.lit) * 90); if (st.lit < st.total && !st.bomb && onTrack()) cheer(st, st.lit - G.prevSt.lit); }
     else if (st.lit < G.prevSt.lit && !st.bomb) Sound.play('unlit');
   }
   /* A bomb forgives two touches per level; the third blows up and the level starts over. A touch only counts when the
