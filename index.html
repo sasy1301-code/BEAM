@@ -2469,6 +2469,7 @@ function flyShow(c) {
 const TAB_OF = { allch: 'home', shop: 'shop', leader: 'leader', home: 'home', pals: 'home', friends: 'duel', garden: 'garden' };       // the screens that carry the two bars
 function show(id) {
   if (id !== 'game') liveStop(); if (id !== 'watch') watchStop();
+  if (id !== 'game' && id !== 'login') setTimeout(claimGifts, 300);          // coming out of a board, or into the game: anything waiting is collected right away
   for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game');
   const tab = TAB_OF[id];
   $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game');
@@ -3886,7 +3887,7 @@ async function claimGifts() {
 }
 /* the gift arrives in the middle of the screen, with its sum and a burst of coins; while a board or another window is open it waits its turn */
 function giftShow(n, who) {
-  if (!$('overlay').hidden || !$('game').hidden || !$('duel').hidden || !$('watch').hidden || !$('login').hidden) return void setTimeout(() => giftShow(n, who), 2500);
+  if (!$('overlay').hidden || !$('game').hidden || !$('duel').hidden || !$('watch').hidden || !$('login').hidden) return void setTimeout(() => giftShow(n, who), 900);
   modal(`<img class="bug giftpic" alt="" src="media/ui/gift.webp">
     <h3>${who.length ? T`מתנה מ-${who.slice(0, 2).map(esc).join(', ')}!` : T('קיבלתם מתנה!')}</h3>
     <div class="gains big"><div class="coin">${ICON_POINTS}<span dir="ltr">+${fmt(n)}</span></div></div>
@@ -3897,7 +3898,7 @@ function giftShow(n, who) {
     });
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) claimGifts(); });
-setInterval(() => { if (!document.hidden) claimGifts(); }, 5 * 60 * 1000);
+setInterval(() => { if (!document.hidden) claimGifts(); }, 20 * 1000);   // a gift sent now shows up within seconds, not at the next visit
 function socialRender() {
   const d = Social.data, online = d.friends.filter(f => f.online).length, asks = d.friends.filter(f => f.rel === 'in').length;
   if (asks || online) $('duelText').textContent = asks ? T('יש לכם בקשת חברות חדשה') : online === 1 ? T('חבר אחד מחובר עכשיו') : T`${online} חברים מחוברים עכשיו`;
