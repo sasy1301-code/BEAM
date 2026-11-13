@@ -2842,6 +2842,7 @@ function buyGarden(key) {
   let fresh;
   if (key === 'house') { g.house++; fresh = 'house'; } else { fresh = id + ':' + (have[id] || 0); have[id] = (have[id] || 0) + 1; }
   P.balance -= price; save(false);
+  logPurchase(key === 'house' ? 'garden:house' + g.house : (inside ? 'room:' : 'garden:') + id, price, false);
   Sound.play('purchase'); Haptic.play('win');
   renderGarden(fresh); renderHome();
   $('gScene').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3330,7 +3331,7 @@ function timeOut() {
       m.querySelector('#toHome').onclick = () => { closeModal(); G = null; goHome(); };
       m.querySelector('#toMore').onclick = () => {
         if (P.balance < more) return;
-        closeModal(); P.balance -= more; save(false);
+        closeModal(); P.balance -= more; save(false); logPurchase('power:time', more, false);
         g.done = false; g.helped = true; g.left = 60000; g.limit = Math.max(g.limit, 60); g.tick = Date.now();     // bought time is help, like a bought mirror
         Sound.play('purchase'); renderGame(T('קיבלתם עוד דקה. עזרה מגבילה את השלב לכוכב אחד.'));
       };
@@ -3578,9 +3579,9 @@ function nextHint() {
   if (!G.lv.sol) return null;
   return G.lv.sol.find(([k, m]) => G.mirrors[k] !== m || !G.locked.has(k)) || null;
 }
-function spend(n) { if (P.balance < n) return false; P.balance -= n; G.helped = true; save(false); return true; }
+function spend(n, what) { if (P.balance < n) return false; P.balance -= n; G.helped = true; save(false); if (what) logPurchase('power:' + what, n, false); return true; }
 function buyMirror() {
-  if (G.extra >= LIMIT.mirror || !spend(price('mirror'))) return;
+  if (G.extra >= LIMIT.mirror || !spend(price('mirror'), 'mirror')) return;
   G.extra++; Sound.play('purchase'); toast(T('קיבלתם מראה נוספת'), `-${fmt(price('mirror'))}`); renderGame();
 }
 function breakable() {
@@ -3591,13 +3592,13 @@ function toggleHammer() {
   G.hammerMode = !G.hammerMode; Sound.play(G.hammerMode ? 'hammerArm' : 'tap'); renderGame();
 }
 function breakWall(x, y) {
-  if (!breakable().has(key(x, y)) || !spend(price('hammer'))) return;
+  if (!breakable().has(key(x, y)) || !spend(price('hammer'), 'hammer')) return;
   const r = G.lv.rows[y]; G.lv.rows[y] = r.slice(0, x) + '.' + r.slice(x + 1);
   G.hammers++; G.hammerMode = false; Sound.play('hammer');
   toast(T('החסימה נשברה'), `-${fmt(price('hammer'))}`); renderGame();
 }
 function buyHint() {
-  const h = nextHint(); if (!h || G.hints >= hintLimit(G.lv) || !spend(price('hint'))) return;
+  const h = nextHint(); if (!h || G.hints >= hintLimit(G.lv) || !spend(price('hint'), 'hint')) return;
   G.hints++;
   const [k, m] = h;
   const solKeys = new Set(G.lv.sol.map(s => s[0]));
