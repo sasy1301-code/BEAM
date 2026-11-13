@@ -172,7 +172,10 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .duelbox{text-align:center; padding:22px 18px}
 .emobtn{position:fixed; left:18px; bottom:calc(52px + env(safe-area-inset-bottom)); width:60px; height:60px; z-index:45; border-radius:50%; border:3px solid #FFE08A; background:linear-gradient(#A98BFF,#6B3FF0); box-shadow:0 4px 0 #3F1FA8, 0 6px 14px rgba(0,0,0,.35); font-size:28px; line-height:1; padding:0}
 .emobtn[hidden], .emopick[hidden]{display:none}
-.emopick{position:fixed; left:12px; bottom:calc(124px + env(safe-area-inset-bottom)); z-index:46; display:grid; grid-template-columns:repeat(5,1fr); gap:6px; background:#fff; border-radius:20px; padding:10px; box-shadow:0 10px 30px rgba(20,0,60,.45); animation:emoIn .18s ease-out}
+.emopick .emogrid{display:grid; grid-template-columns:repeat(6,1fr); gap:6px} .emopick .emogrid.bugs{padding-bottom:8px; margin-bottom:8px; border-bottom:2px solid #EDE4FF}
+.emopick button.bug{background:#EDE2FF; padding:2px} .emopick button.bug img{width:100%; height:100%; object-fit:contain; display:block}
+.emofly b img{width:150px; height:150px; display:block} .emofly.mine b img{width:76px; height:76px}
+.emopick{position:fixed; left:12px; right:12px; max-width:360px; max-height:60vh; overflow-y:auto; bottom:calc(124px + env(safe-area-inset-bottom)); z-index:46; background:#fff; border-radius:20px; padding:10px; box-shadow:0 10px 30px rgba(20,0,60,.45); animation:emoIn .18s ease-out}
 .emopick button{border:none; background:#F3EDFF; border-radius:14px; width:48px; height:48px; font-size:28px; line-height:1; padding:0} .emopick button:active{transform:scale(.9)}
 @keyframes emoIn{from{opacity:0; transform:translateY(10px) scale(.95)}}
 .emofly{position:fixed; left:50%; top:30%; z-index:70; pointer-events:none; text-align:center; animation:emoFly 2.6s cubic-bezier(.2,1.4,.4,1) both}
@@ -3767,13 +3770,17 @@ function startDuel(code) {
 function stopDuel() { if (D) { clearInterval(D.timer); D = null; } clearInterval(timerInt); emoteBar(false); }
 /* ---- reactions in a duel: a little face sent to the other side, shown big over their screen ---- */
 const EMOTES = { laugh: '😂', wow: '😮', cool: '😎', angry: '😡', cry: '😭', love: '😍', clap: '👏', fire: '🔥', think: '🤔', gg: '🤝' };
+// the firefly pack: painted faces, sent the same way as the emoji
+for (const k of ['happy', 'laugh', 'love', 'wow', 'think', 'wink', 'thumbs', 'luck', 'angry', 'sad', 'cry', 'win']) EMOTES['b-' + k] = `<img alt="" src="media/emo/${k}.webp">`;
 function emoteBar(on) {
   let b = $('emoBtn');
   if (!on) { if (b) b.hidden = true; const pk = $('emoPick'); if (pk) pk.hidden = true; return; }
   if (!b) {
     b = document.createElement('button'); b.id = 'emoBtn'; b.className = 'emobtn'; b.setAttribute('aria-label', T('שליחת אימוג׳י')); b.textContent = '😊';
     const pk = document.createElement('div'); pk.id = 'emoPick'; pk.className = 'emopick'; pk.hidden = true;
-    pk.innerHTML = Object.entries(EMOTES).map(([k, e]) => `<button data-emo="${k}">${e}</button>`).join('');
+    const btns = list => list.map(([k, e]) => `<button data-emo="${k}"${k.startsWith('b-') ? ' class="bug"' : ''}>${e}</button>`).join('');
+    const all = Object.entries(EMOTES);
+    pk.innerHTML = `<div class="emogrid bugs">${btns(all.filter(([k]) => k.startsWith('b-')))}</div><div class="emogrid">${btns(all.filter(([k]) => !k.startsWith('b-')))}</div>`;
     document.body.append(b, pk);
     b.onclick = () => { pk.hidden = !pk.hidden; Sound.play('tap'); };
     pk.onclick = e => { const k = e.target.closest('[data-emo]'); if (k) sendEmote(k.dataset.emo); };
