@@ -182,7 +182,7 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 .fhead{display:flex; align-items:center; gap:12px; margin:0 44px 14px 0; text-align:start} .fhead .av{position:relative; width:60px; height:60px; border-radius:50%; background:#E6DBFA; display:grid; place-items:center; flex:none} .fhead .av img{width:54px; height:54px; object-fit:contain}
 .fhead .dot{position:absolute; bottom:0; inset-inline-end:0; width:13px; height:13px; border-radius:50%; background:#B9AFCF; border:2px solid #fff} .fhead .dot.on{background:#2DBE60} .fhead b{display:block; font-size:23px} .fhead small{color:var(--muted); font-size:14px}
 .fact{display:flex; align-items:center; gap:12px; width:100%; border:none; background:#F6F1FF; border-radius:16px; padding:10px 12px; margin-top:8px; font:inherit; text-align:start; color:#2D1B4E} .fact:disabled{opacity:.45}
-.fact .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; flex:none} .fact .ic img{width:34px; height:34px; object-fit:contain} .fact b{display:block; font-size:17px} .fact small{color:#6B5A8C; font-size:13px}
+.fact .ic{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; flex:none} .fact .ic img{width:38px; height:38px; object-fit:contain} .fact .ic{width:48px; height:48px} .fact b{display:block; font-size:17px} .fact small{color:#6B5A8C; font-size:13px}
 .fact.red{background:#FFF3F4} .fact.red b, .fact.red .ic{color:#C2283C; font-weight:700}
 .frlist button.eye{background:#E3F4FF; padding:4px 9px; font-size:19px; line-height:1}
 .duelbox h3{font-size:24px; margin:0 0 6px}
@@ -4073,10 +4073,10 @@ function friendMenu(f) {
   const sub = !f.online ? T('לא מחובר') : f.state === 'duel' ? T('בדו-קרב') : f.state === 'level' ? T('משחק כרגע') : T('מחובר');
   const item = (a, ic, bg, title, note, off) => `<button class="fact${a === 'remove' ? ' red' : ''}" data-m="${a}"${off ? ' disabled' : ''}><span class="ic" style="background:${bg}">${ic}</span><span><b>${title}</b>${note ? `<small>${note}</small>` : ''}</span></button>`;
   modal(`<div class="fhead"><span class="av"><img alt="" src="${avatarSrc(f.avatar)}"><span class="dot${f.online ? ' on' : ''}"></span></span><div><b>${esc(f.name || '')}</b><small>${sub}</small></div></div>` +
-    (playing ? item('watch', '👁', '#E3F4FF', T('צפייה במשחק'), T('לראות את הלוח בזמן אמת')) : '') +
+    (playing ? item('watch', '<img alt="" src="media/ui/eye.webp">', '#EFE6FF', T('צפייה במשחק'), T('לראות את הלוח בזמן אמת')) : '') +
     item('gift', '<img alt="" src="media/ui/gift.webp">', '#FFE7C2', T('שליחת מתנה'), T('נקודות מהארנק שלכם')) +
     item('invite', '<img alt="" src="media/ui/duel.webp">', '#FFE3B8', T('הזמנה לדו-קרב'), f.online && f.state !== 'duel' ? T('בוחרים רמת קושי וסכום') : T('אפשר כשהחבר מחובר ופנוי'), !(f.online && f.state !== 'duel')) +
-    item('remove', '✕', '#FFE1E5', T('הסרה מהחברים')), m => {
+    item('remove', '<img alt="" src="media/ui/unfriend.webp">', '#FFE1E5', T('הסרה מהחברים')), m => {
       for (const b of m.querySelectorAll('[data-m]')) b.onclick = () => { closeModal(); friendAction(b.dataset.m, f); };
     });
 }
