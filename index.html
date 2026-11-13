@@ -496,11 +496,10 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .bm-classic{--beam:#FF3D7F} .bm-gold{--beam:#FFC83A} .bm-ice{--beam:#3FD0FF} .bm-lime{--beam:#6BEA4B} .bm-violet{--beam:#B36BFF}
 .bm-fire{--beam:#FF5A1F} .bm-fire .glow{stroke:#FFB02E; animation:bmFlick .45s ease-in-out infinite alternate}
 @keyframes bmFlick{from{opacity:.4; stroke-width:.24}to{opacity:.8; stroke-width:.38}}
-.bm-rainbow .beamline,.bm-rainbow .glow{animation:bmHue 2.5s linear infinite}
-@keyframes bmHue{to{filter:hue-rotate(360deg)}}
+.bm-rainbow .beamline{stroke:url(#rbBeam); stroke-width:.2} .bm-rainbow .glow{stroke:url(#rbBeam); opacity:.45}
 .bm-star{--beam:#FFC400} .bm-star .glow{stroke:#FF6FE0; stroke-dasharray:.1 .24; opacity:.95; animation:bmDash .9s linear infinite}
 @keyframes bmDash{to{stroke-dashoffset:-.68}}
-@media (prefers-reduced-motion: reduce){ .bm-fire .glow,.bm-rainbow .beamline,.bm-rainbow .glow,.bm-star .glow{animation:none} }
+@media (prefers-reduced-motion: reduce){ .bm-fire .glow,.bm-star .glow{animation:none} }
 .shopwallet{display:flex; justify-content:center; margin:0 0 14px}
 .shoph{color:#FFE9A8; font-size:20px; font-weight:700; margin:18px 4px 10px}
 .shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
@@ -934,6 +933,11 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
     <p id="spText">טוענים את האור…</p>
   </div>
 </div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="rbBeam" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1.6" y2="1.6" spreadMethod="repeat">
+    <stop offset="0" stop-color="#FF3D3D"/><stop offset=".16" stop-color="#FF8A1F"/><stop offset=".32" stop-color="#FFD23F"/><stop offset=".48" stop-color="#4BD964"/><stop offset=".64" stop-color="#3FB8FF"/><stop offset=".8" stop-color="#8A6BFF"/><stop offset="1" stop-color="#FF3D3D"/>
+    <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="1.6 1.6" dur="2.4s" repeatCount="indefinite"/>
+  </linearGradient></defs></svg>
 <main>
 <div class="hud" id="hud" hidden>
     <button class="me" id="meBtn" aria-label="פרופיל ושם">
