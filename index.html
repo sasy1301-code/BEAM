@@ -3476,19 +3476,27 @@ function goHome() {
    Two players, the same generated board, first to light every star takes the round; first to three wins (at most five rounds).
    The server is the referee (clock, who finished first, who went quiet). This side asks it about once a second
    and draws whatever it answers: waiting room, countdown, the race, the result. */
-const DUEL_GEN = 1;   // raise whenever duelLevel() or the level generator changes, so mismatched versions cannot meet
+const DUEL_GEN = 2;   // raise whenever duelLevel() or the level generator changes, so mismatched versions cannot meet
+/* one spec per round, growing harder; five mirrors and four or five stars on every board, 8 by 8 from the second round on */
 const DUEL_SPECS = [
-  { W: 6, H: 6, k: 3, nt: 3, walls: 2, bombs: 2, maxSols: 3, budget: 80000 },
-  { W: 7, H: 7, k: 3, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 120000 },
-  { W: 7, H: 7, k: 4, nt: 3, walls: 3, bombs: 3, maxSols: 3, budget: 150000 },
+  { W: 7, H: 7, k: 5, nt: 4, walls: 3, bombs: 4, maxSols: 2, budget: 150000 },
+  { W: 8, H: 8, k: 5, nt: 4, walls: 4, bombs: 4, maxSols: 2, budget: 200000 },
+  { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 },
+  { W: 8, H: 8, k: 5, nt: 4, walls: 3, bombs: 4, fixed: 1, maxSols: 2, budget: 200000 },
+  { W: 8, H: 8, k: 5, nt: 5, walls: 4, bombs: 5, maxSols: 2, budget: 200000 },
 ];
 const DUEL_REWARD = { win: 300, draw: 150, lose: 100 };
 /* both players build the round's board from the room's seed, so it is identical without ever being sent */
 function duelLevel(seed, round) {
   const R = mulberry32(hashStr('duel-' + seed + '-' + round)), sp = DUEL_SPECS[(round - 1) % DUEL_SPECS.length];
   for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, sp); if (lv) return lv; }
+  for (let i = 0; i < 1500; i++) { const lv = makeLevel(R, DUEL_SPECS[0]); if (lv) return lv; }   // a rare seed that finds no 8 by 8 board still gets a hard one
   return { rows: ['......', '....T.', '......', '......', '.T....', '......'], lasers: [['L', 1]], max: 2, sol: [['5,1', '\\'], ['5,4', '/']] };
 }
+/* What this player has put into a pot and which matches were already paid out, kept with the profile: a room entered again
+   (the link tapped twice, the page refreshed) must neither take the stake twice nor forget that it was put in. */
+const duelMark = (kind, seed) => { P.duelLog = P.duelLog || { paid: [], done: [] }; if (!P.duelLog[kind].includes(seed)) P.duelLog[kind] = [...P.duelLog[kind], seed].slice(-20); };
+const duelHas = (kind, seed) => !!(P.duelLog && P.duelLog[kind] && P.duelLog[kind].includes(seed));
 let D = null;   // the duel in progress: { code, st: last server answer, offset: server clock minus ours, key, timer, fails }
 const duelNow = () => Date.now() + (D ? D.offset || 0 : 0);
 function duelTimeLeft() { return D && D.st ? Math.max(0, Math.ceil((D.st.round_start + D.st.round_len * 1000 - duelNow()) / 1000)) : 0; }
@@ -3611,7 +3619,7 @@ function duelRender() {
       : T('יריב נמצא!');
     if (D.view !== 'countdown') {
       D.view = 'countdown'; hideWin(); show('duel'); $('duelSub').textContent = st.stake ? T`סיבוב ${st.round} · הקופה: ${fmt(st.stake * 2)}` : T`סיבוב ${st.round} · עד 3 ניצחונות`;
-      if (st.stake && st.round === 1 && D.paid !== st.seed) { D.paid = st.seed; P.balance = Math.max(0, P.balance - st.stake); save(false); toast(T('שמתם בקופה'), `-${fmt(st.stake)}`); }
+      if (st.stake && st.round === 1 && !duelHas('paid', st.seed)) { duelMark('paid', st.seed); P.balance = Math.max(0, P.balance - st.stake); save(false); toast(T('שמתם בקופה'), `-${fmt(st.stake)}`); }
       box.innerHTML = `<img class="dbug" alt="" src="${POSE.power}"><h3>${head}</h3>${vs}<div class="duelcount" id="duelCount"></div><p>${T('הלוח ייחשף לשניכם באותו רגע.')}</p>`;
       if (st.round > 1 && st.last_winner != null) Sound.play(st.last_winner - 1 === me ? 'win' : 'unlit', 1);
       D.lastCount = null;
@@ -3643,10 +3651,10 @@ function duelRender() {
   clearInterval(timerInt); hideWin();
   const won = st.winner - 1 === me, draw_ = st.winner === 0, gone = st.left_by != null && st.left_by - 1 === opp;
   const played = st.wins[0] + st.wins[1] > 0 || st.round > 1;          // walking out before a single round earns nobody anything
-  const pot = st.stake && D.paid === st.seed ? (!played || draw_ ? st.stake : won ? st.stake * 2 : 0) : 0;      // an unplayed or drawn match gives the stake back
+  const pot = st.stake && duelHas('paid', st.seed) ? (!played || draw_ ? st.stake : won ? st.stake * 2 : 0) : 0;      // an unplayed or drawn match gives the stake back
   const reward = (!played ? 0 : draw_ ? DUEL_REWARD.draw : won ? DUEL_REWARD.win : DUEL_REWARD.lose) + pot;
-  if (D.rewarded !== st.seed) {                           // once per match, into the spending balance only
-    D.rewarded = st.seed; gain(reward, false);
+  if (!duelHas('done', st.seed)) {                        // once per match, into the spending balance only
+    duelMark('done', st.seed); gain(reward, false);
     if (played) { P.duel = P.duel || { w: 0, l: 0, d: 0 }; P.duel[draw_ ? 'd' : won ? 'w' : 'l']++; }
     save(false);
     Sound.play(won ? 'win' : 'unlit', 3); if (won) Sound.play('perfect');
