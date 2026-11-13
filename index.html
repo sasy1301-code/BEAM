@@ -508,18 +508,20 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .shopitem svg.bsample{background:none}
 .shopitem button.fxtry{border:none; width:100%; height:96px; overflow:hidden; border-radius:12px; background:#241047; font-size:34px; min-height:0}
 .fxbox{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
-.fxbox i{position:absolute; top:-30px; width:var(--s); height:calc(var(--s) * .6); background:var(--c); border-radius:2px; font-style:normal; animation:fxFall 2.6s linear both}
-.fx-stars i,.fx-hearts i,.fx-dust i,.fx-snow i,.fx-lightning i{background:none; color:var(--c); font-size:calc(var(--s) * 1.8); width:auto; height:auto; text-shadow:0 0 8px var(--c)}
-.fx-bubbles i{top:auto; bottom:-50px; height:var(--s); border-radius:50%; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(160,220,255,.35) 60%,rgba(120,190,255,.15)); border:1px solid rgba(255,255,255,.6); animation-name:fxRise}
-.fx-dust i{top:auto; bottom:-40px; animation-name:fxRise} .fx-lightning i{font-size:calc(var(--s) * 3)}
-.fx-rainbow i{width:calc(var(--s) * .55); height:calc(var(--s) * 4.5); border-radius:999px; box-shadow:0 0 10px var(--c)}
-.fxbox.fx-lightning::before{content:""; position:absolute; inset:0; background:#fff; opacity:0; animation:fxFlash .9s ease-out}
-@keyframes fxFlash{8%{opacity:.75} 20%{opacity:.1} 30%{opacity:.6} 100%{opacity:0}}
 .fxtry img[src*="classic"]{height:72px; margin-top:11px} .fxtry img{height:94px; object-fit:contain; display:block; margin:0 auto; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
-.fx-fireworks i,.fx-portal i{width:7px; height:7px; border-radius:50%; box-shadow:0 0 8px currentColor; opacity:0; animation:fxBurst 1.1s ease-out both}
-@keyframes fxFall{to{transform:translate(var(--sway),110vh) rotate(var(--r))}}
-@keyframes fxRise{to{transform:translate(var(--sway),-115vh); opacity:.2}}
+.fxbox img.fxp{position:absolute; left:var(--x); top:var(--y); width:var(--w); height:auto; opacity:0; animation-fill-mode:both; animation-timing-function:linear; will-change:transform,opacity; filter:drop-shadow(0 4px 8px rgba(30,0,60,.35))}
+@keyframes pFall{0%{opacity:0; transform:translate(0,0) rotate(var(--r0))} 8%{opacity:1} 88%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),125vh) rotate(var(--r))}}
+@keyframes pRise{0%{opacity:0; transform:translate(0,0) rotate(var(--r0)) scale(.8)} 10%{opacity:1} 85%{opacity:1} 100%{opacity:0; transform:translate(var(--sway),-125vh) rotate(var(--r)) scale(1.05)}}
+@keyframes pShoot{0%{opacity:0; transform:translate(0,0) scale(.7)} 12%{opacity:1} 80%{opacity:1} 100%{opacity:0; transform:translate(115vw,-85vh) scale(1)}}
+@keyframes pPop{0%{opacity:0; transform:translate(-50%,-50%) rotate(var(--r0)) scale(.2)} 18%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r0)) scale(1.15)} 30%{transform:translate(-50%,-50%) rotate(var(--r0)) scale(1)} 72%{opacity:1} 100%{opacity:0; transform:translate(-50%,-60%) rotate(var(--r0)) scale(1.08)}}
+@keyframes pBoom{0%{opacity:0; transform:translate(-50%,-50%) scale(.05)} 25%{opacity:1; transform:translate(-50%,-50%) scale(1)} 65%{opacity:1} 100%{opacity:0; transform:translate(-50%,-42%) scale(1.25)}}
+@keyframes pFlick{0%{opacity:0; transform:translate(-50%,-50%) rotate(var(--r0)) scale(.6)} 10%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r0)) scale(1.15)} 20%{opacity:.25} 30%{opacity:1; transform:translate(-50%,-50%) rotate(var(--r0)) scale(1)} 70%{opacity:1} 100%{opacity:0}}
+@keyframes pBurst{0%{opacity:0; transform:translate(-50%,-50%) scale(.3)} 15%{opacity:1} 80%{opacity:1} 100%{opacity:0; transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--r)) scale(1)}}
+@keyframes pSwirl{0%{opacity:0; transform:translate(-50%,-50%) rotate(0) scale(.1)} 20%{opacity:1; transform:translate(-50%,-50%) rotate(-140deg) scale(1)} 75%{opacity:1; transform:translate(-50%,-50%) rotate(-460deg) scale(1.15)} 100%{opacity:0; transform:translate(-50%,-50%) rotate(-620deg) scale(1.7)}}
 @keyframes fxBurst{0%{opacity:1; transform:translate(0,0) scale(1)} 80%{opacity:1} 100%{opacity:0; transform:translate(var(--dx),var(--dy)) scale(.3)}}
+.fxbox.fx-lightning::before{content:""; position:absolute; inset:0; background:#FFF6D6; opacity:0; animation:fxFlash .9s ease-out}
+@keyframes fxFlash{8%{opacity:.6} 20%{opacity:.1} 30%{opacity:.45} 100%{opacity:0}}
+@keyframes pGlow{0%{opacity:0; transform:translate(-50%,-50%) scale(.6) rotate(-10deg)} 25%{opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0)} 70%{opacity:1} 100%{opacity:0; transform:translate(-50%,-56%) scale(1.15) rotate(6deg)}}
 .shopitem b{font-size:16px}
 .shopitem button.act{border:none; border-radius:12px; font:inherit; font-weight:700; font-size:15px; min-height:40px; background:var(--orange,#FF8A1F); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px}
 .shopitem button.act svg{width:18px; height:18px; background:none}
@@ -2864,6 +2866,7 @@ function migrateBoards() {
 }
 function applyLook() {
   migrateBoards();
+  fxPreload(lookOf('fx'));
   for (const el of [$('game'), $('help')]) {          // only where a board is drawn, so the shop's samples keep their own look
     for (const c of [...el.classList]) if (/^b[md]-/.test(c)) el.classList.remove(c);
     for (const cat of ['beam', 'board']) if (lookOf(cat) !== 'classic') el.classList.add(PREFIX[cat] + lookOf(cat));
@@ -2929,30 +2932,41 @@ function buyLook(cat, it) {
       };
     });
 }
-/* the win effect: a short shower of particles over the screen, drawn with plain elements so it costs nothing when idle */
+/* the win effect: a short shower of the painted pieces (media/fx/p) over the screen; plain images, so it costs nothing when idle */
+const FX_N = { bubbles: 10, stars: 9, dust: 6, hearts: 6, rainbow: 7, snow: 8, lightning: 7, fireworks: 7, portal: 10, confetti: 10 };
+const fxSrc = (kind, i) => `media/fx/p/${kind}-${i}.webp?v=1`;
+function fxPreload(kind) { if (FX_N[kind]) for (let i = 0; i < FX_N[kind]; i++) new Image().src = fxSrc(kind, i); }
 function winFx(kind) {
-  if (!kind || kind === 'classic' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  if (!FX_N[kind] || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
   const box = document.createElement('div'); box.className = 'fxbox fx-' + kind;
-  const rnd = (a, b) => a + Math.random() * (b - a), COLORS = ['#FF3D7F', '#FFC83A', '#3FD0FF', '#6BEA4B', '#B36BFF', '#FF8A1F'];
-  const add = (style, text) => { const i = document.createElement('i'); i.style.cssText = style; if (text) i.textContent = text; box.appendChild(i); };
-  if (kind === 'portal') {                 // rings of light opening from the middle of the screen
-    for (let w = 0; w < 4; w++) for (let k = 0; k < 26; k++) { const a = k / 26 * Math.PI * 2 + w * .3, d = 90 + w * 70; add(`left:50%;top:42%;background:${['#FFD23F', '#C77DFF', '#fff', '#FF8AD8'][w]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${w * .28}s`); }
-  } else if (kind === 'fireworks') {
-    for (let b = 0; b < 5; b++) {
-      const x = rnd(15, 85), y = rnd(15, 55), c = COLORS[b % COLORS.length], n = 16;
-      for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, d = rnd(60, 120); add(`left:${x}%;top:${y}%;background:${c};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${b * .35}s`); }
-    }
-  } else {
-    const n = kind === 'bubbles' ? 26 : kind === 'lightning' ? 22 : 44, glyph = { stars: '★', hearts: '♥', dust: '✦', snow: '❄', lightning: '⚡' }[kind] || '';
-    const TINT = { stars: ['#FFC83A'], hearts: ['#FF5FA2', '#B36BFF', '#FF3D7F'], dust: ['#FFE27A', '#FFB8F0', '#fff'], snow: ['#fff', '#BFEFFF', '#D9C9FF'], lightning: ['#FFE23F', '#FFF6B0'], rainbow: ['#FF3D3D', '#FF8A1F', '#FFD23F', '#4BD964', '#3FD0FF', '#6B7BFF', '#B36BFF'] }[kind];
-    for (let k = 0; k < n; k++) {
-      const c = TINT ? TINT[k % TINT.length] : COLORS[k % COLORS.length], size = rnd(kind === 'bubbles' ? 14 : 8, kind === 'bubbles' ? 42 : 16);
-      const slow = kind === 'snow' ? 1.7 : kind === 'lightning' ? .45 : 1;
-      add(`left:${rnd(0, 100)}%;--c:${c};--s:${size}px;--r:${kind === 'snow' || kind === 'lightning' ? rnd(-30, 30) : rnd(-360, 360)}deg;--sway:${rnd(-40, 40)}px;animation-duration:${rnd(1.8, 3.2) * slow}s;animation-delay:${rnd(0, .9)}s`, glyph);
-    }
+  const rnd = (a, b) => a + Math.random() * (b - a), pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const add = (i, o) => {
+    const im = document.createElement('img'); im.alt = ''; im.className = 'fxp'; im.src = fxSrc(kind, i);
+    im.style.cssText = `--x:${o.x}%;--y:${o.y}%;--w:${o.w}px;--r:${o.r || 0}deg;--r0:${o.r0 || 0}deg;--sway:${o.sway || 0}px;--dx:${o.dx || 0}px;--dy:${o.dy || 0}px;animation-name:${o.a};animation-duration:${o.d}s;animation-delay:${o.dl || 0}s`;
+    box.appendChild(im);
+  };
+  const shower = (ids, n, a, w, extra = {}) => { for (let k = 0; k < n; k++) add(pick(ids), { x: rnd(-5, 95), y: a === 'pRise' ? rnd(100, 112) : rnd(-22, -8), w: rnd(...w), r: rnd(-200, 200), r0: rnd(-40, 40), sway: rnd(-60, 60), a, d: rnd(2.2, 3.4), dl: rnd(0, 1), ...extra }); };
+  const pops = (ids, n, w, a, gap, d) => { for (let k = 0; k < n; k++) add(pick(ids), { x: rnd(12, 88), y: rnd(10, 70), w: rnd(...w), r0: rnd(-25, 25), a, d, dl: k * gap + rnd(0, .15) }); };
+  if (kind === 'confetti') shower(range(0, 9), 34, 'pFall', [34, 58]);
+  else if (kind === 'snow') shower(range(0, 7), 26, 'pFall', [28, 56], { d: rnd(3, 3.6) });
+  else if (kind === 'bubbles') shower(range(0, 9), 22, 'pRise', [26, 70]);
+  else if (kind === 'hearts') shower(range(0, 5), 24, 'pRise', [30, 60], { r: 0 });
+  else if (kind === 'stars') for (let k = 0; k < 14; k++) add(pick(range(0, 8)), { x: rnd(-40, 30), y: rnd(55, 125), w: rnd(56, 104), a: 'pShoot', d: rnd(1.3, 2), dl: rnd(0, 1.6) });
+  else if (kind === 'rainbow') {
+    pops([0, 1, 2], 3, [150, 210], 'pPop', .45, 2.4);
+    shower([3, 4], 8, 'pFall', [50, 80], { r: 0 }); shower([5, 6], 14, 'pFall', [22, 40]);
+  } else if (kind === 'lightning') { pops(range(0, 3), 9, [60, 110], 'pFlick', .2, 1.2); pops(range(4, 6), 10, [24, 40], 'pPop', .15, 1); }
+  else if (kind === 'fireworks') { pops(range(0, 4), 7, [110, 190], 'pBoom', .32, 1.5); pops([5, 6], 12, [22, 36], 'pPop', .18, 1.1); }
+  else if (kind === 'dust') {
+    add(0, { x: 50, y: 45, w: Math.min(innerWidth * .7, 300), a: 'pGlow', d: 3 });
+    shower(range(1, 5), 30, 'pRise', [16, 34]);
+  } else if (kind === 'portal') {
+    add(0, { x: 50, y: 42, w: Math.min(innerWidth * .62, 280), a: 'pSwirl', d: 2.8 });
+    for (let k = 0; k < 18; k++) { const an = rnd(0, Math.PI * 2), dist = rnd(140, 260); add(pick(range(1, 9)), { x: 50, y: 42, w: rnd(30, 58), dx: Math.cos(an) * dist, dy: Math.sin(an) * dist, r: rnd(-180, 180), a: 'pBurst', d: rnd(1.4, 2), dl: .5 + rnd(0, 1.2) }); }
   }
   document.body.appendChild(box);
-  setTimeout(() => box.remove(), 4300);
+  setTimeout(() => box.remove(), 4800);
 }
 
 /* ================= my profile ================= */
