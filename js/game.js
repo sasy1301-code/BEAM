@@ -24,6 +24,11 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'התקנה במסך הבית': 'Add to home screen', 'פתיחה בלחיצה אחת, במסך מלא, כמו אפליקציה.': 'Opens with one tap, full screen, like an app.', 'להוספה למסך הבית': 'Add it', 'BEAM במסך הבית': 'BEAM on your home screen',
+  'ככה המשחק נפתח במסך מלא, כמו אפליקציה, בלגיעה אחת.': 'The game then opens full screen, like an app, with one tap.', 'לוחצים על כפתור השיתוף בתחתית הדפדפן (ריבוע עם חץ למעלה).': 'Tap the Share button at the bottom of the browser (a square with an arrow).',
+  'גוללים ובוחרים "הוספה למסך הבית".': 'Scroll and choose "Add to Home Screen".', 'לוחצים "הוסף", והגחלילית מחכה לכם במסך הבית.': 'Tap "Add" and the firefly is waiting on your home screen.',
+  'פותחים את התפריט של הדפדפן (שלוש הנקודות).': 'Open the browser menu (the three dots).', 'בוחרים "הוספה למסך הבית" או "התקנת אפליקציה".': 'Choose "Add to Home screen" or "Install app".', 'הבנתי': 'Got it', 'המשחק נוסף למסך הבית': 'The game is on your home screen',
+  'שומרים את ההתקדמות?': 'Keep your progress safe?', 'כבר פתרתם {} שלבים! חברו חשבון, וההתקדמות, הנקודות והקניות יישמרו גם אם תחליפו טלפון או תמחקו את הדפדפן.': 'You have solved {0} levels already! Connect an account and your progress, points and purchases stay safe even if you change phones or clear the browser.', 'אולי אחר כך': 'Maybe later',
   'חדש בלוח!': 'New on the board!', 'הבנתי, בואו נשחק': 'Got it, let\'s play',
   'לשחק ולצבור נקודות': 'Play and earn points', 'הבית עולה {}. חסרות עוד {} נקודות.': 'The house costs {0}. You need {1} more points.',
   'הגחלילית צריכה בית!': 'The firefly needs a home!', 'בונים לה בית, ואז ממלאים את הגן ואת הבית בקישוטים.': 'Build her a house, then fill the garden and the house with decorations.', 'בנו בית · {}': 'Build a house · {0}', 'חסרות {} נקודות': '{0} points short',
@@ -1372,6 +1377,7 @@ function openMap(ch, justSolved) {
   $('mapWarp').classList.remove('on'); $('mScene').classList.remove('warp');
   if (ch === undefined) { const n = ALL.findIndex((_, i) => !isSolved(i)); ch = n === -1 ? CHAPTERS.length - 1 : ALL[n].ch; }
   mapCh = ch; show('map'); renderMap(true, justSolved);
+  if (justSolved) setTimeout(milestonePrompts, 2600);
 }
 /* the firefly waits beside the stop, on the side that has room; she faces right, so she is turned round when she stands on its right */
 const flyAt = j => { const [x, y] = MAP_PADS[j], k = padScale(j), left = x < 50, off = 13 + 15 * k, want = left ? x - off : x + off, fx = Math.max(13, Math.min(87, want)), squeezed = Math.abs(want - fx); return [fx, y - (5.5 + squeezed * .75) * k, left]; };   // on the outer side of the road, where no other stop stands; near the edge she rises above the stop instead
@@ -1839,6 +1845,40 @@ function winFx(kind) {
   const box = document.createElement('div'); box.className = 'fxbox fx-' + kind; document.body.appendChild(box);
   FX_SCENES[kind](fxKit(box, kind));
   setTimeout(() => box.remove(), 5200);
+}
+
+/* ================= one-time nudges on the map after a win: back up progress (level 5), put the game on the home screen (level 8) ================= */
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; syncInstallCard(); });
+addEventListener('appinstalled', () => { installEvt = null; P.installed = true; save(false); syncInstallCard(); });
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isInstalled = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const canInstall = () => !isInstalled() && (!!installEvt || isIOS());
+function syncInstallCard() { const c = $('installCard'); if (c) c.hidden = !canInstall(); }
+function openInstall() {
+  if (installEvt) { const e = installEvt; e.prompt(); e.userChoice.then(r => { if (r.outcome === 'accepted') { installEvt = null; toast(T('המשחק נוסף למסך הבית')); } syncInstallCard(); }).catch(() => {}); return; }
+  modal(`<img class="bug" alt="" src="${POSE.point}"><h3>${T('BEAM במסך הבית')}</h3>
+    <p>${T('ככה המשחק נפתח במסך מלא, כמו אפליקציה, בלגיעה אחת.')}</p>
+    <ol class="steps">${isIOS() ? `<li>${T('לוחצים על כפתור השיתוף בתחתית הדפדפן (ריבוע עם חץ למעלה).')}</li><li>${T('גוללים ובוחרים "הוספה למסך הבית".')}</li><li>${T('לוחצים "הוסף", והגחלילית מחכה לכם במסך הבית.')}</li>`
+      : `<li>${T('פותחים את התפריט של הדפדפן (שלוש הנקודות).')}</li><li>${T('בוחרים "הוספה למסך הבית" או "התקנת אפליקציה".')}</li>`}</ol>
+    <button class="btn green" id="instOk">${T('הבנתי')}</button>`, m => { m.querySelector('#instOk').onclick = closeModal; });
+}
+function milestonePrompts() {
+  if (!$('overlay').hidden || $('map').hidden) return;
+  const solved = Object.keys(P.levels).length;
+  if (solved >= 5 && !P.askedBackup && !Session.get() && Object.values(AUTH.enabled).some(Boolean)) {
+    P.askedBackup = true; save(false);
+    const on = Object.keys(AUTH.enabled).filter(p => AUTH.enabled[p]);
+    modal(`<img class="bug" alt="" src="${POSE.thumbs}"><h3>${T('שומרים את ההתקדמות?')}</h3>
+      <p>${T`כבר פתרתם ${solved} שלבים! חברו חשבון, וההתקדמות, הנקודות והקניות יישמרו גם אם תחליפו טלפון או תמחקו את הדפדפן.`}</p>
+      ${on.map(p => `<button class="sso ${p}" data-p="${p}" style="margin-bottom:12px">${T`חיבור עם ${PROVIDERS[p]}`}</button>`).join('')}
+      <button class="btn ghosty" id="bkLater">${T('אולי אחר כך')}</button>`, m => {
+        for (const b of m.querySelectorAll('[data-p]')) b.onclick = () => AUTH.signIn(b.dataset.p);
+        m.querySelector('#bkLater').onclick = closeModal;
+      });
+    return;
+  }
+  if (solved >= 8 && !P.askedInstall && canInstall()) { P.askedInstall = true; save(false); openInstall(); }
 }
 
 /* ================= WhatsApp stickers: the firefly faces as 512px files to save or share ================= */
@@ -3527,6 +3567,7 @@ $('adBannerRemove').onclick = openSettings;
 $('setBack').onclick = goHome;
 $('setRename').onclick = () => openProfile(openSettings);
 $('setStickers').onclick = () => { Sound.play('tap'); openStickers(); };
+$('setInstall').onclick = () => { Sound.play('tap'); openInstall(); }; syncInstallCard();
 $('setReset').onclick = confirmReset;
 function applySoundPrefs() {
   const sfx = P.sfx !== false, mus = P.music !== false;
