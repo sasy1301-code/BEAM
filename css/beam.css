@@ -532,7 +532,7 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .minis.four{grid-template-columns:repeat(4,1fr); gap:8px} .minis.four button{font-size:13px; padding:10px 2px 8px}
 #homePoints{cursor:pointer}
 .screen-sub{text-align:center; color:var(--muted); margin:0 0 16px; font-weight:500}
-.tabs{display:grid; grid-template-columns:1fr 1fr; background:var(--surface); border-radius:999px; padding:4px; box-shadow:0 3px 0 var(--rule); margin-bottom:16px}
+.tabs{display:grid; grid-auto-columns:1fr; grid-auto-flow:column; background:var(--surface); border-radius:999px; padding:4px; box-shadow:0 3px 0 var(--rule); margin-bottom:16px}
 .tabs button{border:none; background:none; color:var(--ink); font-weight:700; font-size:16px; border-radius:999px; min-height:40px}
 .tabs button[aria-selected=true]{background:var(--purple); color:#fff}
 .lb{list-style:none; margin:0; padding:0}

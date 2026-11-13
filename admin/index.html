@@ -207,7 +207,7 @@ async function player(id) {
 }
 let lsort = ['n', 1];
 async function levels() {
-  const SPECIAL = { daily: { n: 900, label: 'אתגר יומי' }, duel: { n: 901, label: 'דו-קרב (כל הסיבובים)' } };
+  const SPECIAL = { daily: { n: 900, label: 'אתגר יומי' }, duel: { n: 901, label: 'דו-קרב (כל הסיבובים)' }, weekly: { n: 902, label: 'אתגר השבוע' } };
   const rows = (await rpc('beam_admin_levels')).map(l => ({ ...l, ...(LEVELS[l.level_id] || SPECIAL[l.level_id] || { n: 999 }) })).filter(l => l.n < 999);   // levels that were replaced long ago are left out
   const draw = () => {
     const [k, dir] = lsort; rows.sort((a, b) => ((+a[k] || 0) - (+b[k] || 0)) * dir);

@@ -24,6 +24,9 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'אתגר השבוע': 'Weekly challenge', 'בונים את הלוח של השבוע…': 'Building this week\'s board…', 'שיא חדש לשבוע!': 'New best this week!', 'אתגר השבוע הושלם!': 'Weekly challenge complete!',
+  '{} נקודות בטבלת השבוע. {}:{} דקות, {}.{}': '{0} points on the weekly board. {1}:{2} minutes, {3}.{4}', 'לטבלת השבוע': 'To the weekly board', 'השבוע': 'This week', 'היום': 'Today',
+  'לוח אחד קשה לכל השבוע. כולם מקבלים את אותו לוח': 'One hard board for the whole week. Everyone gets the same one', 'אף אחד עוד לא פתר את אתגר השבוע.': 'Nobody has solved this week\'s challenge yet.',
   'התקנה במסך הבית': 'Add to home screen', 'פתיחה בלחיצה אחת, במסך מלא, כמו אפליקציה.': 'Opens with one tap, full screen, like an app.', 'להוספה למסך הבית': 'Add it', 'BEAM במסך הבית': 'BEAM on your home screen',
   'ככה המשחק נפתח במסך מלא, כמו אפליקציה, בלגיעה אחת.': 'The game then opens full screen, like an app, with one tap.', 'לוחצים על כפתור השיתוף בתחתית הדפדפן (ריבוע עם חץ למעלה).': 'Tap the Share button at the bottom of the browser (a square with an arrow).',
   'גוללים ובוחרים "הוספה למסך הבית".': 'Scroll and choose "Add to Home Screen".', 'לוחצים "הוסף", והגחלילית מחכה לכם במסך הבית.': 'Tap "Add" and the firefly is waiting on your home screen.',
@@ -430,6 +433,19 @@ function makeLevel(R, spec){
   return lv;
 }
 
+/* the weekly challenge: one hard board for the whole week, the same for everyone */
+function weeklyLevel(weekStr){
+  const R=mulberry32(hashStr('beam-week-'+weekStr));
+  const specs=[
+    {W:8,H:8,k:5,nt:4,walls:4,bombs:4,maxSols:2,budget:200000},
+    {W:7,H:7,k:5,nt:4,walls:3,bombs:4,fixed:1,maxSols:2,budget:200000},
+    {W:8,H:8,k:5,nt:4,walls:4,bombs:4,splits:1,maxSols:2,budget:200000},
+  ];
+  const v=hashStr(weekStr)%3;
+  for(let o=0;o<3;o++){const sp=specs[(v+o)%3]; for(let i=0,n=o?400:800;i<n;i++){const lv=makeLevel(R,sp);if(lv){lv.week=sp;return lv;}}}
+  for(let i=0;i<1500;i++){const lv=makeLevel(R,{W:7,H:7,k:5,nt:4,walls:3,bombs:4,maxSols:2,budget:150000});if(lv)return lv;}   // the hard duel board as a safety net
+  return dailyLevel(weekStr);
+}
 function dailyLevel(dateStr){
   const R=mulberry32(hashStr('beam-'+dateStr));
   const v=hashStr(dateStr)%4;
@@ -998,6 +1014,7 @@ const levelPoints = (lv, stars) => Math.round(lv.max * 100 * [0, .5, 1.5, 2][sta
 
 let P = null;
 function todayStr(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function weekStr(d = new Date()) { const m = new Date(d); m.setDate(m.getDate() - (m.getDay() + 6) % 7); return todayStr(m); }   // the Monday this week started on
 function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return todayStr(d); }
 function newProfile() {
   return { v2: true, id: 'p' + Math.random().toString(36).slice(2, 10), name: '', balance: START_POINTS, earned: 0, levels: {}, daily: {}, streak: { last: '', count: 0 }, ach: [] };
@@ -1150,7 +1167,7 @@ async function rpc(fn, args) {
    and nothing is sent at all when the browser asks not to be tracked. */
 function track(kind, extra) {
   if (!G || navigator.doNotTrack === '1' || !/^https?:$/.test(location.protocol)) return;
-  rpc('beam_event', { p_kind: kind, p_level: G.mode === 'daily' ? 'daily' : G.mode === 'duel' ? 'duel' : G.lv.id, ...extra }).catch(() => {});
+  rpc('beam_event', { p_kind: kind, p_level: G.mode === 'daily' || G.mode === 'weekly' ? G.mode : G.mode === 'duel' ? 'duel' : G.lv.id, ...extra }).catch(() => {});
 }
 function playerKey() {
   if (!P.key) {
@@ -1158,6 +1175,12 @@ function playerKey() {
     P.key = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); save(false);
   }
   return P.key;
+}
+const WEEKLY_BONUS = 1500;
+async function publishWeekly() {
+  const w = weekStr(), d = P.weekly && P.weekly[w];
+  if (!d || !P.name) return;
+  try { await rpc('beam_submit_weekly', { p_id: P.id, p_secret: playerKey(), p_week: w, p_score: d.score, p_moves: d.moves, p_time: d.time }); } catch (e) { /* tried again with the next solve */ }
 }
 async function publishScore() {
   if (!P.name) return;
@@ -1189,10 +1212,12 @@ async function readLocalBoard(prefix) {
 async function readBoard(tab) {
   try {
     const rows = tab === 'all' ? await rpc('beam_leaderboard', { p_id: P.id, p_limit: 25 })
+      : tab === 'week' ? await rpc('beam_leaderboard_week', { p_week: weekStr(), p_id: P.id, p_limit: 25 })
       : await rpc('beam_leaderboard_day', { p_day: todayStr(), p_id: P.id, p_limit: 25 });
     return { online: true, rows: rows.map(r => ({ ...r, time: r.time_s })) };
   } catch (e) {
     const val = r => tab === 'all' ? r.total : r.score;
+    if (tab === 'week') { const w = P.weekly && P.weekly[weekStr()]; return { online: false, rows: w && P.name ? [{ id: P.id, name: P.name, ...w, rank: 1 }] : [] }; }
     const rows = (await readLocalBoard(tab === 'all' ? 'lb:' : `day:${todayStr()}:`)).sort((a, b) => val(b) - val(a)).map((r, n) => ({ ...r, rank: n + 1 }));
     return { online: false, rows };
   }
@@ -1956,7 +1981,7 @@ function renderHome() {
   const d = P.daily[todayStr()];
   $('dailyText').textContent = d ? T`השיא שלכם היום: ${fmt(d.score)} נקודות` : T('שלב חדש היום, אותו שלב לכולם');
     $('achLabel').textContent = `${P.ach.length}/${ACH.length}`;
-  $('dailyDot').hidden = !!d; $('bonusDot').hidden = P.streak.last === todayStr();
+  $('dailyDot').hidden = !!d; $('weeklyDot').hidden = !!(P.weekly && P.weekly[weekStr()]); $('bonusDot').hidden = P.streak.last === todayStr();
   $('adBanner').hidden = !!P.adFree || !ADS_LIVE;
 
   const box = $('chapters'); box.innerHTML = ''; let idx = 0;
@@ -2058,7 +2083,8 @@ function centerCard(card, smooth) {
 }
 
 /* ================= game ================= */
-let G = null, timerInt = null, DAILY_CACHE = null;
+let G = null, timerInt = null, DAILY_CACHE = null, WEEK_CACHE = null;
+const timedMode = () => !!G && (G.mode === 'daily' || G.mode === 'weekly');   // score by time and moves, no stars, no help
 function session(mode, lv, extra) {
   return { mode, lv: { ...lv, rows: [...lv.rows] }, mirrors: {}, locked: new Set(), extra: 0, hammers: 0, hints: 0, hammerMode: false, helped: false, moves: 0, done: false, ...extra };
 }
@@ -2148,7 +2174,7 @@ function bombOut() {
       <p>${T('הקרן נגעה בפצצה שלוש פעמים. מתחילים את השלב מחדש.')}</p>
       <button class="btn orange" id="boomAgain">${T('נסו שוב')}</button>
       <button class="btn ghosty" id="boomHome" style="margin-top:12px">${T('חזרה לבית')}</button>`, m => {
-        m.querySelector('#boomAgain').onclick = () => { closeModal(); if (g.mode === 'daily') openDaily(); else openLevel(g.idx); };
+        m.querySelector('#boomAgain').onclick = () => { closeModal(); if (g.mode === 'daily') openDaily(); else if (g.mode === 'weekly') openWeekly(); else openLevel(g.idx); };
         m.querySelector('#boomHome').onclick = () => { closeModal(); G = null; goHome(); };
       }, true);
   }, 1500);
@@ -2160,10 +2186,25 @@ function openDaily() {
   G = session('daily', { ...DAILY_CACHE.lv, tip: '' }, { start: Date.now() });
   startGame();
 }
+function openWeekly() {
+  const w = weekStr();
+  if (!WEEK_CACHE || WEEK_CACHE.week !== w) {
+    let kept = null; try { kept = JSON.parse(localStorage.getItem('beam:week') || 'null'); } catch (e) { /* storage blocked */ }
+    if (kept && kept.week === w && kept.lv) { WEEK_CACHE = kept; return openWeekly(); }   // built once per week on this device
+    toast(T('בונים את הלוח של השבוע…'));
+    return setTimeout(() => {
+      WEEK_CACHE = { week: w, lv: weeklyLevel(w) };
+      try { localStorage.setItem('beam:week', JSON.stringify(WEEK_CACHE)); } catch (e) { /* storage blocked */ }
+      openWeekly();
+    }, 60);   // let the toast paint before the solver runs
+  }
+  G = session('weekly', { ...WEEK_CACHE.lv, tip: '' }, { start: Date.now() });
+  startGame();
+}
 function startGame() {
   clearInterval(timerInt);
   Sound.play('whoosh');
-  if (G.mode === 'daily') timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
+  if (timedMode()) timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
   G.t0 = Date.now(); track('start');
   renderGame(); show('game');
   clockStart(); if (CHEERS_ON) cheerPreload();
@@ -2211,7 +2252,7 @@ function renderPills(st) {
     const s = duelTimeLeft();
     mp.innerHTML = `${ICON_CLOCK}<span class="timer">${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span>`;
     mp.classList.toggle('over', s <= 20); mp.setAttribute('aria-label', T('זמן'));
-  } else if (G.mode === 'daily' && !G.done) {
+  } else if (timedMode() && !G.done) {
     const s = elapsed();
     mp.innerHTML = `${ICON_CLOCK}<span class="timer">${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}</span>`;
     mp.classList.remove('over'); mp.setAttribute('aria-label', T('זמן'));
@@ -2324,13 +2365,14 @@ function renderGame(flash) {
   liveSoon();
   $('duelBar').hidden = G.mode !== 'duel';
   if (G.mode === 'duel') { $('lvTitle').textContent = T`סיבוב ${G.round} · עד 3 ניצחונות`; $('lvChapter').textContent = T('הראשון שמדליק את כל הכוכבים מנצח'); renderDuelBar(); }
+  else if (G.mode === 'weekly') { $('lvTitle').textContent = T('אתגר השבוע'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
   else if (G.mode === 'daily') { $('lvTitle').textContent = T('אתגר יומי'); $('lvChapter').textContent = T`יעד מהלכים: ${par(lv)}`; }
   else { $('lvTitle').textContent = T`שלב ${G.idx + 1}`; $('lvChapter').textContent = T`פרק ${lv.ch + 1}: ${CHAPTERS[lv.ch].name}`; }
   $('tip').textContent = lv.tip || '';
   placeTip();
   $('gamePoints').innerHTML = coinHTML(ICON_POINTS, P.balance);
   renderPills(st);
-  $('movesPill').hidden = G.mode === 'level'; $('sayBug').src = BUG_SRC; $('powerNote').hidden = $('resetBtn').hidden = G.done;
+  $('movesPill').hidden = G.mode === 'level'; $('sayBug').src = BUG_SRC; $('powerNote').hidden = $('resetBtn').hidden = G.done; if (timedMode() || G.mode === 'duel') $('powerNote').hidden = true;   // no help to buy here, so no note about help
 
   const status = $('status'); status.className = 'status';
   if (flash) { status.className = 'status bad'; status.textContent = flash; }
@@ -2347,14 +2389,14 @@ function renderGame(flash) {
     status.className = 'status coach'; status.textContent = step.text;
   }
 
-  $('powerBox').hidden = G.mode === 'daily' || G.mode === 'duel' || G.done || !!G.coach;
+  $('powerBox').hidden = timedMode() || G.mode === 'duel' || G.done || !!G.coach;
   $('pwMirror').innerHTML = `${PIC_MIRROR}<span>${T`מראה`}</span><span class="price">${fmt(price('mirror'))}</span>`;
   $('pwHammer').innerHTML = `${PIC_HAMMER}<span>${G.hammerMode ? T('ביטול') : T('פטיש')}</span><span class="price">${fmt(price('hammer'))}</span>`;
   const hintsLeft = Math.max(0, hintLimit(lv) - G.hints);
   $('pwHint').innerHTML = `${PIC_HINT}<span>${T`רמז`} ×${hintsLeft}</span><span class="price">${fmt(price('hint'))}</span>`;
   $('pwMirror').disabled = P.balance < price('mirror') || G.extra >= LIMIT.mirror;
   // the hammer only exists where breaking a wall can actually save a mirror
-  const hammerHere = G.mode !== 'daily' && G.mode !== 'duel' && !!(lv.hammer && lv.hammer.length);
+  const hammerHere = !timedMode() && G.mode !== 'duel' && !!(lv.hammer && lv.hammer.length);
   $('pwHammer').hidden = !hammerHere;
   document.querySelector('.powers').classList.toggle('two', !hammerHere);
   $('pwHammer').disabled = !G.hammerMode && (P.balance < price('hammer') || !breakable().size || G.hammers >= LIMIT.hammer);
@@ -2610,7 +2652,30 @@ function finish() {
   $('status').textContent = ''; $('powerBox').hidden = true;
   let earned = 0, mood = 'think', winSound = null;
 
-  if (G.mode === 'daily') {
+  if (G.mode === 'weekly') {
+    const time = elapsed(), w = weekStr();
+    // a harder board, so more room on the clock; the first solve of the week pays a big bonus
+    const score = 1000 + Math.max(0, 1000 - time * 2) + Math.max(0, 1000 - Math.max(0, G.moves - par(G.lv)) * 60);
+    const clean = G.moves <= par(G.lv);
+    track('done', { p_moves: G.moves, p_time: time, p_helped: false });
+    mood = clean && time <= 120 ? 'cheer' : clean || time <= 240 ? 'think' : 'shrug';
+    P.weekly = P.weekly || {};
+    const prev = P.weekly[w];
+    if (!prev || score > prev.score) { earned = score - (prev ? prev.score : 0); P.weekly[w] = { score, moves: G.moves, time }; }
+    if (!prev) earned += WEEKLY_BONUS;
+    gain(earned);
+    $('winTitle').textContent = prev && score <= prev.score ? T('פתרתם שוב!') : prev ? T('שיא חדש לשבוע!') : T('אתגר השבוע הושלם!');
+    $('bigStars').innerHTML = '';
+    winSound = () => Sound.play('win', 0);
+    $('winText').textContent = T`${fmt(score)} נקודות בטבלת השבוע. ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')} דקות, ${movesText(G.moves)}.${prev && score <= prev.score ? T` השיא שלכם: ${fmt(prev.score)}.` : ''}`;
+    $('nextBtn').textContent = T('לטבלת השבוע');
+    $('nextBtn').onclick = () => openLeaderboard('week');
+    $('retryBtn').textContent = T('נסו שוב לשיא'); $('retryBtn').hidden = false;
+    $('retryBtn').onclick = () => openWeekly();
+    $('shareBtn').hidden = true;
+    publishWeekly();
+    if (!P.name) setTimeout(() => askName(), winDelay + 4800);
+  } else if (G.mode === 'daily') {
     const time = elapsed();
     const score = 500 + Math.max(0, 500 - time * 3) + Math.max(0, 500 - Math.max(0, G.moves - par(G.lv)) * 50);
     // daily has no stars: a fast, clean solve is perfect; slow and wasteful gets the shrug
@@ -3149,7 +3214,7 @@ async function rememberOpponent(code) {
    same board; the server also refuses to show a board to the opponent of a duel in progress. */
 let liveT = null, liveBeat = null, liveOn = false;
 function livePack() {
-  if (!G || G.mode === 'daily' || P.hidePresence === true || $('game').hidden) return null;
+  if (!G || timedMode() || P.hidePresence === true || $('game').hidden) return null;
   const st = G.lastSt || {};
   return { mode: G.mode, n: G.mode === 'level' ? G.idx + 1 : G.round || 1, rows: G.lv.rows, lasers: G.lv.lasers, max: G.lv.max, mirrors: G.mirrors, locked: [...G.locked], lit: st.lit || 0, total: st.total || 0, moves: G.moves, done: !!G.done };
 }
@@ -3352,17 +3417,17 @@ async function openLeaderboard(tab) {
   show('leader');
   if (!P.name) askName(() => openLeaderboard());
   $('tabAll').setAttribute('aria-selected', lbTab === 'all');
-  $('tabDay').setAttribute('aria-selected', lbTab === 'day');
+  $('tabDay').setAttribute('aria-selected', lbTab === 'day'); $('tabWeek').setAttribute('aria-selected', lbTab === 'week');
   const list = $('lbList');
   list.innerHTML = T('<li class="empty">טוען…</li>');
-  $('lbSub').textContent = lbTab === 'all' ? T('כל הנקודות שנצברו במשחק') : T`האתגר של ${todayStr().split('-').reverse().join('.')}`;
-  if (P.name) await publishScore();
+  $('lbSub').textContent = lbTab === 'all' ? T('כל הנקודות שנצברו במשחק') : lbTab === 'week' ? T('לוח אחד קשה לכל השבוע. כולם מקבלים את אותו לוח') : T`האתגר של ${todayStr().split('-').reverse().join('.')}`;
+  if (P.name) { await publishScore(); if (lbTab === 'week') await publishWeekly(); }
   const asked = lbTab, { online, rows } = await readBoard(lbTab);
   if (asked !== lbTab || $('leader').hidden) return;   // the player moved on while the table was loading
   const val = r => lbTab === 'all' ? r.total : r.score;
   $('lbOffline').hidden = online;
   list.innerHTML = '';
-  if (!rows.length) { list.innerHTML = `<li class="empty">${lbTab === 'all' ? T('עוד אין שחקנים בטבלה. היו הראשונים!') : T('אף אחד עוד לא פתר את האתגר של היום.')}</li>`; return; }
+  if (!rows.length) { list.innerHTML = `<li class="empty">${lbTab === 'all' ? T('עוד אין שחקנים בטבלה. היו הראשונים!') : (lbTab === 'week' ? T('אף אחד עוד לא פתר את אתגר השבוע.') : T('אף אחד עוד לא פתר את האתגר של היום.'))}</li>`; return; }
   const row = (r, n) => {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
@@ -3520,6 +3585,8 @@ $('mapBack').onclick = () => { mapSeq++; $('mapWarp').classList.remove('on'); $(
 $('mapPrev').onclick = () => { if (mapCh > 0) { mapCh--; Sound.play('tap'); renderMap(true); } };
 $('mapNext').onclick = () => { if (mapCh < CHAPTERS.length - 1 && unlocked(chBase(mapCh + 1))) { mapCh++; Sound.play('tap'); renderMap(true); } };
 $('dailyBtn').onclick = openDaily;
+$('weeklyBtn').onclick = () => { Sound.play('tap'); openWeekly(); };
+$('tabWeek').onclick = () => openLeaderboard('week');
 $('helpBtn').onclick = () => { demoMir = {}; renderDemo(); renderIcons(); show('help'); $('helpTabs').children[0].onclick(); };
 $('helpBack').onclick = goHome;
 for (const t of $('helpTabs').children) t.onclick = () => {
