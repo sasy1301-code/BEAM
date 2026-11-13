@@ -2210,7 +2210,21 @@ function startGame() {
   renderGame(); show('game');
   clockStart(); if (CHEERS_ON) cheerPreload();
   pieceIntro();
+  requestAnimationFrame(placeSay);
 }
+/* the firefly's speech bubble sits halfway between what you can see of the board and the buttons below.
+   The board's box is taller than its painted frame, so the gap is measured from the frame itself. */
+function placeSay() {
+  const say = document.querySelector('#game .say'), sv = $('board'), dock = document.querySelector('#game .gdock');
+  if (!say || $('game').hidden || !sv.getBBox) return;
+  say.style.marginTop = '0px'; say.style.marginBottom = 'auto';
+  let bb, m; try { bb = sv.getBBox(); m = sv.getScreenCTM(); } catch (e) { return; }
+  if (!m || !bb.height) return;
+  const seen = m.f + (bb.y + bb.height) * m.d, r = say.getBoundingClientRect(), top = dock.getBoundingClientRect().top;
+  const want = seen + (top - seen - r.height) / 2;
+  say.style.marginTop = Math.round(Math.max(seen + 4, want) - r.top) + 'px';
+}
+addEventListener('resize', () => { if (G && !$('game').hidden) placeSay(); });
 /* the first time a kind of piece shows up on a board, a short card explains it (the clock waits while a window is open) */
 const PIECES = [
   { id: 'wall', ic: 'icWall', has: lv => lv.rows.some(r => r.includes('#')) },
