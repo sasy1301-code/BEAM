@@ -1563,15 +1563,15 @@ const painted = () => true;   // every board is painted now; the old drawn piece
 /* the frame pictures: size of the cropped picture, where its bed of tiles starts and how big it is (all in picture pixels), and the colour that hides the grid painted into it */
 const FRAMES = {
   classic: { src: 'frame', w: 1154, h: 1111, bx: 98, by: 124, bw: 958, bh: 863, bed: '#EDE1F6', edge: '#CDB6E6' },
-  forest:  { src: 'frame-forest',  w: 1185, h: 1130, bx: 100, by: 111, bw: 988, bh: 901, bed: '#D1E9DA', edge: '#B4D2C0' },
-  crystal: { src: 'frame-crystal', w: 1164, h: 1126, bx: 89,  by: 115, bw: 988, bh: 901, bed: '#DBE3FD', edge: '#BFC9F0' },
-  flower:  { src: 'frame-flower',  w: 1220, h: 1139, bx: 117, by: 120, bw: 988, bh: 901, bed: '#F0E2F9', edge: '#DCC3EC' },
-  stars: { src: 'frame-stars', w: 1250, h: 1182, bx: 141, by: 162, bw: 967, bh: 877, bed: '#E9DAF4', edge: '#CDBFD6' },
-  coral: { src: 'frame-coral', w: 1145, h: 1055, bx: 97, by: 97, bw: 951, bh: 861, bed: '#F1D3ED', edge: '#D4B9D0' },
-  mushroom: { src: 'frame-mushroom', w: 1210, h: 1136, bx: 118, by: 126, bw: 973, bh: 882, bed: '#EADDF6', edge: '#CDC2D8' },
-  candy: { src: 'frame-candy', w: 1197, h: 1130, bx: 102, by: 119, bw: 993, bh: 901, bed: '#EDDEF9', edge: '#D0C3DB' },
-  ocean: { src: 'frame-ocean', w: 1196, h: 1093, bx: 113, by: 126, bw: 971, bh: 868, bed: '#EBDDFA', edge: '#CEC2DC' },
-  royal: { src: 'frame-royal', w: 1197, h: 1139, bx: 104, by: 152, bw: 990, bh: 883, bed: '#ECDBFA', edge: '#CFC0DC' },
+  forest:  { src: 'frame-forest',  w: 1185, h: 1130, bx: 100, by: 111, bw: 988, bh: 901, bed: '#D1E9DA', edge: '#B4D2C0', tiles: ['k-turquoise', 'k-mint-green', 'k-lavender', 'k-coral-peach'] },
+  crystal: { src: 'frame-crystal', w: 1164, h: 1126, bx: 89,  by: 115, bw: 988, bh: 901, bed: '#DBE3FD', edge: '#BFC9F0', tiles: ['k-turquoise', 'k-sky-blue', 'k-lavender', 'k-pearl-white'] },
+  flower:  { src: 'frame-flower',  w: 1220, h: 1139, bx: 117, by: 120, bw: 988, bh: 901, bed: '#F0E2F9', edge: '#DCC3EC', tiles: ['k-mint-green', 'k-magenta-pink', 'k-lavender', 'k-orange'] },
+  stars: { src: 'frame-stars', w: 1250, h: 1182, bx: 141, by: 162, bw: 967, bh: 877, bed: '#E9DAF4', edge: '#CDBFD6', tiles: ['k-royal-purple', 'k-sky-blue', 'k-lavender', 'k-yellow-gold'] },
+  coral: { src: 'frame-coral', w: 1145, h: 1055, bx: 97, by: 97, bw: 951, bh: 861, bed: '#F1D3ED', edge: '#D4B9D0', tiles: ['k-magenta-pink', 'k-coral-peach', 'k-lavender', 'k-orange'] },
+  mushroom: { src: 'frame-mushroom', w: 1210, h: 1136, bx: 118, by: 126, bw: 973, bh: 882, bed: '#EADDF6', edge: '#CDC2D8', tiles: ['k-magenta-pink', 'k-lavender', 'k-royal-purple', 'k-mint-green'] },
+  candy: { src: 'frame-candy', w: 1197, h: 1130, bx: 102, by: 119, bw: 993, bh: 901, bed: '#EDDEF9', edge: '#D0C3DB', tiles: ['k-sky-blue', 'k-mint-green', 'k-magenta-pink', 'k-yellow-gold'] },
+  ocean: { src: 'frame-ocean', w: 1196, h: 1093, bx: 113, by: 126, bw: 971, bh: 868, bed: '#EBDDFA', edge: '#CEC2DC', tiles: ['k-sky-blue', 'k-turquoise', 'k-lavender', 'k-mint-green'] },
+  royal: { src: 'frame-royal', w: 1197, h: 1139, bx: 104, by: 152, bw: 990, bh: 883, bed: '#ECDBFA', edge: '#CFC0DC', tiles: ['k-royal-purple', 'k-lavender', 'k-ruby-red', 'k-yellow-gold'] },
 };
 const frameOf = () => FRAMES[typeof P !== 'undefined' && P ? lookOf('board') : 'classic'] || FRAMES.classic;
 function pic(g, name, x, y, w, h, cls) {
@@ -1590,9 +1590,10 @@ function tray(g, W, H) {
   el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: f.F.bed }, g);          // the frames were painted with a grid of their own; the bed hides it for every size
   el('rect', { x: -f.bed, y: -f.bed, width: W + 2 * f.bed, height: H + 2 * f.bed, rx: .3, fill: 'none', stroke: f.F.edge, 'stroke-width': .03 }, g);
 }
-const TILE_ART = { 'var(--t-blue)': 't-blue', 'var(--t-green)': 't-green', 'var(--t-purple)': 't-purple', 'var(--t-orange)': 't-orange' };
+const TILE_FACE = ['var(--t-blue)', 'var(--t-green)', 'var(--t-purple)', 'var(--t-orange)'], TILE_BASE = ['t-blue', 't-green', 't-purple', 't-orange'];
+const tileArt = face => { const i = TILE_FACE.indexOf(face); return i < 0 ? null : (frameOf().tiles || TILE_BASE)[i]; };   // each board brings its own four colours
 function tile(g, x, y, face) {
-  if (painted() && TILE_ART[face]) return pic(g, TILE_ART[face], x + .035, y + .035, .93, .93, 'tl');
+  if (painted() && tileArt(face)) return pic(g, tileArt(face), x + .035, y + .035, .93, .93, 'tl');
   el('rect', { x: x + .05, y: y + .05, width: .9, height: .9, rx: .17, fill: 'var(--t-shade)' }, g);
   el('rect', { x: x + .05, y: y + .05, width: .9, height: .82, rx: .17, fill: face }, g);
   el('rect', { x: x + .14, y: y + .11, width: .3, height: .09, rx: .045, fill: '#fff', opacity: .55 }, g);
