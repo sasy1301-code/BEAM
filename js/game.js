@@ -48,7 +48,7 @@ const EN = {
   'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
   'פרק {} מתוך {}': 'Chapter {0} of {1}', 'פרס הפרק!': 'Chapter prize!', 'הפרק הושלם · לפרק הבא': 'Chapter complete · on to the next', 'הפרק הושלם': 'Chapter complete', 'פרס הפרק · עוד שלב אחד': 'Chapter prize · 1 level to go', 'פרס הפרק · עוד {} שלבים': 'Chapter prize · {0} levels to go', 'לפרק הבא': 'Next chapter',
   'שליחת מתנה': 'Send a gift', 'מתנה ל-{}': 'A gift for {0}', 'הנקודות יורדות מהארנק שלכם. יש לכם {}.': 'The points come out of your wallet. You have {0}.', 'שליחה': 'Send', 'המתנה נשלחה ל-{}': 'Gift sent to {0}', 'הגעתם למכסת המתנות להיום. נסו שוב מחר.': 'You have reached today\'s gift limit. Try again tomorrow.', 'אפשר לשלוח מתנות רק לחברים': 'Gifts can only be sent to friends', 'מתנה מ-{}!': 'A gift from {0}!',
-  'קיבלתם מתנה!': 'You got a gift!',
+  'קיבלתם מתנה!': 'You got a gift!', '{} הצטרף בזכותכם!': '{0} joined thanks to you!',
   'אין לכם מספיק נקודות': 'You do not have enough points', 'הדו-קרב על {} נקודות ויש לכם {}. חסרות {}.': 'The duel is for {0} points and you have {1}. You are {2} short.', '{} מזמין לדו-קרב': '{0} invites you to a duel',
   'חברים': 'Friends', 'חברים מחוברים': 'Friends online', '+ הוספת חבר': '+ Add a friend', 'בקשות חברות': 'Friend requests', 'אף חבר לא מחובר כרגע. אפשר להזמין בקישור.': 'No friend is online right now. You can invite with a link.', 'עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.': 'No friends here yet. Add friends from the Friends button on the home screen.',
   'זהירות! עוד שתי פגיעות בפצצה והיא מתפוצצת.': 'Careful! Two more hits and the bomb blows up.',
@@ -2317,6 +2317,7 @@ function startGame() {
   Sound.play('whoosh');
   if (timedMode()) timerInt = setInterval(() => { if (!G.done) renderPills(); }, 1000);
   G.t0 = Date.now(); track('start');
+  if (P.refPending) { P.refPending = 0; P.refDone = 1; save(false); rpc('beam_referral_claim', { p_id: P.id, p_secret: playerKey() }).catch(() => {}); }   // the friend who sent the link gets his bonus now
   renderGame(); show('game');
   clockStart(); if (CHEERS_ON) cheerPreload();
   pieceIntro();
@@ -3270,19 +3271,19 @@ async function claimGifts() {
   if (giftBusy || !P || !P.id || isNewcomer()) return;
   giftBusy = true;
   let n = 0;
-  let who = [];
-  try { const r = await rpc('beam_gifts_take', { p_id: P.id, p_secret: playerKey() }); n = +(r && r.sum) || 0; who = (r && r.from) || []; } catch (e) { /* next time */ }
+  let who = [], ref = 0;
+  try { const r = await rpc('beam_gifts_take', { p_id: P.id, p_secret: playerKey() }); n = +(r && r.sum) || 0; who = (r && r.from) || []; ref = +(r && r.ref) || 0; } catch (e) { /* next time */ }
   giftBusy = false;
   if (n <= 0) return;
   gain(n, false); save(false); cloudSoon(); renderHome(); hudSync();
   if (!$('shop').hidden) renderShop();
-  giftShow(n, who);
+  giftShow(n, who, ref);
 }
 /* the gift arrives in the middle of the screen, with its sum and a burst of coins; while a board or another window is open it waits its turn */
-function giftShow(n, who) {
-  if (!$('overlay').hidden || !$('game').hidden || !$('duel').hidden || !$('watch').hidden || !$('login').hidden) return void setTimeout(() => giftShow(n, who), 900);
+function giftShow(n, who, ref = 0) {
+  if (!$('overlay').hidden || !$('game').hidden || !$('duel').hidden || !$('watch').hidden || !$('login').hidden) return void setTimeout(() => giftShow(n, who, ref), 900);
   modal(`<img class="bug giftpic" alt="" src="media/ui/gift.webp">
-    <h3>${who.length ? T`מתנה מ-${who.slice(0, 2).map(esc).join(', ')}!` : T('קיבלתם מתנה!')}</h3>
+    <h3>${ref && who.length ? T`${who.slice(0, 2).map(esc).join(', ')} הצטרף בזכותכם!` : who.length ? T`מתנה מ-${who.slice(0, 2).map(esc).join(', ')}!` : T('קיבלתם מתנה!')}</h3>
     <div class="gains big"><div class="coin">${ICON_POINTS}<span dir="ltr">+${fmt(n)}</span></div></div>
     <p>${T('הנקודות כבר בארנק שלכם.')}</p>
     <button class="btn green" id="giftOk">${T('תודה!')}</button>`, m => {
@@ -3538,6 +3539,7 @@ async function shareFriendLink() {
 async function acceptFriendLink(fcode) {
   let res = null;
   try { res = await rpc('beam_friend_link', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_fcode: fcode }); } catch (e) { /* told below */ }
+  if (res === 'ok' && !Object.keys(P.levels || {}).length && !P.refDone) { P.refPending = 1; save(false); }   // a new player came in on a friend's link: the friend is paid once this one starts playing
   toast(res === 'ok' ? T('אתם חברים עכשיו') : res === 'self' ? T('זה הקישור שלכם. שלחו אותו לחבר.') : res === 'missing' ? T('הקישור הזה כבר לא פעיל') : T('אין חיבור כרגע. נסו שוב מאוחר יותר.'));
   openPals();
 }
