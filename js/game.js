@@ -2604,12 +2604,18 @@ function playWinVideo(mood, canvas, onFail) {
     if (!v) {
       v = winVideoEl(mood);
     }
-    const work = playWinVideo.work || (playWinVideo.work = document.createElement('canvas'));
-    work.width = N; work.height = 2 * N;
-    const wctx = work.getContext('2d', { willReadFrequently: true }), ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, N, N);
+    // on the graphics card the mask is free; the pixel-by-pixel fallback below made the clip stutter whenever an effect ran next to it
+    const gl = winGL(canvas);
+    let wctx, ctx;
+    if (!gl) {
+      const work = playWinVideo.work || (playWinVideo.work = document.createElement('canvas'));
+      work.width = N; work.height = 2 * N;
+      wctx = work.getContext('2d', { willReadFrequently: true }); ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, N, N);
+    } else gl.clear();
     const paint = () => {
       if (v.readyState < 2) return;
+      if (gl) { try { gl.draw(v); got = true; } catch (e) { fail(); } return; }
       try {
         wctx.drawImage(v, 0, 0, N, 2 * N);
         const img = wctx.getImageData(0, 0, N, 2 * N), p = img.data, half = N * N * 4;
@@ -2639,6 +2645,31 @@ function playWinVideo(mood, canvas, onFail) {
     setTimeout(() => { if (!got) fail(); }, 2500);   // a slow connection gets a little longer before the still takes over
   } catch (e) { fail(); }
 }
+/* WebGL for the win clip: the top half of each frame is the colour, the bottom half is the alpha mask */
+function winGL(canvas) {
+  if (canvas._gl !== undefined) return canvas._gl;
+  canvas._gl = null;
+  try {
+    const g = canvas.getContext('webgl', { premultipliedAlpha: false, alpha: true, preserveDrawingBuffer: true });
+    if (!g) return null;
+    const sh = (type, src) => { const o = g.createShader(type); g.shaderSource(o, src); g.compileShader(o); if (!g.getShaderParameter(o, g.COMPILE_STATUS)) throw 0; return o; };
+    const pr = g.createProgram();
+    g.attachShader(pr, sh(g.VERTEX_SHADER, 'attribute vec2 p; varying vec2 u; void main(){ u = vec2((p.x + 1.0) * .5, (1.0 - p.y) * .5); gl_Position = vec4(p, 0., 1.); }'));
+    g.attachShader(pr, sh(g.FRAGMENT_SHADER, 'precision mediump float; uniform sampler2D t; varying vec2 u; void main(){ vec3 c = texture2D(t, vec2(u.x, u.y * .5)).rgb; float a = texture2D(t, vec2(u.x, .5 + u.y * .5)).r; gl_FragColor = vec4(c, a); }'));
+    g.linkProgram(pr); if (!g.getProgramParameter(pr, g.LINK_STATUS)) return null;
+    g.useProgram(pr);
+    const b = g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER, b); g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), g.STATIC_DRAW);
+    const loc = g.getAttribLocation(pr, 'p'); g.enableVertexAttribArray(loc); g.vertexAttribPointer(loc, 2, g.FLOAT, false, 0, 0);
+    const tex = g.createTexture(); g.bindTexture(g.TEXTURE_2D, tex);
+    for (const [k, v] of [[g.TEXTURE_MIN_FILTER, g.LINEAR], [g.TEXTURE_MAG_FILTER, g.LINEAR], [g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE], [g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE]]) g.texParameteri(g.TEXTURE_2D, k, v);
+    g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+    canvas._gl = {
+      clear() { g.viewport(0, 0, canvas.width, canvas.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT); },
+      draw(v) { g.viewport(0, 0, canvas.width, canvas.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT); g.texImage2D(g.TEXTURE_2D, 0, g.RGB, g.RGB, g.UNSIGNED_BYTE, v); g.drawArrays(g.TRIANGLE_STRIP, 0, 4); },
+    };
+  } catch (e) { canvas._gl = null; }
+  return canvas._gl;
+}
 let winTimers = [];
 function hideWin() {
   winTimers.forEach(clearTimeout); winTimers = []; stopWinVideo(); Sound.hush();
@@ -2666,8 +2697,8 @@ function showWin(mood, delay, onCard, coins = 0) {
     if (!still()) return;
     bug.className = 'winbug ' + mood + ' perch'; film.className = 'winbug ' + mood + ' perch anim';
     $('winbox').hidden = false;
-    if (mood !== 'shrug') winFx(lookOf('fx'));
     if (onCard) onCard();
+    if (mood !== 'shrug') winTimers.push(setTimeout(() => { if (still()) winFx(lookOf('fx')); }, 350));   // after the card's own pop, not on the same frame
     $('nextBtn').focus({ preventScroll: true });
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
