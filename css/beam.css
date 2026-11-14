@@ -985,3 +985,19 @@ body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); bord
 .lb li.pod .p1{z-index:3; margin-bottom:5%}
 .lb li.pod .p2{margin-inline-end:-7%} .lb li.pod .p3{margin-inline-start:-7%}
 .lb li.pod .p2 .ped,.lb li.pod .p3 .ped{filter:brightness(.96)}
+/* closer to the design: faces sink into the podium tops, wider side podiums, bigger names and score pills */
+.lb li.pod{padding:10px 5% 0; margin:4px -10px 20px}
+.lb li.pod .p1{flex:1.12}
+.lb li.pod .p2{margin-inline-end:-5%} .lb li.pod .p3{margin-inline-start:-5%}
+.lb li.pod .av{width:74px; height:74px; margin-bottom:-30px}
+.lb li.pod .p1 .av{width:100px; height:100px; margin-bottom:-38px}
+.lb li.pod .medal{height:44px; margin-bottom:-6px}
+.lb li.pod .p1 .medal{height:60px; margin-bottom:-8px}
+.lb li.pod .ped .txt{top:30%} .lb li.pod .p1 .ped .txt{top:26%}
+.lb li.pod .txt b{font-size:18px} .lb li.pod .p1 .txt b{font-size:21px}
+.lb li.pod .txt small{font-size:14px; padding:4px 11px 4px 8px; margin-top:6px; background:rgba(50,15,40,.62)}
+.lb li.pod .txt small img{width:17px; height:17px}
+.lb li.pod .stage{left:-2%; right:-2%; width:104%; bottom:-10px}
+.lb li.pod .p1 .ped .pd{aspect-ratio:1 / .98; object-fit:fill}   /* the gold block is drawn tall; the design shows it squarer */
+.lb li.pod .p2 .ped .pd,.lb li.pod .p3 .ped .pd{aspect-ratio:1.22 / 1; object-fit:fill}
+.lb li.pod{padding:10px 2% 0}
