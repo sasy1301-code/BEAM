@@ -2634,7 +2634,7 @@ function playWinVideo(mood, canvas, onFail) {
     // frame callbacks pause when the browser decides nothing is on screen; a plain timer keeps the canvas fed
     const guard = setInterval(() => {
       if (my !== winPlay || failed || v.ended) { clearInterval(guard); return; }
-      if (performance.now() - last > 120) { paint(); last = performance.now(); }
+      if (performance.now() - last > 250) { paint(); last = performance.now(); }
     }, 60);
     v.onended = () => { if (my === winPlay) paint(); };
     v.onerror = fail;
@@ -2698,7 +2698,17 @@ function showWin(mood, delay, onCard, coins = 0) {
     bug.className = 'winbug ' + mood + ' perch'; film.className = 'winbug ' + mood + ' perch anim';
     $('winbox').hidden = false;
     if (onCard) onCard();
-    if (mood !== 'shrug') winTimers.push(setTimeout(() => { if (still()) winFx(lookOf('fx')); }, 350));   // after the card's own pop, not on the same frame
+    // the effect waits until the clip has finished: the two together overloaded the phone and froze the picture
+    if (mood !== 'shrug') {
+      let fired = false;
+      const go = () => { if (fired) return; fired = true; winTimers.push(setTimeout(() => { if (still()) winFx(lookOf('fx')); }, 350)); };
+      const v = WIN_VIDEO[mood] && winVids[mood];
+      if (v && !v.ended && !v.paused && isFinite(v.duration)) {
+        const left = Math.max(0, (v.duration - v.currentTime) * 1000) + 150;
+        v.addEventListener('ended', go, { once: true });
+        winTimers.push(setTimeout(go, Math.min(left, 3500)));
+      } else go();
+    }
     $('nextBtn').focus({ preventScroll: true });
   }, delay + (WIN_VIDEO[mood] ? WIN_VIDEO_MS[mood] : 1900)));
 }
