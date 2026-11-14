@@ -1196,7 +1196,7 @@ async function publishScore() {
     }
   } catch (e) { /* local copy is optional */ }
   try {
-    const ok = await rpc('beam_submit_score', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_total: P.earned, p_stars: totalStars(), p_levels: Object.keys(P.levels).length, p_clean: Object.values(P.levels).filter(l => l.stars > 1).length });
+    const ok = await rpc('beam_submit_score', { p_id: P.id, p_secret: playerKey(), p_name: P.name, p_total: P.earned, p_stars: totalStars(), p_levels: Object.keys(P.levels).length, p_clean: Object.values(P.levels).filter(l => l.stars > 1).length, p_avatar: lookOf('char') });
     if (ok && d) await rpc('beam_submit_daily', { p_id: P.id, p_secret: playerKey(), p_day: t, p_score: d.score, p_moves: d.moves, p_time: d.time });
   } catch (e) { if (!saveWarned) console.warn('Leaderboard update skipped for now.'); }
 }
@@ -1737,7 +1737,7 @@ function renderShop() {
   for (const el of $('shopBody').querySelectorAll('[data-pack]')) el.onclick = () => buyCoins(COIN_PACKS.find(k => k.id === el.dataset.pack));
   for (const el of $('shopBody').querySelectorAll('[data-cat]')) el.onclick = () => { shopCat = el.dataset.cat; Sound.play('tap'); renderShop(); };
   const find = key => { const [cat, id] = key.split(':'); return [cat, SHOP[cat].items.find(x => x.id === id)]; };
-  for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[P_KEY(cat)] = it.id; save(cat === 'char'); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); if (cat === 'char') pulse(); };
+  for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[P_KEY(cat)] = it.id; save(cat === 'char'); applyLook(); if (cat === 'char' && P.name) publishScore(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); if (cat === 'char') pulse(); };
   for (const el of $('shopBody').querySelectorAll('[data-buy]')) el.onclick = () => buyLook(...find(el.dataset.buy));
   for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
   for (const el of $('shopBody').querySelectorAll('[data-emo]')) el.onclick = () => buyEmoSet(EMO_SETS.find(x => x.id === el.dataset.emo));
@@ -1752,7 +1752,7 @@ function buyLook(cat, it) {
       m.querySelector('#buyGo').onclick = () => {
         if (P.balance < it.price) { closeModal(); return; }
         P.balance -= it.price; P.own = P.own || {}; P.own[cat + ':' + it.id] = 1; P[P_KEY(cat)] = it.id;
-        save(cat === 'char'); applyLook(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
+        save(cat === 'char'); applyLook(); if (cat === 'char' && P.name) publishScore(); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop(); renderHome();
         toast(T('נוסף לאוסף שלכם'), `-${fmt(it.price)}`);
         if (cat === 'fx') winFx(it.id);
         logPurchase(cat + ':' + it.id, it.price, false);
@@ -2048,7 +2048,7 @@ function openProfile(after) {
       const done = () => {
         const v = (inp.value.trim() || def).replace(/[<>]/g, '').trim().slice(0, 16);
         if (!v) { inp.focus(); return; }
-        P.name = v; P.avatar = pick; closeModal(); save(); renderHome(); pulse(); if (after) after();
+        P.name = v; P.avatar = pick; closeModal(); save(); renderHome(); pulse(); publishScore(); if (after) after();
       };
       m.querySelector('#nameSave').onclick = done;
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') done(); });
@@ -3549,9 +3549,9 @@ function shareDaily(d) {
 /* ================= leaderboard ================= */
 /* podium geometry on the 804-unit canvas (top of the podium = 0); measured from the design */
 const POD_GEO = [
-  { pod: [250, 245, 304, 300], fr: [314, 118, 180, 202], who: [324, 128, 160, 160], medal: [345, 16.7, 120, 124], nm: [404, 345, 268, 52], pl: [315, 382.5, 180, 47, 35, 34], cast: [336, 270, 136, 40], sh: [235, 522, 340, 50] },
-  { pod: [495, 303, 275, 226], fr: [570, 200, 148, 167], who: [582, 212, 124, 124], medal: [609, 103.5, 73, 104], nm: [636, 409, 190, 39], pl: [556, 437, 160, 42, 32, 31], cast: [592, 324, 106, 36], sh: [505, 514, 275, 46] },
-  { pod: [18, 332.6, 291, 207.4], fr: [87, 218, 146, 156], who: [99, 231, 122, 122], medal: [123, 126, 73, 106], nm: [163.5, 425, 170, 39], pl: [83.5, 453, 160, 42, 33, 32], cast: [102, 335, 106, 36], sh: [10, 514, 300, 46] },
+  { pod: [250, 245, 304, 300], fr: [314, 118, 180, 198.9], who: [324, 128, 160, 160], medal: [345, 16.7, 120, 124], nm: [404, 345, 268, 52], pl: [315, 382.5, 180, 47, 35, 34], cast: [336, 270, 136, 40], sh: [235, 522, 340, 50] },
+  { pod: [495, 303, 275, 226], fr: [570, 200, 148, 167.6], who: [582, 212, 124, 124], medal: [609, 103.5, 73, 104], nm: [636, 409, 190, 39], pl: [556, 437, 160, 42, 32, 31], cast: [592, 324, 106, 36], sh: [505, 514, 275, 46] },
+  { pod: [18, 332.6, 291, 207.4], fr: [87, 218, 146, 154.7], who: [99, 231, 122, 122], medal: [123, 126, 73, 106], nm: [163.5, 425, 170, 39], pl: [83.5, 453, 160, 42, 33, 32], cast: [102, 335, 106, 36], sh: [10, 514, 300, 46] },
 ];
 const POD_SPARKS = [[276, 121, 28], [490, 128, 14], [58, 292, 20], [292, 192, 12]];
 /* the header and podium scale as single pictures: one unit = width / 804 */
@@ -3581,7 +3581,7 @@ async function openLeaderboard(tab) {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
     const rk = r.rank || n + 1, me = r.id === P.id;
-    li.innerHTML = `${rk <= 3 ? `<img class="badge" alt="${rk}" src="media/lb/badge${rk}.webp">` : `<span class="pos">${rk}</span>`}<span class="nm"><span></span><small></small></span><span class="sc"><span></span><small class="st"><img alt="" src="media/lb/star.webp"><i></i></small></span><span class="av"><img alt="" src="${avatarSrc(me ? lookOf('char') : null)}"></span>`;
+    li.innerHTML = `${rk <= 3 ? `<img class="badge" alt="${rk}" src="media/lb/badge${rk}.webp">` : `<span class="pos">${rk}</span>`}<span class="nm"><span></span><small></small></span><span class="sc"><span></span><small class="st"><img alt="" src="media/lb/star.webp"><i></i></small></span><span class="av"><img alt="" src="${avatarSrc(me ? lookOf('char') : r.avatar)}"></span>`;
     li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? T(' (אתם)') : '');
     li.querySelector('.nm small').textContent = lbTab === 'all' ? (r.levels != null ? T`★ ${r.stars || 0} · ${r.levels} שלבים · ${r.clean || 0} בלי עזרה`.replace(/^★ \d+ · /, '') : T`${r.stars || 0} כוכבים, ${rankOf(r.total).name}`) : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
     li.querySelector('.sc > span').textContent = fmt(val(r));
@@ -3602,7 +3602,7 @@ async function openLeaderboard(tab) {
         + `<img class="pd${k ? '' : ' g'}" alt="" ${at(...g.pod)} src="media/lb/pod${k + 1}.webp">`
         + (g.orn ? `<img class="orn" alt="" ${at(g.orn[0] - g.orn[2] / 2, g.orn[1] - g.orn[2] / g.orn[3] / 2, g.orn[2], g.orn[2] / g.orn[3])} src="media/lb/${g.orn[4]}.webp">` : '')
         + `<i class="cast" ${at(...g.cast)}></i>`
-        + `<img class="who${me ? ' mine' : ''}" alt="" ${at(...g.who)} src="${avatarSrc(me ? lookOf('char') : null)}">`
+        + `<img class="who${me ? ' mine' : ''}" alt="" ${at(...g.who)} src="${avatarSrc(me ? lookOf('char') : r.avatar)}">`
         + `<img class="fr" alt="" ${at(...g.fr)} src="media/lb/frame${k + 1}.webp">`
         + `<img class="medal" alt="" ${at(...g.medal)} src="media/lb/medal${k + 1}.webp">`
         + `<span class="nm" style="--x:${g.nm[0] - g.nm[2] / 2};--y:${g.nm[1] - nmH / 2};--w:${g.nm[2]};--h:${nmH};font-size:calc(${g.nm[3]} * var(--u));line-height:calc(${nmH} * var(--u))">${esc(r.name)}</span>`
