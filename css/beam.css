@@ -1005,3 +1005,4 @@ body.onleader::before{display:none}
 .lb li .sc .st img{width:13px; height:13px} .lb li .sc .st i{font-style:normal}
 .lbh .screen-sub{white-space:normal; text-align:center; line-height:1.15; padding:0 calc(70 * var(--u))}
 .lbh .screen-sub.long{font-size:calc(25 * var(--u));}
+.pod .orn{z-index:5; filter:drop-shadow(0 calc(1.5 * var(--u)) calc(1.5 * var(--u)) rgba(30,0,40,.35))}
