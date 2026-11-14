@@ -1001,3 +1001,23 @@ body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); bord
 .lb li.pod .p1 .ped .pd{aspect-ratio:1 / .98; object-fit:fill}   /* the gold block is drawn tall; the design shows it squarer */
 .lb li.pod .p2 .ped .pd,.lb li.pod .p3 .ped .pd{aspect-ratio:1.22 / 1; object-fit:fill}
 .lb li.pod{padding:10px 2% 0}
+/* header closer to the design: small crown on a soft arc of light, big 3D gold title, tall laurels at its sides, dotted subtitle */
+.lbhead{margin:-4px 0 10px; padding-top:6px}
+.lbhead::before{content:""; position:absolute; left:8%; right:8%; top:10px; height:70px; border-radius:50% 50% 0 0 / 100% 100% 0 0; border-top:2px solid rgba(255,214,120,.35); filter:blur(.5px); box-shadow:0 -6px 18px -8px rgba(255,200,90,.5); pointer-events:none}
+.lbhead .crown{position:relative; width:66px; margin:0 auto -2px}
+.lbhead .ttl{gap:2px}
+.lbhead .ttl .screen-title{font-size:38px; line-height:1.1; -webkit-text-stroke:1.5px #8A4A0E; paint-order:stroke fill; filter:drop-shadow(0 3px 0 #6B3407) drop-shadow(0 6px 10px rgba(30,0,60,.5))}
+.lbhead .lau{height:62px; margin-top:14px}
+.lbhead .screen-sub{display:inline-flex; align-items:center; gap:10px; margin-top:6px; font-size:16px; color:#E4D8FF}
+.lbhead .screen-sub::before,.lbhead .screen-sub::after{content:""; width:7px; height:7px; border-radius:50%; background:radial-gradient(circle,#FFF2B0,#F2B53A); box-shadow:0 0 6px #FFC94A}
+.lbhead .ttl{justify-content:space-between; padding:0 2px}
+.lbhead .ttl .screen-title{font-size:44px; font-weight:800; -webkit-text-stroke:0; letter-spacing:-.5px; background:linear-gradient(180deg,#FFFBE6 0%,#FFE9A6 35%,#FFC94A 70%,#F2A21C 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 2px 0 #B8650F) drop-shadow(0 4px 0 #7A3F08) drop-shadow(0 8px 10px rgba(20,0,50,.55))}
+.lbhead .lau{height:58px; margin-top:16px; flex:none}
+.lbhead::before{top:22px}
+.lbhead .ttl .screen-title{font-size:50px; background:linear-gradient(180deg,#FFFFF4 0%,#FFF3C4 40%,#FFDC6E 72%,#FFC23A 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 2px 0 #C9790F) drop-shadow(0 3px 0 #8E4A08) drop-shadow(0 6px 8px rgba(20,0,50,.45))}
+.lbhead .crown{width:62px; margin:0 auto -10px}
+.lbhead .lau{height:64px; margin-top:20px}
+.lbhead .ttl .screen-title{font-size:clamp(30px, 11vw, 46px); white-space:nowrap}
+.lbhead .lau{height:56px; margin-top:12px}
+.lbhead .ttl .screen-title{line-height:1; padding:4px 0 6px; background:linear-gradient(180deg,#FFFFFF 0%,#FFF8DA 30%,#FFE58A 62%,#FFC93C 100%); -webkit-background-clip:text; background-clip:text}
+.lbhead .ttl .screen-title{text-shadow:none}   /* a text-shadow shows through see-through gold letters and muddied them */
