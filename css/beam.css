@@ -946,7 +946,7 @@ body.onleader{background-image:url(../media/lb/bg.webp); background-size:cover; 
 .lbhead .crown{display:block; width:84px; margin:0 auto -6px; filter:drop-shadow(0 4px 10px rgba(255,190,60,.5))}
 .lbhead .ttl{display:flex; align-items:center; justify-content:center; gap:6px}
 .lbhead .ttl .screen-title{margin:0; background:linear-gradient(180deg,#FFF6C8 0%,#FFD45A 55%,#F2A21C 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 3px 0 rgba(90,40,0,.45))}
-.lbhead .lau{height:46px; width:auto} .lbhead .lau.r{transform:scaleX(-1)}
+.lbhead .lau{height:46px; width:auto; transform:scaleX(-1)} .lbhead .lau.r{transform:none}
 .lbhead .screen-sub{margin-top:4px; color:#D9C9FF}
 .tabs.lbtabs{background:linear-gradient(180deg,#1E0B4D,#2A1166); border:2px solid #5B3AB8; box-shadow:inset 0 2px 6px rgba(0,0,0,.45); padding:5px; border-radius:999px}
 .tabs.lbtabs button{color:#fff; font-weight:700; border-radius:999px; background:none}
