@@ -1066,3 +1066,55 @@ body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); bord
 .lb li.pod .stage{top:62cqw}
 .lb li.pod .p1 .ped{top:37.6cqw} .lb li.pod .p1 .av{top:20.7cqw} .lb li.pod .p1 .medal{top:4.9cqw}
 .lb li.pod{height:79cqw}
+/* === one-to-one with the design: values measured on a grid laid over the design and over the game === */
+.tabs.lbtabs button{font-size:4.3cqw}
+.lb li.pod{height:80cqw}
+.lb li.pod .stage{left:-3.75%; width:107.5%; top:62.5cqw}
+.lb li.pod .av .who{inset:9%; width:82%; height:82%}
+.lb li.pod .p1 .ped{left:29.9%; width:40.2%; top:36cqw} .lb li.pod .p1 .pd{height:38.6cqw}
+.lb li.pod .p1 .av{left:50.1%; top:16.7cqw; width:25cqw; height:25cqw}
+.lb li.pod .p1 .medal{left:50.1%; top:2cqw; height:16.5cqw}
+.lb li.pod .p1 .txt b{font-size:6.1cqw} .lb li.pod .p1 .txt small{font-size:4.2cqw}
+.lb li.pod .p2 .ped{left:65.2%; width:33.8%; top:41.3cqw} .lb li.pod .p2 .pd{height:31.3cqw}
+.lb li.pod .p2 .av{left:82.7%; top:27cqw; width:21.5cqw; height:21.5cqw}
+.lb li.pod .p2 .medal{left:82.7%; top:14.9cqw; height:12.6cqw}
+.lb li.pod .p2 .ped .txt{top:26%}
+.lb li.pod .p3 .ped{left:0; width:33.4%; top:42.2cqw} .lb li.pod .p3 .pd{height:31.7cqw}
+.lb li.pod .p3 .av{left:17.3%; top:29.5cqw; width:19.8cqw; height:19.8cqw}
+.lb li.pod .p3 .medal{left:17.1%; top:17.6cqw; height:13.3cqw}
+.lb li.pod .p3 .ped .txt{top:25%}
+.lb li.pod .txt small{font-size:4cqw}
+
+/* podium: final one-to-one pass against the design mockup (measured by overlay) */
+.lb li.pod .spark{display:none}
+.lb li.pod::before{content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 36.6% 3.8cqw/4.4cqw 4.4cqw no-repeat,
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 72.2% 3.8cqw/3.4cqw 3.4cqw no-repeat,
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 38.2% 18cqw/3.2cqw 3.2cqw no-repeat,
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 4.8% 29cqw/3cqw 3cqw no-repeat;}
+.lb li.pod .p1 .medal{top:3.3cqw}
+.lb li.pod .p1 .av{top:18.4cqw}
+.lb li.pod .p1 .ped{left:29.6%; width:40.8%; top:33.9cqw} .lb li.pod .p1 .pd{height:42.5cqw}
+.lb li.pod .p2 .medal{top:16.2cqw} .lb li.pod .p2 .av{top:29.3cqw}
+.lb li.pod .p2 .ped{left:65.3%; width:33.2%; top:41.7cqw} .lb li.pod .p2 .pd{height:31.6cqw}
+.lb li.pod .p3 .medal{top:19.1cqw} .lb li.pod .p3 .av{top:31.1cqw}
+.lb li.pod .p3 .ped{width:34.1%; top:43.5cqw} .lb li.pod .p3 .pd{height:31.4cqw}
+.lb li.pod .stage{top:61.8cqw}
+.lb li.pod::before{background:
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(34.6% - 1.6cqw) 18.6cqw/3.2cqw 3.2cqw no-repeat,
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(62% - 1cqw) 19.2cqw/2cqw 2cqw no-repeat,
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(4.6% - 1.1cqw) 41.6cqw/2.2cqw 2.2cqw no-repeat}
+.lb li.pod .p3 .medal{top:18.3cqw} .lb li.pod .p2 .medal{top:15.5cqw}
+.lb li.pod .p1 .ped .txt{top:26.1%} .lb li.pod .p2 .ped .txt{top:23%} .lb li.pod .p3 .ped .txt{top:22.9%}
+.lb li.pod .p1 .txt b{font-size:7cqw} .lb li.pod .p2 .txt b,.lb li.pod .p3 .txt b{font-size:5.3cqw}
+.lb li.pod .txt small{display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; gap:1cqw; margin-top:.5cqw; padding:1cqw 0; width:21.4cqw; font-size:4.5cqw}
+.lb li.pod .p1 .txt small{width:24cqw; margin-top:.9cqw; font-size:4.7cqw}
+.lb li.pod .p2 .txt small{width:21.1cqw; font-size:4.4cqw}
+.lb li.pod .txt small img{width:4.4cqw; height:4.4cqw} .lb li.pod .p1 .txt small img{width:4.8cqw; height:4.8cqw}
+.lb li.pod .p1 .ped .txt{top:24.1%} .lb li.pod .p1 .txt small{margin-top:.1cqw}
+.lb li.pod .p3 .txt small{margin-top:-.5cqw}
+.lb li.pod .txt small{padding:.45cqw 0}
+.lb li.pod .av .who{inset:4%; width:92%; height:92%}
+.lb li.pod .stage{top:61.6cqw; height:24cqw; object-fit:fill}
+.lb li.pod{height:82cqw}
