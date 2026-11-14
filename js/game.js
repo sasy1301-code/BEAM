@@ -2695,6 +2695,7 @@ function winGL(canvas) {
   return canvas._gl;
 }
 let winTimers = [];
+$('winX').onclick = () => { Sound.play('tap'); hideWin(); clearInterval(timerInt); G = null; goHome(); };   // the cross on a result card: leave without choosing
 function hideWin() {
   winTimers.forEach(clearTimeout); winTimers = []; stopWinVideo(); Sound.hush();
   $('winLayer').hidden = true; $('winLayer').classList.remove('dim'); $('winbox').hidden = true;

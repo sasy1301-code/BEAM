@@ -309,6 +309,11 @@ svg.board{display:block; width:100%; height:auto; touch-action:manipulation; use
 @keyframes pop{to{transform:scale(1)}}
 .gains{display:flex; justify-content:center; gap:10px; margin:6px 0 14px}
 .win .btn + .btn{margin-top:12px}
+.win{position:relative}
+.win .mclose{position:absolute; top:12px; inset-inline-end:12px; width:40px; height:40px; border-radius:50%; border:none; padding:0; display:grid; place-items:center; z-index:3;
+  background:linear-gradient(180deg,#B48CFF,#7C4DFF); box-shadow:0 4px 0 #4B25B8, 0 6px 12px rgba(60,20,150,.35), inset 0 2px 0 rgba(255,255,255,.45); transition:transform .08s}
+.win .mclose:active{transform:translateY(3px)}
+.win .mclose svg{width:18px; height:18px}
 
 /* overlays */
 .overlay{position:fixed; inset:0; background:rgba(30,15,60,.5); display:grid; place-items:center; padding:20px; z-index:20}
