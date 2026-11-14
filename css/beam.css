@@ -538,9 +538,6 @@ svg.mroad{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointe
 .lb{list-style:none; margin:0; padding:0}
 .lb li{display:grid; grid-template-columns:40px 1fr auto; align-items:center; gap:10px; background:var(--surface); border-radius:16px; padding:10px 14px; margin-bottom:8px; box-shadow:0 3px 0 var(--rule); font-weight:600}
 .lb li .pos{width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--rule); font-weight:700; font-variant-numeric:tabular-nums}
-.lb li:nth-child(1) .pos{background:var(--star); color:#5A2E12}
-.lb li:nth-child(2) .pos{background:#D8DCE8; color:#3A3F55}
-.lb li:nth-child(3) .pos{background:#F0B27A; color:#5A2E12}
 .lb li.mine{outline:3px solid var(--purple)}
 .lb li .nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .lb li .nm small{display:block; color:var(--muted); font-weight:500; font-size:13px}
@@ -776,15 +773,6 @@ svg.board image{pointer-events:none}
 .pile.p1 img{left:30px; top:16px; width:60px; height:60px} .pile.p2 img:nth-child(1){left:20px; top:22px} .pile.p2 img:nth-child(2){left:58px; top:26px}
 .shopitem img.thumb.char{height:104px} .shopitem img.thumb.brd{height:104px}
 .avgrid button.lock{opacity:.45} .avgrid button.lock img{filter:grayscale(1)}
-.lb li.pod{display:flex; align-items:flex-end; justify-content:center; gap:8px; background:none; box-shadow:none; padding:102px 0 0; margin-bottom:12px}
-.lb li.pod div{position:relative; flex:1; max-width:112px; border-radius:18px 18px 0 0; text-align:center; color:#fff; font-weight:700; padding:40px 4px 8px; box-shadow:inset 0 3px 0 rgba(255,255,255,.35); min-width:0}
-.lb li.pod .p1{background:linear-gradient(180deg,#FFD86B,#F0A012); height:150px} .lb li.pod .p2{background:linear-gradient(180deg,#C9D3E6,#8E9BB8); height:120px} .lb li.pod .p3{background:linear-gradient(180deg,#F0B58A,#C9793F); height:100px}
-.lb li.pod i{position:absolute; top:-32px; left:50%; transform:translateX(-50%); width:64px; height:64px; border-radius:50%; background:#FFE9A8; border:4px solid #FFD23F; box-shadow:0 4px 0 rgba(0,0,0,.3); overflow:hidden; display:grid; place-items:center}
-.lb li.pod i img{width:88%; height:88%; object-fit:contain}
-.lb li.pod u{position:absolute; top:-84px; left:50%; transform:translateX(-50%); text-decoration:none; z-index:2; line-height:0}
-.lb li.pod u img{height:62px; filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))} .lb li.pod .p1 u{top:-98px} .lb li.pod .p1 u img{height:76px}
-.lb li.pod b{display:block; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap} .lb li.pod small{display:block; font-size:13px}
-.lb li.pod .mine{box-shadow:0 0 0 3px #fff, inset 0 3px 0 rgba(255,255,255,.35)}
 body.tabbed .lb li.mine{position:sticky; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:2; background:linear-gradient(180deg,#C77DFF,#8A3DF0); color:#fff; --ink:#fff; --muted:#EBDDFF; outline:3px solid #FFD23F}
 #homeFly{position:absolute; left:0; top:0; width:min(31%,147px); height:auto; z-index:4; pointer-events:none; opacity:0; transition:opacity .4s; filter:drop-shadow(0 0 12px rgba(255,214,90,.55)); animation:hfPath 26s ease-in-out infinite}
 .gscene canvas.gbug{width:36%; margin:-9% 0 0 -9%; opacity:0; transition:opacity .4s} .gscene canvas.gbug.live{opacity:1} .gscene:has(canvas.gbug.live) img.gbug{display:none}
@@ -952,3 +940,41 @@ body.onhome #hud{position:fixed; top:0; left:0; right:0; margin:0 auto; max-widt
 .faces.big{margin:0 0 6px}
 .emoset .act{width:100%}
 .emopick .emogrid.five{grid-template-columns:repeat(5,1fr)}
+/* ===== leaderboard, painted set (media/lb) ===== */
+body.onleader{background-image:url(../media/lb/bg.webp); background-size:cover; background-position:center top; background-attachment:fixed}
+.lbhead{text-align:center; margin:-6px 0 6px; position:relative}
+.lbhead .crown{display:block; width:84px; margin:0 auto -6px; filter:drop-shadow(0 4px 10px rgba(255,190,60,.5))}
+.lbhead .ttl{display:flex; align-items:center; justify-content:center; gap:6px}
+.lbhead .ttl .screen-title{margin:0; background:linear-gradient(180deg,#FFF6C8 0%,#FFD45A 55%,#F2A21C 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 3px 0 rgba(90,40,0,.45))}
+.lbhead .lau{height:46px; width:auto} .lbhead .lau.r{transform:scaleX(-1)}
+.lbhead .screen-sub{margin-top:4px; color:#D9C9FF}
+.tabs.lbtabs{background:linear-gradient(180deg,#1E0B4D,#2A1166); border:2px solid #5B3AB8; box-shadow:inset 0 2px 6px rgba(0,0,0,.45); padding:5px; border-radius:999px}
+.tabs.lbtabs button{color:#fff; font-weight:700; border-radius:999px; background:none}
+.tabs.lbtabs button[aria-selected="true"]{background:url(../media/lb/pill.webp) center / 100% 100% no-repeat; box-shadow:none; color:#fff; text-shadow:0 1px 0 rgba(60,0,120,.5)}
+.lb li.pod{position:relative; display:flex; align-items:flex-end; justify-content:center; gap:0; background:none; box-shadow:none; padding:14px 0 0; margin:6px -6px 14px; outline:none}
+.lb li.pod .spark{position:absolute; left:50%; top:0; width:110%; transform:translateX(-50%); pointer-events:none; opacity:.9}
+.lb li.pod > div{position:relative; flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center}
+.lb li.pod .p1{flex:1.15; z-index:2}
+.lb li.pod .medal{position:relative; height:46px; width:auto; margin-bottom:-8px; z-index:3; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.lb li.pod .p1 .medal{height:58px}
+.lb li.pod .av{position:relative; display:block; width:78px; height:78px; margin-bottom:-22px; z-index:2}
+.lb li.pod .p1 .av{width:96px; height:96px}
+.lb li.pod .av .fr{position:absolute; inset:-6%; width:112%; height:112%; object-fit:contain}
+.lb li.pod .av .who{position:absolute; inset:14%; width:72%; height:72%; object-fit:contain; z-index:1}
+.lb li.pod .ped{position:relative; width:100%; display:block; line-height:0}
+.lb li.pod .ped .pd{width:100%; height:auto; display:block}
+.lb li.pod .ped .txt{position:absolute; left:8%; right:8%; top:24%; line-height:1.15; color:#fff}
+.lb li.pod .p1 .ped .txt{top:20%}
+.lb li.pod .txt b{display:block; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 2px 0 rgba(60,20,0,.55)}
+.lb li.pod .p1 .txt b{font-size:19px}
+.lb li.pod .txt small{display:inline-flex; align-items:center; gap:4px; margin-top:4px; background:rgba(40,10,60,.55); border-radius:999px; padding:3px 9px 3px 7px; font-size:13px; font-weight:700; direction:ltr}
+.lb li.pod .txt small img{width:15px; height:15px}
+.lb li.pod .mine .av{filter:drop-shadow(0 0 8px #FFE27A)}
+.lb li:not(.pod):not(.empty){grid-template-columns:44px 1fr auto 46px; gap:10px; border-radius:20px; padding:8px 12px; background:linear-gradient(180deg,#3A1C88,#2A1269); border:2px solid #5E3DC4; box-shadow:0 4px 0 rgba(10,0,40,.45); --ink:#fff; --muted:#C9B8F5; color:#fff}
+.lb li .badge{width:40px; height:40px; object-fit:contain}
+.lb li .pos{background:rgba(255,255,255,.14); color:#fff}
+.lb li .sc{display:inline-flex; align-items:center; gap:5px; padding-inline-start:10px; border-inline-start:2px solid rgba(255,255,255,.18); direction:ltr}
+.lb li .sc img{width:18px; height:18px}
+.lb li .av{width:42px; height:42px; border-radius:50%; background:radial-gradient(circle,#FFF3D2,#F6D88E); border:3px solid #FFC94A; display:grid; place-items:center; overflow:hidden}
+.lb li .av img{width:86%; height:86%; object-fit:contain}
+body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); border-color:#FFD23F; outline:none; box-shadow:0 0 0 2px #FFD23F, 0 6px 14px rgba(255,200,60,.35)}

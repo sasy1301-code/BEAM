@@ -1305,7 +1305,7 @@ function show(id) {
   if (id !== 'game' && id !== 'login') setTimeout(claimGifts, 300);          // coming out of a board, or into the game: anything waiting is collected right away
   for (const s of SCREENS) $(s).hidden = s !== id; window.scrollTo(0, 0); Sound.music(id === 'game');
   const tab = TAB_OF[id];
-  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game'); document.body.classList.toggle('onhome', id === 'home');
+  $('hud').hidden = $('tabbar').hidden = !tab; document.body.classList.toggle('tabbed', !!tab); document.body.classList.toggle('playing', id === 'game'); document.body.classList.toggle('onhome', id === 'home'); document.body.classList.toggle('onleader', id === 'leader');
   for (const b of $('tabbar').children) b.classList.toggle('on', b.dataset.tab === tab);
   if (tab) hudSync();
   flyShow(id === 'home' ? $('homeFly') : id === 'garden' ? GFLY : null);
@@ -3567,17 +3567,21 @@ async function openLeaderboard(tab) {
   const row = (r, n) => {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
-    li.innerHTML = `<span class="pos">${r.rank || n + 1}</span><span class="nm"><span></span><small></small></span><span class="sc"></span>`;
+    const rk = r.rank || n + 1, me = r.id === P.id;
+    li.innerHTML = `${rk <= 3 ? `<img class="badge" alt="${rk}" src="media/lb/badge${rk}.webp">` : `<span class="pos">${rk}</span>`}<span class="nm"><span></span><small></small></span><span class="sc"><span></span><img alt="" src="media/lb/star.webp"></span><span class="av"><img alt="" src="${avatarSrc(me ? lookOf('char') : null)}"></span>`;
     li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? T(' (אתם)') : '');
     li.querySelector('.nm small').textContent = lbTab === 'all' ? (r.levels != null ? T`★ ${r.stars || 0} · ${r.levels} שלבים · ${r.clean || 0} בלי עזרה` : T`${r.stars || 0} כוכבים, ${rankOf(r.total).name}`) : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
-    li.querySelector('.sc').textContent = fmt(val(r));
+    li.querySelector('.sc span').textContent = fmt(val(r));
     return li;
   };
   const top = rows.length >= 3 && rows.slice(0, 3).every((r, n) => (r.rank || n + 1) === n + 1) ? rows.slice(0, 3) : [];
   if (top.length) {
     const pod = document.createElement('li'); pod.className = 'pod';
-    pod.innerHTML = [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}"><u><img alt="" src="media/ui/place${k + 1}.webp"></u><i><img alt="" src="${avatarSrc(top[k].id === P.id ? lookOf('char') : null)}"></i><b></b><small>${fmt(val(top[k]))}</small></div>`).join('');
-    [1, 0, 2].forEach((k, j) => { pod.children[j].querySelector('b').textContent = top[k].name; });
+    pod.innerHTML = `<img class="spark" alt="" src="media/lb/sparkles.webp">` + [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}">
+      <img class="medal" alt="" src="media/lb/medal${k + 1}.webp">
+      <span class="av"><img class="who" alt="" src="${avatarSrc(top[k].id === P.id ? lookOf('char') : null)}"><img class="fr" alt="" src="media/lb/frame${k + 1}.webp"></span>
+      <span class="ped"><img class="pd" alt="" src="media/lb/pod${k + 1}.webp"><span class="txt"><b></b><small><img alt="" src="media/lb/star.webp"><span>${fmt(val(top[k]))}</span></small></span></span></div>`).join('');
+    [1, 0, 2].forEach((k, j) => { pod.children[j + 1].querySelector('b').textContent = top[k].name; });
     list.appendChild(pod);
   }
   rows.filter((r, n) => (r.rank || n + 1) <= 25 || r.id === P.id).forEach((r, n) => { if (n >= top.length || r.id === P.id) list.appendChild(row(r, n)); });
