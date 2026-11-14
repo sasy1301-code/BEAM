@@ -3547,16 +3547,29 @@ function shareDaily(d) {
 }
 
 /* ================= leaderboard ================= */
+/* podium geometry on the 804-unit canvas (top of the podium = 0); measured from the design */
+const POD_GEO = [
+  { pod: [250, 245, 304, 300], fr: [314, 118, 180, 202], who: [324, 128, 160, 160], medal: [345, 16.7, 120, 124], nm: [404, 345, 268, 52], pl: [315, 382.5, 180, 47, 35, 34], cast: [336, 270, 136, 40], sh: [235, 522, 340, 50] },
+  { pod: [552, 295, 208, 234], fr: [570, 200, 148, 167], who: [582, 212, 124, 124], medal: [609, 103.5, 73, 104], nm: [645, 378, 190, 39], pl: [565, 404, 160, 42, 32, 31], cast: [592, 324, 106, 36], sh: [538, 518, 246, 46] },
+  { pod: [45, 306, 248, 234], fr: [87, 218, 146, 156], who: [99, 231, 122, 122], medal: [123, 126, 73, 106], nm: [162, 388, 200, 39], pl: [83, 413.5, 160, 42, 33, 32], cast: [102, 335, 106, 36], sh: [28, 518, 280, 46] },
+];
+const POD_SPARKS = [[276, 121, 28], [490, 128, 14], [58, 292, 20], [292, 192, 12]];
+/* the header and podium scale as single pictures: one unit = width / 804 */
+const lbRO = typeof ResizeObserver === 'function' ? new ResizeObserver(es => es.forEach(e => e.target.style.setProperty('--u', (e.target.clientWidth / 804) + 'px'))) : null;
+function lbScale(el) { if (!el || el.dataset.ro) return; el.dataset.ro = 1; el.style.setProperty('--u', ((el.clientWidth || 393) / 804) + 'px'); if (lbRO) lbRO.observe(el); }
+
 let lbTab = 'all';
 async function openLeaderboard(tab) {
   if (tab) lbTab = tab;
   show('leader');
+  $('leader').classList.toggle('he', LANG === 'he'); lbScale(document.querySelector('#leader .lbh'));
   if (!P.name) askName(() => openLeaderboard());
   $('tabAll').setAttribute('aria-selected', lbTab === 'all');
   $('tabDay').setAttribute('aria-selected', lbTab === 'day'); $('tabWeek').setAttribute('aria-selected', lbTab === 'week');
   const list = $('lbList');
   list.innerHTML = T('<li class="empty">טוען…</li>');
   $('lbSub').textContent = lbTab === 'all' ? T('כל הנקודות שנצברו במשחק') : lbTab === 'week' ? T('לוח אחד קשה לכל השבוע. כולם מקבלים את אותו לוח') : T`האתגר של ${todayStr().split('-').reverse().join('.')}`;
+  $('lbSub').classList.toggle('long', $('lbSub').textContent.length > 30);
   if (P.name) { await publishScore(); if (lbTab === 'week') await publishWeekly(); }
   const asked = lbTab, { online, rows } = await readBoard(lbTab);
   if (asked !== lbTab || $('leader').hidden) return;   // the player moved on while the table was loading
@@ -3568,21 +3581,34 @@ async function openLeaderboard(tab) {
     const li = document.createElement('li');
     if (r.id === P.id) li.className = 'mine';
     const rk = r.rank || n + 1, me = r.id === P.id;
-    li.innerHTML = `${rk <= 3 ? `<img class="badge" alt="${rk}" src="media/lb/badge${rk}.webp">` : `<span class="pos">${rk}</span>`}<span class="nm"><span></span><small></small></span><span class="sc"><span></span><img alt="" src="media/lb/star.webp"></span><span class="av"><img alt="" src="${avatarSrc(me ? lookOf('char') : null)}"></span>`;
+    li.innerHTML = `${rk <= 3 ? `<img class="badge" alt="${rk}" src="media/lb/badge${rk}.webp">` : `<span class="pos">${rk}</span>`}<span class="nm"><span></span><small></small></span><span class="sc"><span></span><small class="st"><img alt="" src="media/lb/star.webp"><i></i></small></span><span class="av"><img alt="" src="${avatarSrc(me ? lookOf('char') : null)}"></span>`;
     li.querySelector('.nm span').textContent = r.name + (r.id === P.id ? T(' (אתם)') : '');
-    li.querySelector('.nm small').textContent = lbTab === 'all' ? (r.levels != null ? T`★ ${r.stars || 0} · ${r.levels} שלבים · ${r.clean || 0} בלי עזרה` : T`${r.stars || 0} כוכבים, ${rankOf(r.total).name}`) : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
-    li.querySelector('.sc span').textContent = fmt(val(r));
+    li.querySelector('.nm small').textContent = lbTab === 'all' ? (r.levels != null ? T`★ ${r.stars || 0} · ${r.levels} שלבים · ${r.clean || 0} בלי עזרה`.replace(/^★ \d+ · /, '') : T`${r.stars || 0} כוכבים, ${rankOf(r.total).name}`) : `${movesText(r.moves)}, ${Math.floor(r.time / 60)}:${String(r.time % 60).padStart(2, '0')}`;
+    li.querySelector('.sc > span').textContent = fmt(val(r));
+    if (lbTab === 'all' && r.stars != null) li.querySelector('.st i').textContent = r.stars; else li.querySelector('.st').remove();
     return li;
   };
   const top = rows.length >= 3 && rows.slice(0, 3).every((r, n) => (r.rank || n + 1) === n + 1) ? rows.slice(0, 3) : [];
   if (top.length) {
-    const pod = document.createElement('li'); pod.className = 'pod';
-    pod.innerHTML = `<img class="spark" alt="" src="media/lb/sparkles.webp"><img class="stage" alt="" src="media/lb/stage.webp">` + [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}">
-      <img class="medal" alt="" src="media/lb/medal${k + 1}.webp">
-      <span class="av"><img class="who" alt="" src="${avatarSrc(top[k].id === P.id ? lookOf('char') : null)}"><img class="fr" alt="" src="media/lb/frame${k + 1}.webp"></span>
-      <span class="ped"><img class="pd" alt="" src="media/lb/pod${k + 1}.webp"><span class="txt"><b></b><small><img alt="" src="media/lb/star.webp"><span>${fmt(val(top[k]))}</span></small></span></span></div>`).join('');
-    [1, 0, 2].forEach((k, j) => { pod.children[j + 2].querySelector('b').textContent = top[k].name; });
-    list.appendChild(pod);
+    const pod = document.createElement('li'); pod.className = 'pod lbc';
+    const at = (x, y, w, h) => `style="--x:${x};--y:${y};--w:${w};--h:${h}"`;
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let h = `<div class="glow" ${at(0, 60, 804, 420)}></div><img class="stage" alt="" ${at(4, 464, 800, 158)} src="media/lb/stage.webp">`;
+    h += POD_SPARKS.map(([x, y, w]) => `<i class="sp" ${at(x, y, w, w)}></i>`).join('');
+    [0, 1, 2].forEach(k => {
+      const g = POD_GEO[k], r = top[k], me = r.id === P.id;
+      const nmH = Math.round(g.nm[3] * 1.3);
+      h += `<i class="sh" ${at(...g.sh)}></i>`
+        + `<img class="pd${k ? '' : ' g'}" alt="" ${at(...g.pod)} src="media/lb/pod${k + 1}.webp">`
+        + `<i class="cast" ${at(...g.cast)}></i>`
+        + `<img class="who${me ? ' mine' : ''}" alt="" ${at(...g.who)} src="${avatarSrc(me ? lookOf('char') : null)}">`
+        + `<img class="fr" alt="" ${at(...g.fr)} src="media/lb/frame${k + 1}.webp">`
+        + `<img class="medal" alt="" ${at(...g.medal)} src="media/lb/medal${k + 1}.webp">`
+        + `<span class="nm" style="--x:${g.nm[0] - g.nm[2] / 2};--y:${g.nm[1] - nmH / 2};--w:${g.nm[2]};--h:${nmH};font-size:calc(${g.nm[3]} * var(--u));line-height:calc(${nmH} * var(--u))">${esc(r.name)}</span>`
+        + `<span class="pl" style="--x:${g.pl[0]};--y:${g.pl[1]};--w:${g.pl[2]};--h:${g.pl[3]};--s:${g.pl[5]};font-size:calc(${g.pl[4]} * var(--u))"><img alt="" src="media/lb/star.webp"><span>${fmt(val(r))}</span></span>`;
+    });
+    pod.innerHTML = h;
+    list.appendChild(pod); lbScale(pod);
   }
   rows.filter((r, n) => (r.rank || n + 1) <= 25 || r.id === P.id).forEach((r, n) => { if (n >= top.length || r.id === P.id) list.appendChild(row(r, n)); });
 }

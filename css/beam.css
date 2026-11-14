@@ -942,34 +942,9 @@ body.onhome #hud{position:fixed; top:0; left:0; right:0; margin:0 auto; max-widt
 .emopick .emogrid.five{grid-template-columns:repeat(5,1fr)}
 /* ===== leaderboard, painted set (media/lb) ===== */
 body.onleader{background-image:url(../media/lb/bg.webp); background-size:cover; background-position:center top; background-attachment:fixed}
-.lbhead{text-align:center; margin:-6px 0 6px; position:relative}
-.lbhead .crown{display:block; width:84px; margin:0 auto -6px; filter:drop-shadow(0 4px 10px rgba(255,190,60,.5))}
-.lbhead .ttl{display:flex; align-items:center; justify-content:center; gap:6px}
-.lbhead .ttl .screen-title{margin:0; background:linear-gradient(180deg,#FFF6C8 0%,#FFD45A 55%,#F2A21C 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 3px 0 rgba(90,40,0,.45))}
-.lbhead .lau{height:46px; width:auto; transform:scaleX(-1)} .lbhead .lau.r{transform:none}
-.lbhead .screen-sub{margin-top:4px; color:#D9C9FF}
 .tabs.lbtabs{background:linear-gradient(180deg,#1E0B4D,#2A1166); border:2px solid #5B3AB8; box-shadow:inset 0 2px 6px rgba(0,0,0,.45); padding:5px; border-radius:999px}
 .tabs.lbtabs button{color:#fff; font-weight:700; border-radius:999px; background:none}
 .tabs.lbtabs button[aria-selected="true"]{background:url(../media/lb/pill.webp) center / 100% 100% no-repeat; box-shadow:none; color:#fff; text-shadow:0 1px 0 rgba(60,0,120,.5)}
-.lb li.pod{position:relative; display:flex; align-items:flex-end; justify-content:center; gap:0; background:none; box-shadow:none; padding:14px 0 0; margin:6px -6px 14px; outline:none}
-.lb li.pod .spark{position:absolute; left:50%; top:0; width:110%; transform:translateX(-50%); pointer-events:none; opacity:.9}
-.lb li.pod > div{position:relative; flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center}
-.lb li.pod .p1{flex:1.15; z-index:2}
-.lb li.pod .medal{position:relative; height:46px; width:auto; margin-bottom:-8px; z-index:3; filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
-.lb li.pod .p1 .medal{height:58px}
-.lb li.pod .av{position:relative; display:block; width:78px; height:78px; margin-bottom:-22px; z-index:2}
-.lb li.pod .p1 .av{width:96px; height:96px}
-.lb li.pod .av .fr{position:absolute; inset:-6%; width:112%; height:112%; object-fit:contain}
-.lb li.pod .av .who{position:absolute; inset:14%; width:72%; height:72%; object-fit:contain; z-index:1}
-.lb li.pod .ped{position:relative; width:100%; display:block; line-height:0}
-.lb li.pod .ped .pd{width:100%; height:auto; display:block}
-.lb li.pod .ped .txt{position:absolute; left:8%; right:8%; top:24%; line-height:1.15; color:#fff}
-.lb li.pod .p1 .ped .txt{top:20%}
-.lb li.pod .txt b{display:block; font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 2px 0 rgba(60,20,0,.55)}
-.lb li.pod .p1 .txt b{font-size:19px}
-.lb li.pod .txt small{display:inline-flex; align-items:center; gap:4px; margin-top:4px; background:rgba(40,10,60,.55); border-radius:999px; padding:3px 9px 3px 7px; font-size:13px; font-weight:700; direction:ltr}
-.lb li.pod .txt small img{width:15px; height:15px}
-.lb li.pod .mine .av{filter:drop-shadow(0 0 8px #FFE27A)}
 .lb li:not(.pod):not(.empty){grid-template-columns:44px 1fr auto 46px; gap:10px; border-radius:20px; padding:8px 12px; background:linear-gradient(180deg,#3A1C88,#2A1269); border:2px solid #5E3DC4; box-shadow:0 4px 0 rgba(10,0,40,.45); --ink:#fff; --muted:#C9B8F5; color:#fff}
 .lb li .badge{width:40px; height:40px; object-fit:contain}
 .lb li .pos{background:rgba(255,255,255,.14); color:#fff}
@@ -977,144 +952,56 @@ body.onleader{background-image:url(../media/lb/bg.webp); background-size:cover; 
 .lb li .sc img{width:18px; height:18px}
 .lb li .av{width:42px; height:42px; border-radius:50%; background:radial-gradient(circle,#FFF3D2,#F6D88E); border:3px solid #FFC94A; display:grid; place-items:center; overflow:hidden}
 .lb li .av img{width:86%; height:86%; object-fit:contain}
-body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); border-color:#FFD23F; outline:none; box-shadow:0 0 0 2px #FFD23F, 0 6px 14px rgba(255,200,60,.35)}
-/* the podium is one group standing on the round stage: first place in front, second and third tucked in behind it */
-.lb li.pod{padding:14px 4% 0; margin:6px -10px 18px; isolation:isolate}
-.lb li.pod .stage{position:absolute; left:0; right:0; bottom:-6px; width:100%; z-index:0; pointer-events:none}
-.lb li.pod > div{z-index:1; margin-bottom:9%}
-.lb li.pod .p1{z-index:3; margin-bottom:5%}
-.lb li.pod .p2{margin-inline-end:-7%} .lb li.pod .p3{margin-inline-start:-7%}
-.lb li.pod .p2 .ped,.lb li.pod .p3 .ped{filter:brightness(.96)}
-/* closer to the design: faces sink into the podium tops, wider side podiums, bigger names and score pills */
-.lb li.pod{padding:10px 5% 0; margin:4px -10px 20px}
-.lb li.pod .p1{flex:1.12}
-.lb li.pod .p2{margin-inline-end:-5%} .lb li.pod .p3{margin-inline-start:-5%}
-.lb li.pod .av{width:74px; height:74px; margin-bottom:-30px}
-.lb li.pod .p1 .av{width:100px; height:100px; margin-bottom:-38px}
-.lb li.pod .medal{height:44px; margin-bottom:-6px}
-.lb li.pod .p1 .medal{height:60px; margin-bottom:-8px}
-.lb li.pod .ped .txt{top:30%} .lb li.pod .p1 .ped .txt{top:26%}
-.lb li.pod .txt b{font-size:18px} .lb li.pod .p1 .txt b{font-size:21px}
-.lb li.pod .txt small{font-size:14px; padding:4px 11px 4px 8px; margin-top:6px; background:rgba(50,15,40,.62)}
-.lb li.pod .txt small img{width:17px; height:17px}
-.lb li.pod .stage{left:-2%; right:-2%; width:104%; bottom:-10px}
-.lb li.pod .p1 .ped .pd{aspect-ratio:1 / .98; object-fit:fill}   /* the gold block is drawn tall; the design shows it squarer */
-.lb li.pod .p2 .ped .pd,.lb li.pod .p3 .ped .pd{aspect-ratio:1.22 / 1; object-fit:fill}
-.lb li.pod{padding:10px 2% 0}
-/* header closer to the design: small crown on a soft arc of light, big 3D gold title, tall laurels at its sides, dotted subtitle */
-.lbhead{margin:-4px 0 10px; padding-top:6px}
-.lbhead::before{content:""; position:absolute; left:8%; right:8%; top:10px; height:70px; border-radius:50% 50% 0 0 / 100% 100% 0 0; border-top:2px solid rgba(255,214,120,.35); filter:blur(.5px); box-shadow:0 -6px 18px -8px rgba(255,200,90,.5); pointer-events:none}
-.lbhead .crown{position:relative; width:66px; margin:0 auto -2px}
-.lbhead .ttl{gap:2px}
-.lbhead .ttl .screen-title{font-size:38px; line-height:1.1; -webkit-text-stroke:1.5px #8A4A0E; paint-order:stroke fill; filter:drop-shadow(0 3px 0 #6B3407) drop-shadow(0 6px 10px rgba(30,0,60,.5))}
-.lbhead .lau{height:62px; margin-top:14px}
-.lbhead .screen-sub{display:inline-flex; align-items:center; gap:10px; margin-top:6px; font-size:16px; color:#E4D8FF}
-.lbhead .screen-sub::before,.lbhead .screen-sub::after{content:""; width:7px; height:7px; border-radius:50%; background:radial-gradient(circle,#FFF2B0,#F2B53A); box-shadow:0 0 6px #FFC94A}
-.lbhead .ttl{justify-content:space-between; padding:0 2px}
-.lbhead .ttl .screen-title{font-size:44px; font-weight:800; -webkit-text-stroke:0; letter-spacing:-.5px; background:linear-gradient(180deg,#FFFBE6 0%,#FFE9A6 35%,#FFC94A 70%,#F2A21C 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 2px 0 #B8650F) drop-shadow(0 4px 0 #7A3F08) drop-shadow(0 8px 10px rgba(20,0,50,.55))}
-.lbhead .lau{height:58px; margin-top:16px; flex:none}
-.lbhead::before{top:22px}
-.lbhead .ttl .screen-title{font-size:50px; background:linear-gradient(180deg,#FFFFF4 0%,#FFF3C4 40%,#FFDC6E 72%,#FFC23A 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 2px 0 #C9790F) drop-shadow(0 3px 0 #8E4A08) drop-shadow(0 6px 8px rgba(20,0,50,.45))}
-.lbhead .crown{width:62px; margin:0 auto -10px}
-.lbhead .lau{height:64px; margin-top:20px}
-.lbhead .ttl .screen-title{font-size:clamp(30px, 11vw, 46px); white-space:nowrap}
-.lbhead .lau{height:56px; margin-top:12px}
-.lbhead .ttl .screen-title{line-height:1; padding:4px 0 6px; background:linear-gradient(180deg,#FFFFFF 0%,#FFF8DA 30%,#FFE58A 62%,#FFC93C 100%); -webkit-background-clip:text; background-clip:text}
-.lbhead .ttl .screen-title{text-shadow:none}   /* a text-shadow shows through see-through gold letters and muddied them */
-/* ===== pixel-matched podium: every piece placed on a 361-wide grid measured from the design (1cqw = 3.61px there) ===== */
+body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); border-color:#FFD23F; outline:none; box-shadow:0 0 0 2px #FFD23F, 0 6px 14px rgba(255,200,60,.35)}   /* a text-shadow shows through see-through gold letters and muddied them */
 .tabs.lbtabs{height:11.6cqw; min-height:40px; padding:4px; margin-bottom:0; container-type:normal}
 #leader{container-type:inline-size}
 .tabs.lbtabs button{font-size:15px; padding:0}
 .tabs.lbtabs button[aria-selected="true"]{background:linear-gradient(180deg,#B57CFF 0%,#8D4BF5 55%,#7434E6 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(60,0,140,.35), 0 0 12px rgba(170,110,255,.55)}
-.lb li.pod{display:block; position:relative; height:80.5cqw; padding:0; margin:0 -16px 10px; width:auto}
-#leader .lb li.pod{margin:0 0 10px}
-.lb li.pod > div{display:contents}
-.lb li.pod .spark{top:2cqw; width:100%; left:0; transform:none}
-.lb li.pod .stage{left:-2.8%; width:105.6%; right:auto; top:66.5cqw; bottom:auto}
-.lb li.pod .medal,.lb li.pod .av,.lb li.pod .ped{position:absolute; margin:0; transform:translateX(-50%)}
-.lb li.pod .ped{transform:none}
-/* gold, centre front */
-.lb li.pod .p1 .ped{left:31.9%; width:38%; top:35.2cqw; z-index:3}
-.lb li.pod .p1 .pd{aspect-ratio:1/1}
-.lb li.pod .p1 .av{left:49.9%; top:18.3cqw; width:23.8cqw; height:23.8cqw; z-index:4}
-.lb li.pod .p1 .medal{left:49.9%; top:2.5cqw; height:17cqw; z-index:5}
-/* silver, right */
-.lb li.pod .p2 .ped{left:67%; width:32.4%; top:41.3cqw; z-index:1}
-.lb li.pod .p2 .pd{aspect-ratio:117/106}
-.lb li.pod .p2 .av{left:82%; top:27.7cqw; width:19.4cqw; height:19.4cqw; z-index:2}
-.lb li.pod .p2 .medal{left:82%; top:14.4cqw; height:13.3cqw; z-index:2}
-/* bronze, left */
-.lb li.pod .p3 .ped{left:1.4%; width:31.3%; top:44cqw; z-index:1}
-.lb li.pod .p3 .pd{aspect-ratio:113/101}
-.lb li.pod .p3 .av{left:17.2%; top:30.2cqw; width:19.1cqw; height:19.1cqw; z-index:2}
-.lb li.pod .p3 .medal{left:17.2%; top:17.5cqw; height:13.3cqw; z-index:2}
-/* names and scores on the fronts */
-.lb li.pod .ped .txt{left:6%; right:6%; top:23%} .lb li.pod .p1 .ped .txt{top:23%}
-.lb li.pod .p3 .ped .txt{top:19%}
-.lb li.pod .txt b{font-size:5cqw} .lb li.pod .p1 .txt b{font-size:5.6cqw}
-.lb li.pod .txt small{font-size:3.9cqw; padding:1cqw 3cqw 1cqw 2.2cqw; margin-top:1.6cqw}
-/* iPhone Safari ignores aspect-ratio on these pictures and kept their drawn (shorter) shape, so the blocks ended above the stage.
-   Fixed heights make every block the same on every phone; the sides sit a touch deeper on the plate */
-.lb li.pod .ped .pd{width:100%; object-fit:fill; aspect-ratio:auto}
-.lb li.pod .p1 .pd{height:37.9cqw}
-.lb li.pod .p2 .pd{height:29.4cqw}
-.lb li.pod .p3 .pd{height:28cqw}
-.lb li.pod .p2 .ped{top:42.7cqw} .lb li.pod .p3 .ped{top:45.4cqw}
-.lb li.pod .p2 .av{top:29.1cqw} .lb li.pod .p2 .medal{top:15.8cqw}
-.lb li.pod .p3 .av{top:31.6cqw} .lb li.pod .p3 .medal{top:18.9cqw}
-.lb li.pod .ped{line-height:0}
-.lb li.pod .stage{top:62cqw}
-.lb li.pod .p1 .ped{top:37.6cqw} .lb li.pod .p1 .av{top:20.7cqw} .lb li.pod .p1 .medal{top:4.9cqw}
-.lb li.pod{height:79cqw}
 /* === one-to-one with the design: values measured on a grid laid over the design and over the game === */
 .tabs.lbtabs button{font-size:4.3cqw}
-.lb li.pod{height:80cqw}
-.lb li.pod .stage{left:-3.75%; width:107.5%; top:62.5cqw}
-.lb li.pod .av .who{inset:9%; width:82%; height:82%}
-.lb li.pod .p1 .ped{left:29.9%; width:40.2%; top:36cqw} .lb li.pod .p1 .pd{height:38.6cqw}
-.lb li.pod .p1 .av{left:50.1%; top:16.7cqw; width:25cqw; height:25cqw}
-.lb li.pod .p1 .medal{left:50.1%; top:2cqw; height:16.5cqw}
-.lb li.pod .p1 .txt b{font-size:6.1cqw} .lb li.pod .p1 .txt small{font-size:4.2cqw}
-.lb li.pod .p2 .ped{left:65.2%; width:33.8%; top:41.3cqw} .lb li.pod .p2 .pd{height:31.3cqw}
-.lb li.pod .p2 .av{left:82.7%; top:27cqw; width:21.5cqw; height:21.5cqw}
-.lb li.pod .p2 .medal{left:82.7%; top:14.9cqw; height:12.6cqw}
-.lb li.pod .p2 .ped .txt{top:26%}
-.lb li.pod .p3 .ped{left:0; width:33.4%; top:42.2cqw} .lb li.pod .p3 .pd{height:31.7cqw}
-.lb li.pod .p3 .av{left:17.3%; top:29.5cqw; width:19.8cqw; height:19.8cqw}
-.lb li.pod .p3 .medal{left:17.1%; top:17.6cqw; height:13.3cqw}
-.lb li.pod .p3 .ped .txt{top:25%}
-.lb li.pod .txt small{font-size:4cqw}
 
-/* podium: final one-to-one pass against the design mockup (measured by overlay) */
-.lb li.pod .spark{display:none}
-.lb li.pod::before{content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
-  background:
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 36.6% 3.8cqw/4.4cqw 4.4cqw no-repeat,
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 72.2% 3.8cqw/3.4cqw 3.4cqw no-repeat,
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 38.2% 18cqw/3.2cqw 3.2cqw no-repeat,
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") 4.8% 29cqw/3cqw 3cqw no-repeat;}
-.lb li.pod .p1 .medal{top:3.3cqw}
-.lb li.pod .p1 .av{top:18.4cqw}
-.lb li.pod .p1 .ped{left:29.6%; width:40.8%; top:33.9cqw} .lb li.pod .p1 .pd{height:42.5cqw}
-.lb li.pod .p2 .medal{top:16.2cqw} .lb li.pod .p2 .av{top:29.3cqw}
-.lb li.pod .p2 .ped{left:65.3%; width:33.2%; top:41.7cqw} .lb li.pod .p2 .pd{height:31.6cqw}
-.lb li.pod .p3 .medal{top:19.1cqw} .lb li.pod .p3 .av{top:31.1cqw}
-.lb li.pod .p3 .ped{width:34.1%; top:43.5cqw} .lb li.pod .p3 .pd{height:31.4cqw}
-.lb li.pod .stage{top:61.8cqw}
-.lb li.pod::before{background:
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(34.6% - 1.6cqw) 18.6cqw/3.2cqw 3.2cqw no-repeat,
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(62% - 1cqw) 19.2cqw/2cqw 2cqw no-repeat,
-   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'%3E%3Cpath d='M0-10Q1-1 10 0Q1 1 0 10Q-1 1-10 0Q-1-1 0-10Z' fill='%23e9d8ff'/%3E%3C/svg%3E") calc(4.6% - 1.1cqw) 41.6cqw/2.2cqw 2.2cqw no-repeat}
-.lb li.pod .p3 .medal{top:18.3cqw} .lb li.pod .p2 .medal{top:15.5cqw}
-.lb li.pod .p1 .ped .txt{top:26.1%} .lb li.pod .p2 .ped .txt{top:23%} .lb li.pod .p3 .ped .txt{top:22.9%}
-.lb li.pod .p1 .txt b{font-size:7cqw} .lb li.pod .p2 .txt b,.lb li.pod .p3 .txt b{font-size:5.3cqw}
-.lb li.pod .txt small{display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; gap:1cqw; margin-top:.5cqw; padding:1cqw 0; width:21.4cqw; font-size:4.5cqw}
-.lb li.pod .p1 .txt small{width:24cqw; margin-top:.9cqw; font-size:4.7cqw}
-.lb li.pod .p2 .txt small{width:21.1cqw; font-size:4.4cqw}
-.lb li.pod .txt small img{width:4.4cqw; height:4.4cqw} .lb li.pod .p1 .txt small img{width:4.8cqw; height:4.8cqw}
-.lb li.pod .p1 .ped .txt{top:24.1%} .lb li.pod .p1 .txt small{margin-top:.1cqw}
-.lb li.pod .p3 .txt small{margin-top:-.5cqw}
-.lb li.pod .txt small{padding:.45cqw 0}
-.lb li.pod .av .who{inset:4%; width:92%; height:92%}
-.lb li.pod .stage{top:61.6cqw; height:24cqw; object-fit:fill}
-.lb li.pod{height:82cqw}
+/* ===== leaderboard header + podium: drawn on a fixed 804-unit canvas that scales as one picture (--u = one unit in px) ===== */
+.lbc{--u:.489px; position:relative; width:calc(100% + 32px); margin-inline:-16px}
+.lbc > *{position:absolute; left:calc(var(--x) * var(--u)); top:calc(var(--y) * var(--u)); width:calc(var(--w) * var(--u)); height:calc(var(--h) * var(--u)); max-width:none; display:block; margin:0}
+.lbc img{object-fit:fill; pointer-events:none; -webkit-user-drag:none}
+.lbh{height:calc(222 * var(--u)); margin-top:calc(-8 * var(--u))}
+.lbh .arc{z-index:0; opacity:.6}
+.lbh .crown,.lbh .lau,.lbh .ttl{z-index:2}
+.lbh .crown{filter:drop-shadow(0 0 calc(10 * var(--u)) rgba(255,190,60,.55))}
+.lbh .ttltxt{display:none; text-align:center; font-size:calc(58 * var(--u)); line-height:calc(89 * var(--u)); font-weight:800; color:#FFE58A; text-shadow:0 calc(3 * var(--u)) 0 #A8570B, 0 0 calc(14 * var(--u)) rgba(255,190,40,.6); background:none; padding:0; white-space:nowrap; z-index:2}
+#leader:not(.he) .lbh .ttl{display:none} #leader:not(.he) .lbh .ttltxt{display:block}
+.lbh .screen-sub{display:flex; align-items:center; justify-content:center; gap:calc(16 * var(--u)); margin:0; font-size:calc(33.5 * var(--u)); font-weight:600; color:#D8C8FF; text-shadow:0 0 calc(10 * var(--u)) rgba(190,150,255,.65); white-space:nowrap; z-index:2}
+.lbh .screen-sub::before,.lbh .screen-sub::after{content:""; flex:none; width:calc(20 * var(--u)); height:calc(20 * var(--u)); background:url(../media/lb/hdot.webp) center / 100% 100% no-repeat}
+.tabs.lbtabs{margin-top:2px; height:12.2cqw; min-height:44px; padding:5px} .tabs.lbtabs button{font-size:4.7cqw}
+
+.lb li.pod{display:block; position:relative; height:calc(612 * var(--u)); padding:0; margin:0 -16px 6px; width:calc(100% + 32px); background:none; box-shadow:none; border:0; border-radius:0; overflow:visible; grid-template-columns:none}
+.pod .glow{left:0; top:calc(60 * var(--u)); width:calc(804 * var(--u)); height:calc(420 * var(--u)); z-index:0; background:radial-gradient(ellipse 30% 46% at 50% 44%, rgba(255,190,70,.30), rgba(180,90,255,.12) 60%, transparent 100%)}
+.pod .stage{z-index:1; filter:drop-shadow(0 calc(8 * var(--u)) calc(14 * var(--u)) rgba(10,0,40,.5))}
+.pod .sh{z-index:2; background:radial-gradient(ellipse at 50% 50%, rgba(20,0,50,.55), rgba(20,0,50,0) 70%); border-radius:50%}
+.pod .pd{z-index:3; filter:drop-shadow(0 calc(10 * var(--u)) calc(10 * var(--u)) rgba(20,0,50,.5))}
+.pod .pd.g{z-index:4}
+.pod .cast{z-index:5; background:radial-gradient(ellipse at 50% 50%, rgba(60,25,0,.5), rgba(60,25,0,0) 70%); border-radius:50%}
+.pod .who{z-index:8; object-fit:contain; border-radius:50%}
+.pod .fr{z-index:7; filter:drop-shadow(0 calc(6 * var(--u)) calc(8 * var(--u)) rgba(20,0,50,.5))}
+.pod .medal{z-index:9; filter:drop-shadow(0 calc(5 * var(--u)) calc(6 * var(--u)) rgba(20,0,50,.45))}
+.pod .nm{z-index:10; display:block; text-align:center; color:#fff; font-weight:800; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 calc(2 * var(--u)) 0 rgba(40,10,0,.55), 0 0 calc(6 * var(--u)) rgba(0,0,0,.25)}
+.pod .pl{z-index:10; display:flex; align-items:center; justify-content:center; gap:calc(8 * var(--u)); border-radius:999px; background:rgba(72,26,46,.66); box-shadow:inset 0 calc(2 * var(--u)) calc(4 * var(--u)) rgba(0,0,0,.25), 0 0 0 calc(1.5 * var(--u)) rgba(255,255,255,.1); color:#fff; font-weight:800; font-variant-numeric:tabular-nums; direction:ltr; text-shadow:0 calc(2 * var(--u)) 0 rgba(30,0,20,.5)}
+.pod .pl img{position:static; width:calc(var(--s) * var(--u)); height:calc(var(--s) * var(--u)); flex:none}
+.pod .sp{z-index:2; opacity:.9; background:#E9DAFF; clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%); filter:drop-shadow(0 0 calc(4 * var(--u)) #CDA8FF)}
+.pod .mine .who,.pod .who.mine{filter:drop-shadow(0 0 calc(6 * var(--u)) #FFE27A)}
+.tabs.lbtabs{display:flex; align-items:stretch; box-sizing:border-box}
+.tabs.lbtabs button{flex:1; height:100%; margin:0; display:flex; align-items:center; justify-content:center; line-height:1}
+.tabs.lbtabs{padding:1.5px; min-height:0}
+.tabs.lbtabs button{min-height:0; padding:0}
+body.onleader::before{display:none}
+/* ranking rows: score with the star count under it, as in the design */
+.lb li:not(.pod):not(.empty){grid-template-columns:48px 1fr auto 52px; padding:7px 12px; min-height:64px; border-radius:24px}
+.lb li .badge{width:48px; height:48px}
+.lb li .av{width:52px; height:52px}
+.lb li .nm{font-size:17px; font-weight:800} .lb li .nm small{font-size:12.5px; color:#D8C8FF; font-weight:500; margin-top:2px}
+.lb li .sc{flex-direction:column; align-items:center; gap:3px; padding-inline-start:12px; line-height:1.1}
+.lb li .sc > span{font-size:17px; font-weight:800}
+.lb li .sc .st{display:inline-flex; align-items:center; gap:3px; padding:1px 9px 1px 6px; border-radius:999px; background:rgba(40,10,70,.45); font-size:12.5px; font-weight:700; color:#fff}
+.lb li .sc .st img{width:13px; height:13px} .lb li .sc .st i{font-style:normal}
+.lbh .screen-sub{white-space:normal; text-align:center; line-height:1.15; padding:0 calc(70 * var(--u))}
+.lbh .screen-sub.long{font-size:calc(25 * var(--u));}
