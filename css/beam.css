@@ -1021,3 +1021,35 @@ body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); bord
 .lbhead .lau{height:56px; margin-top:12px}
 .lbhead .ttl .screen-title{line-height:1; padding:4px 0 6px; background:linear-gradient(180deg,#FFFFFF 0%,#FFF8DA 30%,#FFE58A 62%,#FFC93C 100%); -webkit-background-clip:text; background-clip:text}
 .lbhead .ttl .screen-title{text-shadow:none}   /* a text-shadow shows through see-through gold letters and muddied them */
+/* ===== pixel-matched podium: every piece placed on a 361-wide grid measured from the design (1cqw = 3.61px there) ===== */
+.tabs.lbtabs{height:11.6cqw; min-height:40px; padding:4px; margin-bottom:0; container-type:normal}
+#leader{container-type:inline-size}
+.tabs.lbtabs button{font-size:15px; padding:0}
+.tabs.lbtabs button[aria-selected="true"]{background:linear-gradient(180deg,#B57CFF 0%,#8D4BF5 55%,#7434E6 100%); box-shadow:inset 0 2px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(60,0,140,.35), 0 0 12px rgba(170,110,255,.55)}
+.lb li.pod{display:block; position:relative; height:80.5cqw; padding:0; margin:0 -16px 10px; width:auto}
+#leader .lb li.pod{margin:0 0 10px}
+.lb li.pod > div{display:contents}
+.lb li.pod .spark{top:2cqw; width:100%; left:0; transform:none}
+.lb li.pod .stage{left:-2.8%; width:105.6%; right:auto; top:66.5cqw; bottom:auto}
+.lb li.pod .medal,.lb li.pod .av,.lb li.pod .ped{position:absolute; margin:0; transform:translateX(-50%)}
+.lb li.pod .ped{transform:none}
+/* gold, centre front */
+.lb li.pod .p1 .ped{left:31.9%; width:38%; top:35.2cqw; z-index:3}
+.lb li.pod .p1 .pd{aspect-ratio:1/1}
+.lb li.pod .p1 .av{left:49.9%; top:18.3cqw; width:23.8cqw; height:23.8cqw; z-index:4}
+.lb li.pod .p1 .medal{left:49.9%; top:2.5cqw; height:17cqw; z-index:5}
+/* silver, right */
+.lb li.pod .p2 .ped{left:67%; width:32.4%; top:41.3cqw; z-index:1}
+.lb li.pod .p2 .pd{aspect-ratio:117/106}
+.lb li.pod .p2 .av{left:82%; top:27.7cqw; width:19.4cqw; height:19.4cqw; z-index:2}
+.lb li.pod .p2 .medal{left:82%; top:14.4cqw; height:13.3cqw; z-index:2}
+/* bronze, left */
+.lb li.pod .p3 .ped{left:1.4%; width:31.3%; top:44cqw; z-index:1}
+.lb li.pod .p3 .pd{aspect-ratio:113/101}
+.lb li.pod .p3 .av{left:17.2%; top:30.2cqw; width:19.1cqw; height:19.1cqw; z-index:2}
+.lb li.pod .p3 .medal{left:17.2%; top:17.5cqw; height:13.3cqw; z-index:2}
+/* names and scores on the fronts */
+.lb li.pod .ped .txt{left:6%; right:6%; top:23%} .lb li.pod .p1 .ped .txt{top:23%}
+.lb li.pod .p3 .ped .txt{top:19%}
+.lb li.pod .txt b{font-size:5cqw} .lb li.pod .p1 .txt b{font-size:5.6cqw}
+.lb li.pod .txt small{font-size:3.9cqw; padding:1cqw 3cqw 1cqw 2.2cqw; margin-top:1.6cqw}
