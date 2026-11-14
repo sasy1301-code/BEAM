@@ -763,7 +763,7 @@ svg.board image{pointer-events:none}
 /* ---- inner pages of the shell ---- */
 #hud .wallet{flex-direction:row-reverse}
 .tabs.four{grid-template-columns:repeat(4,1fr)} .tabs.four button{font-size:15px}
-.tabs.five{grid-template-columns:repeat(5,1fr)} .tabs.five button{font-size:14px; padding:0 2px}
+.tabs.five{grid-template-columns:none} .tabs.five button{font-size:13px; padding:0 2px}
 .coinlead{text-align:center; color:#E9DEFF; margin:-4px 0 12px; font-size:15px}
 .coinpack{position:relative; padding-top:14px} .coinpack b{font-size:24px; font-weight:800; color:#B25E00; direction:ltr}
 .coinpack .tag{position:absolute; top:-8px; inset-inline-start:50%; transform:translateX(50%); background:#FF4F8B; color:#fff; font-style:normal; font-weight:800; font-size:12px; padding:3px 10px; border-radius:999px; white-space:nowrap; box-shadow:0 2px 0 #B8235A}
@@ -942,3 +942,13 @@ body.tabbed #shopBack,body.tabbed #lbBack,body.tabbed #gardenBack,body.tabbed #f
 html{overscroll-behavior-y:none}
 body.onhome{overflow:hidden; height:100dvh; overscroll-behavior:none}
 body.onhome #hud{position:fixed; top:0; left:0; right:0; margin:0 auto; max-width:480px; z-index:12}
+/* shop: emoji sets */
+.emohint{text-align:center; color:var(--muted); margin:2px 6px 12px; font-size:14px}
+.emosets{display:grid; gap:12px}
+.emoset{padding:12px 12px 14px; gap:8px}
+.emoset b{font-size:17px}
+.faces{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px}
+.faces img{display:block; width:100%; height:auto; aspect-ratio:1/1; object-fit:contain}
+.faces.big{margin:0 0 6px}
+.emoset .act{width:100%}
+.emopick .emogrid.five{grid-template-columns:repeat(5,1fr)}

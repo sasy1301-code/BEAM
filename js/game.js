@@ -24,6 +24,8 @@ const LANG = (() => {
 })();
 function setLang(l) { try { localStorage.setItem('beam:lang', l); } catch (e) { /* storage blocked */ } location.reload(); }
 const EN = {
+  'אימוג׳ים': 'Emojis', 'סטים של 5 פרצופים לשליחה ליריב בדו-קרב. כל סט שקונים נוסף לבחירה במשחק.': 'Sets of 5 faces to send your opponent in a duel. Every set you buy is added to your picker.',
+  'יש לכם': 'Owned', 'אימוג׳ים: {}': 'Emojis: {0}', 'הסט נוסף לדו-קרב': 'Set added to your duels',
   'נחיל גחליליות': 'Firefly swarm',
   'שועל הצללים': 'Shadow Fox', 'ארנבת הכוכבים': 'Star Bunny', 'ינשוף הלילה': 'Night Owl', 'חתול הירח': 'Moon Cat', 'קיפוד הברקים': 'Lightning Hedgehog', 'צפרדע הרעל': 'Poison Frog', 'דביבון התעלומות': 'Mystery Raccoon', 'איילת הזוהר': 'Aurora Deer', 'פרפר הקסם': 'Magic Butterfly', 'דרקון האש': 'Fire Dragon',
   'אתגר השבוע': 'Weekly challenge', 'בונים את הלוח של השבוע…': 'Building this week\'s board…', 'שיא חדש לשבוע!': 'New best this week!', 'אתגר השבוע הושלם!': 'Weekly challenge complete!',
@@ -1640,7 +1642,43 @@ const SHOP = {
 const CHAR_IDS = new Set(SHOP.char.items.map(x => x.id).filter(x => x !== 'bug'));
 const PREFIX = { beam: 'bm-', board: 'bd-', fx: 'fx-', char: 'ch-' };
 const P_KEY = cat => cat === 'char' ? 'avatar' : cat, BASE = cat => cat === 'char' ? 'bug' : 'classic';
-const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות', coins: 'נקודות' };
+const SHOP_TAB = { beam: 'קרן', board: 'לוח', fx: 'אפקט', char: 'דמויות', emo: 'אימוג׳ים', coins: 'נקודות' };
+/* reaction sets for duels: five faces of each character. Bought once, every owned set shows up in the duel picker.
+   Priced at about a third of the character itself (the firefly's set is free). */
+const EMO_FACES = ['happy', 'angry', 'think', 'cry', 'love'];
+const EMO_SETS = [
+  { id: 'fox', name: 'שועל הצללים', price: 1500 }, { id: 'bunny', name: 'ארנבת הכוכבים', price: 1500 },
+  { id: 'owl', name: 'ינשוף הלילה', price: 2000 }, { id: 'cat', name: 'חתול הירח', price: 2000 },
+  { id: 'hedgehog', name: 'קיפוד הברקים', price: 2500 }, { id: 'frog', name: 'צפרדע הרעל', price: 2500 },
+  { id: 'raccoon', name: 'דביבון התעלומות', price: 3000 }, { id: 'deer', name: 'איילת הזוהר', price: 3500 },
+  { id: 'moth', name: 'פרפר הקסם', price: 4000 }, { id: 'dragon', name: 'דרקון האש', price: 4500 }, { id: 'unicorn', name: 'חד-קרן', price: 6000 },
+];
+const emoSrc = (c, f) => `media/emo/${c}/${f}.webp`;
+const ownsEmo = id => !!(P.own && P.own['emo:' + id]);
+function renderEmoSets() {
+  return `<p class="emohint">${T('סטים של 5 פרצופים לשליחה ליריב בדו-קרב. כל סט שקונים נוסף לבחירה במשחק.')}</p><div class="emosets">` + EMO_SETS.map(it => {
+    const have = ownsEmo(it.id);
+    return `<div class="shopitem emoset${have ? ' have' : ''}"><b>${T(it.name)}</b><div class="faces">${EMO_FACES.map(f => `<img alt="" src="${emoSrc(it.id, f)}">`).join('')}</div>
+      ${have ? `<button class="act on" disabled>${T('יש לכם')}</button>` : `<button class="act" data-emo="${it.id}"${P.balance < it.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(it.price)}</button>`}</div>`;
+  }).join('') + '</div>';
+}
+function buyEmoSet(it) {
+  modal(`<div class="faces big">${EMO_FACES.map(f => `<img alt="" src="${emoSrc(it.id, f)}">`).join('')}</div>
+    <h3>${T`אימוג׳ים: ${T(it.name)}`}</h3>
+    <p>${T`המחיר: ${fmt(it.price)} נקודות. יישארו לכם ${fmt(P.balance - it.price)}.`}</p>
+    <button class="btn orange" id="buyGo">${T('קנייה')}</button>
+    <button class="btn ghosty" id="buyNo" style="margin-top:12px">${T('ביטול')}</button>`, m => {
+      m.querySelector('#buyNo').onclick = closeModal;
+      m.querySelector('#buyGo').onclick = () => {
+        if (P.balance < it.price || ownsEmo(it.id)) { closeModal(); return; }
+        P.balance -= it.price; P.own = P.own || {}; P.own['emo:' + it.id] = 1;
+        save(true); Sound.play('purchase'); Haptic.play('win'); closeModal(); renderShop();
+        toast(T('הסט נוסף לדו-קרב'), `-${fmt(it.price)}`);
+        logPurchase('emo:' + it.id, it.price, false);
+        const pk = $('emoPick'); if (pk) { pk.remove(); $('emoBtn').remove(); }   // the picker is rebuilt with the new set next time
+      };
+    });
+}
 const owns = (cat, id) => (SHOP[cat].items.find(x => x.id === id) || {}).price === 0 || !!(P.own && P.own[cat + ':' + id]);
 const lookOf = cat => SHOP[cat].items.some(x => x.id === P[P_KEY(cat)]) && owns(cat, P[P_KEY(cat)]) ? P[P_KEY(cat)] : BASE(cat);
 const OLD_BOARDS = { night: 'stars' };   // the drawn boards were replaced by painted ones; a purchase carries over
@@ -1689,8 +1727,8 @@ async function buyCoins(k) {
 }
 function renderShop() {
   $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance); hudSync();
-  $('shopBody').innerHTML = `<div class="tabs five" role="tablist">` + [...Object.keys(SHOP), 'coins'].map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
-    (shopCat === 'coins' ? [renderCoins()] : [shopCat].map(cat => `<div class="shopgrid">` + SHOP[cat].items.map(it => {
+  $('shopBody').innerHTML = `<div class="tabs five" role="tablist">` + [...Object.keys(SHOP), 'emo', 'coins'].map(c => `<button role="tab" data-cat="${c}" aria-selected="${c === shopCat}">${T(SHOP_TAB[c])}</button>`).join('') + '</div>' +
+    (shopCat === 'coins' ? [renderCoins()] : shopCat === 'emo' ? [renderEmoSets()] : [shopCat].map(cat => `<div class="shopgrid">` + SHOP[cat].items.map(it => {
     const btn = it.id === lookOf(cat) ? `<button class="act on" disabled>${T('בשימוש')}</button>`
       : owns(cat, it.id) ? `<button class="act have" data-use="${cat}:${it.id}">${T('בחירה')}</button>`
       : `<button class="act" data-buy="${cat}:${it.id}"${P.balance < it.price ? ' disabled' : ''}>${ICON_POINTS}${fmt(it.price)}</button>`;
@@ -1702,6 +1740,7 @@ function renderShop() {
   for (const el of $('shopBody').querySelectorAll('[data-use]')) el.onclick = () => { const [cat, it] = find(el.dataset.use); P[P_KEY(cat)] = it.id; save(cat === 'char'); applyLook(); Sound.play('tap'); renderShop(); if (cat === 'fx') winFx(it.id); if (cat === 'char') pulse(); };
   for (const el of $('shopBody').querySelectorAll('[data-buy]')) el.onclick = () => buyLook(...find(el.dataset.buy));
   for (const el of $('shopBody').querySelectorAll('[data-try]')) el.onclick = () => winFx(el.dataset.try);
+  for (const el of $('shopBody').querySelectorAll('[data-emo]')) el.onclick = () => buyEmoSet(EMO_SETS.find(x => x.id === el.dataset.emo));
 }
 function buyLook(cat, it) {
   modal(`<div class="shopitem ${PREFIX[cat]}${it.id}" style="box-shadow:none;padding:0;background:none">${cat === 'fx' ? `<img alt="" src="media/fx/${it.id}.webp?v=2" style="height:150px;width:150px;max-width:100%;object-fit:contain;display:block;margin:0 auto">` : sampleOf(cat, it)}</div>
@@ -2940,15 +2979,18 @@ function stopDuel() { if (D) { clearInterval(D.timer); D = null; } clearInterval
 const EMOTES = { laugh: '😂', wow: '😮', cool: '😎', angry: '😡', cry: '😭', love: '😍', clap: '👏', fire: '🔥', think: '🤔', gg: '🤝' };
 // the firefly pack: painted faces, sent the same way as the emoji
 for (const k of ['happy', 'laugh', 'love', 'wow', 'think', 'wink', 'thumbs', 'luck', 'angry', 'sad', 'cry', 'win']) EMOTES['b-' + k] = `<img alt="" src="media/emo/${k}.webp">`;
+// every character set is known here so a face the opponent sends always shows, even from a set this player has not bought
+for (const it of EMO_SETS) for (const f of EMO_FACES) EMOTES[`c-${it.id}-${f}`] = `<img alt="" src="${emoSrc(it.id, f)}">`;
 function emoteBar(on) {
   let b = $('emoBtn');
   if (!on) { if (b) b.hidden = true; const pk = $('emoPick'); if (pk) pk.hidden = true; return; }
   if (!b) {
     b = document.createElement('button'); b.id = 'emoBtn'; b.className = 'emobtn'; b.setAttribute('aria-label', T('שליחת אימוג׳י')); b.textContent = '😊';
     const pk = document.createElement('div'); pk.id = 'emoPick'; pk.className = 'emopick'; pk.hidden = true;
-    const btns = list => list.map(([k, e]) => `<button data-emo="${k}"${k.startsWith('b-') ? ' class="bug"' : ''}>${e}</button>`).join('');
+    const btns = list => list.map(([k, e]) => `<button data-emo="${k}"${/^[bc]-/.test(k) ? ' class="bug"' : ''}>${e}</button>`).join('');
     const all = Object.entries(EMOTES);
-    pk.innerHTML = `<div class="emogrid bugs">${btns(all.filter(([k]) => k.startsWith('b-')))}</div><div class="emogrid">${btns(all.filter(([k]) => !k.startsWith('b-')))}</div>`;
+    const sets = EMO_SETS.filter(it => ownsEmo(it.id)).map(it => `<div class="emogrid bugs five">${btns(EMO_FACES.map(f => [`c-${it.id}-${f}`, EMOTES[`c-${it.id}-${f}`]]))}</div>`).join('');
+    pk.innerHTML = `<div class="emogrid bugs">${btns(all.filter(([k]) => k.startsWith('b-')))}</div>${sets}<div class="emogrid">${btns(all.filter(([k]) => !/^[bc]-/.test(k)))}</div>`;
     document.body.append(b, pk);
     b.onclick = () => { pk.hidden = !pk.hidden; Sound.play('tap'); };
     pk.onclick = e => { const k = e.target.closest('[data-emo]'); if (k) sendEmote(k.dataset.emo); };

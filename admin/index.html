@@ -235,6 +235,7 @@ async function loadItemNames(src) {
       [...g[0].matchAll(/name: '([^']+)' \}/g)].forEach((x, i) => { ITEMS['garden:house' + (i + 1)] = { name: x[1], cat: 'בית' }; }); }
     if (r) for (const x of r[0].matchAll(/\{ id: '([^']+)', name: '([^']+)', price: (\d+)/g)) ITEMS['room:' + x[1]] = { name: x[2], cat: 'בתוך הבית' };
   } catch (e) { /* ids are shown instead */ }
+  try { const e = src.match(/const EMO_SETS = \[[\s\S]*?\n\];/); if (e) for (const x of e[0].matchAll(/\{ id: '([^']+)', name: '([^']+)', price: (\d+)/g)) ITEMS['emo:' + x[1]] = { name: x[2], cat: 'אימוג׳ים', price: +x[3] }; } catch (e) { /* ids instead */ }
   Object.assign(ITEMS, { 'power:mirror': { name: 'מראה נוספת', cat: 'עזרה בשלב' }, 'power:hammer': { name: 'פטיש', cat: 'עזרה בשלב' }, 'power:hint': { name: 'רמז', cat: 'עזרה בשלב' }, 'power:time': { name: 'עוד דקה', cat: 'עזרה בשלב' } });
   ITEMS.remove_ads = { name: 'הסרת פרסומות', cat: 'כסף אמיתי' };
   for (const [n, k] of [[500, 'coins_500'], [1000, 'coins_1000'], [2000, 'coins_2000'], [5000, 'coins_5000'], [12000, 'coins_12000'], [30000, 'coins_30000']]) ITEMS[k] = { name: `${fmt(n)} נקודות`, cat: 'כסף אמיתי' };
