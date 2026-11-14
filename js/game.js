@@ -3577,11 +3577,11 @@ async function openLeaderboard(tab) {
   const top = rows.length >= 3 && rows.slice(0, 3).every((r, n) => (r.rank || n + 1) === n + 1) ? rows.slice(0, 3) : [];
   if (top.length) {
     const pod = document.createElement('li'); pod.className = 'pod';
-    pod.innerHTML = `<img class="spark" alt="" src="media/lb/sparkles.webp">` + [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}">
+    pod.innerHTML = `<img class="spark" alt="" src="media/lb/sparkles.webp"><img class="stage" alt="" src="media/lb/stage.webp">` + [1, 0, 2].map(k => `<div class="p${k + 1}${top[k].id === P.id ? ' mine' : ''}">
       <img class="medal" alt="" src="media/lb/medal${k + 1}.webp">
       <span class="av"><img class="who" alt="" src="${avatarSrc(top[k].id === P.id ? lookOf('char') : null)}"><img class="fr" alt="" src="media/lb/frame${k + 1}.webp"></span>
       <span class="ped"><img class="pd" alt="" src="media/lb/pod${k + 1}.webp"><span class="txt"><b></b><small><img alt="" src="media/lb/star.webp"><span>${fmt(val(top[k]))}</span></small></span></span></div>`).join('');
-    [1, 0, 2].forEach((k, j) => { pod.children[j + 1].querySelector('b').textContent = top[k].name; });
+    [1, 0, 2].forEach((k, j) => { pod.children[j + 2].querySelector('b').textContent = top[k].name; });
     list.appendChild(pod);
   }
   rows.filter((r, n) => (r.rank || n + 1) <= 25 || r.id === P.id).forEach((r, n) => { if (n >= top.length || r.id === P.id) list.appendChild(row(r, n)); });
