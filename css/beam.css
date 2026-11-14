@@ -1053,3 +1053,16 @@ body.tabbed .lb li.mine{background:linear-gradient(180deg,#B66BFF,#8237E6); bord
 .lb li.pod .p3 .ped .txt{top:19%}
 .lb li.pod .txt b{font-size:5cqw} .lb li.pod .p1 .txt b{font-size:5.6cqw}
 .lb li.pod .txt small{font-size:3.9cqw; padding:1cqw 3cqw 1cqw 2.2cqw; margin-top:1.6cqw}
+/* iPhone Safari ignores aspect-ratio on these pictures and kept their drawn (shorter) shape, so the blocks ended above the stage.
+   Fixed heights make every block the same on every phone; the sides sit a touch deeper on the plate */
+.lb li.pod .ped .pd{width:100%; object-fit:fill; aspect-ratio:auto}
+.lb li.pod .p1 .pd{height:37.9cqw}
+.lb li.pod .p2 .pd{height:29.4cqw}
+.lb li.pod .p3 .pd{height:28cqw}
+.lb li.pod .p2 .ped{top:42.7cqw} .lb li.pod .p3 .ped{top:45.4cqw}
+.lb li.pod .p2 .av{top:29.1cqw} .lb li.pod .p2 .medal{top:15.8cqw}
+.lb li.pod .p3 .av{top:31.6cqw} .lb li.pod .p3 .medal{top:18.9cqw}
+.lb li.pod .ped{line-height:0}
+.lb li.pod .stage{top:62cqw}
+.lb li.pod .p1 .ped{top:37.6cqw} .lb li.pod .p1 .av{top:20.7cqw} .lb li.pod .p1 .medal{top:4.9cqw}
+.lb li.pod{height:79cqw}
