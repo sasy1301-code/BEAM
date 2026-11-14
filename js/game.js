@@ -489,6 +489,18 @@ const FRAMES = {
   royal: { src: 'frame-royal', w: 1197, h: 1139, bx: 104, by: 152, bw: 990, bh: 883, bed: '#ECDBFA', edge: '#CFC0DC', tiles: ['k-royal-purple', 'k-lavender', 'k-ruby-red', 'k-yellow-gold'] },
 };
 const frameOf = () => FRAMES[typeof P !== 'undefined' && P ? lookOf('board') : 'classic'] || FRAMES.classic;
+/* the board's pictures are fetched and decoded the first time a board is drawn, which made the first level of a session (or of a new frame) pop in late.
+   So they are brought in quietly beforehand: the core pieces, and the frame and tiles the player has equipped. */
+const warmed = new Set();
+function warmBoard() {
+  const names = ['frame', 't-blue', 't-orange', 't-purple', 't-green', 'wall', 'bomb', 'mir-a', 'mir-b', 'star', 'star-off', 'fly'];
+  try { const F = frameOf(); names.push(F.src, ...(F.tiles || [])); } catch (e) { /* the default set */ }
+  for (const n of names) {
+    if (warmed.has(n)) continue; warmed.add(n);
+    const im = new Image(); im.src = ART_DIR + n + '.webp';
+    if (im.decode) im.decode().catch(() => { warmed.delete(n); });
+  }
+}
 function pic(g, name, x, y, w, h, cls) {
   const im = el('image', { href: ART_DIR + name + '.webp', x, y, width: w, height: h, preserveAspectRatio: 'none', ...(cls ? { class: cls } : {}) }, g);
   im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', ART_DIR + name + '.webp');
@@ -1260,7 +1272,7 @@ function checkAchievements() {
   const fresh = ACH.filter(a => !P.ach.includes(a.id) && a.test());
   fresh.forEach((a, n) => {
     P.ach.push(a.id); gain(a.reward);
-    setTimeout(() => { Sound.play('achievement'); toast(T`הישג חדש: ${a.name}`, `+${fmt(a.reward)}`); }, 1800 + n * 2600);
+    setTimeout(() => { Sound.play('achievement'); toast(T`הישג חדש: ${a.name}`, `+${fmt(a.reward)}`); coinsIn(a.reward); }, 1800 + n * 2600);
   });
   if (fresh.length) save();
 }
@@ -1317,6 +1329,7 @@ function show(id) {
   for (const b of $('tabbar').children) b.classList.toggle('on', b.dataset.tab === tab);
   if (tab) hudSync();
   flyShow(id === 'home' ? $('homeFly') : id === 'garden' ? GFLY : null);
+  if (id === 'home' || id === 'allch' || id === 'map' || id === 'shop') setTimeout(warmBoard, 400);   // cheap once done; picks up a frame just equipped or bought
 }
 /* the level's tip sits halfway between the clock and the top of the board picture (or the firefly, when she stands above it) */
 function placeTip() {
@@ -1393,8 +1406,10 @@ function dailyBonus() {
   modal(`<img class="bug" alt="" src="${POSE.hero}">
     <h3>${P.streak.count > 1 ? T`${P.streak.count} ימים ברצף!` : T('ברוכים השבים!')}</h3>
     <p>${T`קיבלתם ${reward} נקודות לקניות. חזרו מחר כדי להגדיל את הבונוס.`}</p>
+    <div class="gains big"><div class="coin">${ICON_POINTS}<span dir="ltr">+${fmt(reward)}</span></div></div>
     <div class="streak">${days}</div>
     <button class="btn green" id="bonusOk">${T`איסוף`}</button>`, m => {
+            setTimeout(() => { if (m.isConnected) coinBurst(reward, { chip: m.querySelector('.gains .coin') }); }, 350);
             m.querySelector('#bonusOk').onclick = () => { Sound.play('bonus'); closeModal(); renderHome(); checkAchievements(); };
     }, true);
 }
@@ -1439,7 +1454,7 @@ const CH_PRIZE = 500;
 function chapterPrize(ci) {
   if (!chapterDone(ci) || (P.chPrize || []).includes(ci)) return;
   P.chPrize = [...(P.chPrize || []), ci]; gain(CH_PRIZE, false); save(false); hudSync();
-  Sound.play('purchase'); toast(T('פרס הפרק!'), `+${fmt(CH_PRIZE)}`);
+  Sound.play('purchase'); toast(T('פרס הפרק!'), `+${fmt(CH_PRIZE)}`); coinsIn(CH_PRIZE);
 }
 function mapBurst(x, y, n = 12) {
   const scene = $('mScene'), w = scene.clientWidth;
@@ -1731,7 +1746,7 @@ async function buyCoins(k) {
   if (!PAYMENTS.live) return soonModal();             // no checkout is connected yet, and points must never be handed out for a tap
   if (!await PAYMENTS.buy(k)) return;
   logPurchase(k.id, agorot(k.price), true); gain(k.coins, false); save(); renderShop(); renderHome(); Sound.play('purchase'); Haptic.play('win');
-  toast(T('הנקודות נוספו'), `+${fmt(k.coins)}`);
+  toast(T('הנקודות נוספו'), `+${fmt(k.coins)}`); coinsIn(k.coins);
 }
 function renderShop() {
   $('shopPoints').innerHTML = coinHTML(ICON_POINTS, P.balance); hudSync();
@@ -2724,13 +2739,13 @@ function showWin(mood, delay, onCard, coins = 0) {
 const COIN_N = 96, COIN_MS = 2550;   // how many coins, and how long from the first burst until the last ones are landing
 /* o.chip: another counter to fill (the duel's prize), which then counts from 0 up to the prize with a plus sign */
 function coinBurst(earned, o = {}) {
-  const own = !o.chip, chip = o.chip || $('gamePoints'), g = G;
+  const quiet = !!o.quiet, own = !o.chip, chip = o.chip || $('gamePoints'), g = G;
   const from = !own ? 0 : g.coinFrom != null ? g.coinFrom : P.balance - earned;   // achievements may have added to the sum meanwhile, so count from what the counter shows
   const goal = () => own ? P.balance : earned, text = n => (own ? '' : '+') + fmt(n);
   const alive = () => own ? G === g : chip.isConnected;
-  const show = n => { const sp = chip.querySelector('span'); if (sp) { sp.textContent = text(n); if (!own) sp.dir = 'ltr'; } };
-  const settle = () => { if (!alive()) return; if (own) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); else show(earned); };
-  if (!earned || (own && $('game').hidden)) return settle();
+  const show = n => { if (quiet) return; const sp = chip.querySelector('span'); if (sp) { sp.textContent = text(n); if (!own) sp.dir = 'ltr'; } };
+  const settle = () => { if (quiet || !alive()) return; if (own) chip.innerHTML = coinHTML(ICON_POINTS, P.balance); else show(earned); };
+  if (!earned || (own && $('game').hidden)) return settle();   // (a quiet burst just flies to a counter that already shows the new sum)
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !chip.animate) return settle();
   const layer = document.createElement('div'); layer.className = 'coinfly'; document.body.appendChild(layer);
   document.body.classList.add('coining');
@@ -2742,8 +2757,8 @@ function coinBurst(earned, o = {}) {
   // the stage: a golden flash, two shock rings and a board that jumps
   add('cf-flash').animate([{ opacity: 0 }, { opacity: .95, offset: .12 }, { opacity: 0 }], { duration: 650, fill: 'both' });
   for (const d of [0, 220]) add('cf-ring', `left:${ox}px; top:${oy}px`).animate([{ transform: 'translate(-50%,-50%) scale(.1)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }], { duration: 750, delay: d, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'both' });
-  const wrap = own ? document.querySelector('#game .boardwrap') : chip.closest('.modal, .duelbox, section') || chip;
-  wrap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07) rotate(-1.2deg)', offset: .18 }, { transform: 'scale(.97) rotate(.8deg)', offset: .4 }, { transform: 'scale(1.03)', offset: .62 }, { transform: 'scale(1)' }], { duration: 700, easing: 'ease-out' });
+  const wrap = quiet ? null : own ? document.querySelector('#game .boardwrap') : chip.closest('.modal, .duelbox, section') || chip;
+  if (wrap) wrap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07) rotate(-1.2deg)', offset: .18 }, { transform: 'scale(.97) rotate(.8deg)', offset: .4 }, { transform: 'scale(1.03)', offset: .62 }, { transform: 'scale(1)' }], { duration: 700, easing: 'ease-out' });
 
   // the prize itself, big, in the middle; it shrinks into the counter with the last coins
   const big = add('cf-sum'); big.textContent = '+' + fmt(earned);
@@ -2794,6 +2809,13 @@ function coinBurst(earned, o = {}) {
   }
   Sound.play('jackpot');
   setTimeout(done, COIN_MS + 2200);   // whatever happens to the animations, the sum ends up right
+}
+/* coins that arrive anywhere else (achievements, prizes, purchases, the daily bonus): the same burst, flying into whichever balance is on screen */
+function coinsIn(n) {
+  const vis = e => e && e.isConnected && e.getClientRects().length;
+  const chip = [$('gamePoints'), $('homePoints'), $('shopPoints')].find(vis);
+  if (!chip || !n) return;
+  coinBurst(n, { chip, quiet: true });
 }
 function finish() {
   if (G.mode === 'duel') return duelSolved();
@@ -4054,7 +4076,7 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   setTimeout(() => $('splash').remove(), 700);
   // today's challenge takes a moment to build, so it is prepared quietly once the screen is up
   const idle = window.requestIdleCallback || (f => setTimeout(f, 1200));
-  idle(() => { preloadWinVideos(); const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
+  idle(() => { warmBoard(); preloadWinVideos(); const t = todayStr(); if (!DAILY_CACHE || DAILY_CACHE.date !== t) { try { DAILY_CACHE = { date: t, lv: dailyLevel(t) }; } catch (e) { /* built on demand instead */ } } });
   // on the web the game installs to the home screen and keeps working offline
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
   AUTH.detect();
