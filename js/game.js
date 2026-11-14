@@ -709,9 +709,16 @@ const Sound = (() => {
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     if (musicWanted) startMusic();
+    loadClip();
     return true;
   }
   const now = () => ctx.currentTime;
+  /* the soundtrack of the firefly's victory clip: a real recording, decoded once the audio is switched on */
+  let clipBuf = null, clipTried = false;
+  function loadClip() {
+    if (clipTried || !ctx || !/^https?:$/.test(location.protocol)) return; clipTried = true;
+    fetch('media/win.m4a').then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => ctx.decodeAudioData(b, ok, no))).then(buf => { clipBuf = buf; }).catch(() => { /* the synthesized whirl covers it */ });
+  }
 
   let tapStep = 0;
   function tone({ f = 440, f2 = null, type = 'sine', dur = .15, vol = .25, at = .005, delay = 0, bus = sfxBus, wet = 0, detune = 0, lp = 0 }) {
@@ -770,6 +777,7 @@ const Sound = (() => {
     },
     spin()   {            // the firefly's victory whirl: three sweeps of air that grow, a rising trail of bells, and a bright landing
       const bus = clipBus = ctx.createGain(); bus.connect(sfxBus);        // its own line, so leaving the win screen can cut it short
+      if (clipBuf) { const src = ctx.createBufferSource(); src.buffer = clipBuf; const g = ctx.createGain(); g.gain.value = 1.1; src.connect(g); g.connect(bus); src.start(now()); return; }
       [[.25, .07, 500, 2200], [1.35, .1, 600, 2800], [2.5, .13, 700, 3400]].forEach(([d, v, a, b]) => noise({ dur: 1.05, vol: v, type: 'bandpass', f: a, f2: b, q: 1.4, delay: d, bus }));
       for (let k = 0; k < 34; k++) {
         const t = .3 + k * .115, n = Math.min(PENTA.length - 1, Math.floor(k / 3.5));
