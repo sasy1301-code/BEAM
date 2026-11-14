@@ -48,7 +48,7 @@ const EN = {
   'רמת קושי': 'Difficulty', 'קל': 'Easy', 'בינוני': 'Medium', 'קשה': 'Hard',
   'פרק {} מתוך {}': 'Chapter {0} of {1}', 'פרס הפרק!': 'Chapter prize!', 'הפרק הושלם · לפרק הבא': 'Chapter complete · on to the next', 'הפרק הושלם': 'Chapter complete', 'פרס הפרק · עוד שלב אחד': 'Chapter prize · 1 level to go', 'פרס הפרק · עוד {} שלבים': 'Chapter prize · {0} levels to go', 'לפרק הבא': 'Next chapter',
   'שליחת מתנה': 'Send a gift', 'מתנה ל-{}': 'A gift for {0}', 'הנקודות יורדות מהארנק שלכם. יש לכם {}.': 'The points come out of your wallet. You have {0}.', 'שליחה': 'Send', 'המתנה נשלחה ל-{}': 'Gift sent to {0}', 'הגעתם למכסת המתנות להיום. נסו שוב מחר.': 'You have reached today\'s gift limit. Try again tomorrow.', 'אפשר לשלוח מתנות רק לחברים': 'Gifts can only be sent to friends', 'מתנה מ-{}!': 'A gift from {0}!',
-  'קיבלתם מתנה!': 'You got a gift!', '{} הצטרף בזכותכם!': '{0} joined thanks to you!',
+  'קיבלתם מתנה!': 'You got a gift!', 'חדש: מזמינים חבר, מקבלים בונוס!': 'New: invite a friend, get a bonus!', 'שולחים קישור לחבר. ברגע שהוא מתחיל לשחק, אתם מקבלים {} נקודות על כל חבר חדש.': 'Send a friend a link. As soon as they start playing, you get {0} points for every new friend.', 'אחר כך': 'Later', '{} הצטרף בזכותכם!': '{0} joined thanks to you!',
   'אין לכם מספיק נקודות': 'You do not have enough points', 'הדו-קרב על {} נקודות ויש לכם {}. חסרות {}.': 'The duel is for {0} points and you have {1}. You are {2} short.', '{} מזמין לדו-קרב': '{0} invites you to a duel',
   'חברים': 'Friends', 'חברים מחוברים': 'Friends online', '+ הוספת חבר': '+ Add a friend', 'בקשות חברות': 'Friend requests', 'אף חבר לא מחובר כרגע. אפשר להזמין בקישור.': 'No friend is online right now. You can invite with a link.', 'עוד אין לכם חברים כאן. מוסיפים חברים מהכפתור "חברים" במסך הבית.': 'No friends here yet. Add friends from the Friends button on the home screen.',
   'זהירות! עוד שתי פגיעות בפצצה והיא מתפוצצת.': 'Careful! Two more hits and the bomb blows up.',
@@ -3242,6 +3242,23 @@ function shareText(text, link, copiedMsg) {
 }
 
 const SITE_URL = 'https://beam-game.co.il/';
+/* one-time notice for every player, old and new: sending a friend link now pays a bonus. It waits until the home screen is free of other windows. */
+const REF_BONUS = 500;
+function announceRef(tries = 0) {
+  if (!P || P.annRef || tries > 40) return;
+  if ($('home').hidden || !$('overlay').hidden || isNewcomer()) return void setTimeout(() => announceRef(tries + 1), 2000);
+  P.annRef = 1; save(false);
+  Sound.play('sparkle', 5);
+  modal(`<img class="bug giftpic" alt="" src="media/ui/gift.webp">
+    <h3>${T('חדש: מזמינים חבר, מקבלים בונוס!')}</h3>
+    <div class="gains big"><div class="coin">${ICON_POINTS}<span dir="ltr">+${fmt(REF_BONUS)}</span></div></div>
+    <p>${T`שולחים קישור לחבר. ברגע שהוא מתחיל לשחק, אתם מקבלים ${fmt(REF_BONUS)} נקודות על כל חבר חדש.`}</p>
+    <button class="btn green" id="refGo">${T('שליחת קישור לחבר')}</button>
+    <button class="linkbtn" id="refLater">${T('אחר כך')}</button>`, m => {
+      m.querySelector('#refGo').onclick = () => { closeModal(); withName(shareFriendLink); };
+      m.querySelector('#refLater').onclick = closeModal;
+    });
+}
 /* ================= friends =================
    Friends see each other while the game is open and can call each other into a duel. Everything goes through one
    light "pulse" request every few seconds, and only for players who have used friends or played a duel. */
@@ -4108,5 +4125,6 @@ function setProgress(p, text) { spGoal = p; if (text) $('spText').textContent = 
   checkAchievements();
   setTimeout(claimGifts, 2500);
   setTimeout(sessionPing, 1500);
+  announceRef();
 })();
 
